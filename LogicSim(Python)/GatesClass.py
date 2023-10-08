@@ -78,13 +78,22 @@ def XOR_GATE(X1: bool, X2: bool) -> bool:
 
 #not really a gate!
 def ADDER(X1: bool, X2: bool, CarryIn: bool) -> bool:
-    
-
+    """Takes input(x, y, z) as in x1 + y1 carry in z"""
     SUM = XOR_GATE(XOR_GATE(X1, X2), CarryIn)
     CARRYOUT = OR_GATE(AND_GATE(XOR_GATE(X1, X2), CarryIn), AND_GATE(X2, X1))
 
     return SUM, CARRYOUT
 
+def TWOBITADDER(XBools: list, YBools: list, CarryIn: bool) -> bool:
+    """Takes input(xx, yy, z) as in x1 + y1 carry in z"""
+    X2, X1 = utils.twoBitList_into_individual_bools(XBools)
+    Y2, Y1 = utils.twoBitList_into_individual_bools(YBools)
+
+    xout1, adder1out = ADDER(X1, Y1, CarryIn)
+    xout2, carryout = ADDER(X2, Y2, adder1out)
+
+    output = utils.twoIndividualBools_into_twoBitList(xout2, xout1)
+    return output, carryout
 
 def FOURBITADDER(XBools: list, YBools: list, CarryIn: bool) -> bool:
     """Takes input(xxxx, yyyy, z) as in x1 + y1 carry in z\n
@@ -92,9 +101,6 @@ def FOURBITADDER(XBools: list, YBools: list, CarryIn: bool) -> bool:
     """
     X4, X3, X2, X1 = utils.fourBitList_into_individual_bools(XBools)
     Y4, Y3, Y2, Y1 = utils.fourBitList_into_individual_bools(YBools)
-
-    print(XBools)
-    print(YBools)
 
     xout1, adder1out = ADDER(X1, Y1, CarryIn)
     xout2, adder2out = ADDER(X2, Y2, adder1out)
@@ -106,7 +112,7 @@ def FOURBITADDER(XBools: list, YBools: list, CarryIn: bool) -> bool:
     return output, carryout
 
 def EIGHTBITADDER(XBools: list, YBools: list, CarryIn: bool) -> bool: 
-    """Takes input(xxxx, yyyy, z) as in x1 + y1 carry in z"""
+    """Takes input(xxxxxxxx, yyyyyyyy, z) as in x1 + y1 carry in z"""
     X8, X7, X6, X5, X4, X3, X2, X1 = utils.eightBitList_into_individual_bools(XBools)
     Y8, Y7, Y6, Y5, Y4, Y3, Y2, Y1 = utils.eightBitList_into_individual_bools(YBools)
 
@@ -123,13 +129,38 @@ def EIGHTBITADDER(XBools: list, YBools: list, CarryIn: bool) -> bool:
 
     return output, carryout
 
-def EIGHTBITADDERsmall(XBools: list, YBools: list, CarryIn: bool) -> bool: 
+def TWOBITADDERsmall(XBools: list, YBools: list, CarryIn: bool) -> bool:
+    """Takes input(xx, yy, z) as in x1 + y1 carry in z"""
+    X2, X1 = utils.twoBitList_into_individual_bools(XBools)
+    Y2, Y1 = utils.twoBitList_into_individual_bools(YBools)
+
+    xout1, adder1out = ADDER(X1, Y1, CarryIn)
+    xout2, carryout = ADDER(X2, Y2, adder1out)
+
+    output = utils.twoIndividualBools_into_twoBitList(xout2, xout1)
+    return output, carryout
+
+def FOURBITADDERsmall(XBools: list, YBools: list, CarryIn: bool) -> bool:
     """Takes input(xxxx, yyyy, z) as in x1 + y1 carry in z"""
+    X4, X3, X2, X1 = utils.fourBitList_into_individual_bools(XBools)
+    Y4, Y3, Y2, Y1 = utils.fourBitList_into_individual_bools(YBools)
+
+    xout1, adder1out = TWOBITADDERsmall([X2,X1], [Y2,Y1], CarryIn)
+    xout2, carryout = TWOBITADDERsmall([X4,X3], [Y4,Y3], adder1out)
+
+    out2, out1 = utils.twoBitList_into_individual_bools(xout1)
+    out4, out3 = utils.twoBitList_into_individual_bools(xout2)
+    output = utils.fourIndividualBools_into_fourBitList(out4, out3, out2, out1)
+    return output, carryout
+
+
+def EIGHTBITADDERsmall(XBools: list, YBools: list, CarryIn: bool) -> bool: 
+    """Takes input(xxxxxxxx, yyyyyyyy, z) as in x1 + y1 carry in z"""
     X8, X7, X6, X5, X4, X3, X2, X1 = utils.eightBitList_into_individual_bools(XBools)
     Y8, Y7, Y6, Y5, Y4, Y3, Y2, Y1 = utils.eightBitList_into_individual_bools(YBools)
 
-    xout1, adder1out = FOURBITADDER([X1,X2,X3,X4], [Y1,Y2,Y3,Y4], CarryIn)
-    xout2, carryout = FOURBITADDER([X5,X6,X7,X8], [Y5,Y6,Y7,Y8], adder1out)
+    xout1, adder1out = FOURBITADDERsmall([X4,X3,X2,X1], [Y4,Y3,Y2,Y1], CarryIn)
+    xout2, carryout = FOURBITADDERsmall([X8,X7,X6,X5], [Y8,Y7,Y6,Y5], adder1out)
 
     out4, out3, out2, out1 = utils.fourBitList_into_individual_bools(xout1)
     out8, out7, out6, out5 = utils.fourBitList_into_individual_bools(xout2)

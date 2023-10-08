@@ -10,23 +10,30 @@ def main():
 
     #print(str(gate.FOURBITADDER(1,1,1,1,0,0,0,1,0)))
 
-    input1 = [1,0,0,0,0,0,0,0]
-    input2 = [0,1,1,1,1,1,1,1]
+    inputTWOx = [1,1]
+    inputTWOy = [1,1]
 
-    rad1 = utils.binary_to_decimal(input1)
-    rad2 = utils.binary_to_decimal(input2)
+    inputFOURx = [1,0,1,1]
+    inputFOURy = [0,1,0,0]
 
-    additon, carry = gate.EIGHTBITADDER(input1, input2, 0)
+    inputEIGHTx = [0,1,0,1,0,1,0,1]
+    inputEIGHTy = [1,0,1,0,1,0,1,1]
+
+    rad1 = utils.binary_to_decimal(inputEIGHTx)
+    rad2 = utils.binary_to_decimal(inputEIGHTy)
+
+    additon, carry = gate.EIGHTBITADDERsmall(inputEIGHTx, inputEIGHTy, 0)
     print(f"{additon},{carry}")
     print(f"{rad1}+{rad2}={utils.binary_to_decimal(additon)}")
 
+    #print(gate.EIGHTBITADDERsmall(input1, input2, 0))
 
     #in the future i want to be able to input into any function an array of bits EX:
     # x = [[0,1]] y = [[0,1], [1,0]] Z = []
 
 
-    #x = [[0,1]]
-    #y = [[0,1], [1,0]]
+    #x = [[0,0,0,0,1,1,1,1],[0,0,1,1,0,0,1,1],[0,1,0,1,0,1,0,1]]
+    #y = [[0,1,0,1,0,1,0,1],[0,0,1,1,0,0,0,1]]
 
     #print(utils.format_truth_table(x, y))
 

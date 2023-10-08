@@ -64,7 +64,18 @@ def binary_to_decimal(Xbools: list) -> int:
         exponent = exponent - 1
     #print(decimalnumber)
     return decimalnumber
-        
+
+def twoBitList_into_individual_bools(Xbools: list) -> bool:
+    """Takes a list 2 long a sepperates it into 4 seperate variables"""
+    X1 = Xbools[0]
+    X2 = Xbools[1]
+    return X1, X2
+
+def twoIndividualBools_into_twoBitList(X1: bool, X2: bool) -> list:
+    """Takes 2 variables and puts them into a list"""
+    twoBitList = [X1, X2]
+    return twoBitList
+
 def fourBitList_into_individual_bools(Xbools: list) -> bool:
     """Takes a list 4 long and sepperates it into 4 seperate variables"""
     X1 = Xbools[0]
