@@ -27,13 +27,15 @@ def WhatGateCLI(GateDimentions: list) -> list:
     #Example dimentions: [[[0,0,0,0],[0,0,0,0],[0]],[[0,0,0,0],[0]]]
         
     #Example Combinations List: [[[0,0,0,0],[0,0,0,0],[0]],[[0,0,0,0],[0,0,0,0],[1]],[[0,0,0,0],[0,0,0,1],[0]]]
-    combinations = [[]]
+    combinations = []
 
     #finds the largest number representable in binary using the ammount of zeros present in the inputs
     Xdimentions = len(GateDimentions[0])
     Xwidth = 0
+    Xwidthlist = []
     for dimention in range(0, Xdimentions):
         Xwidth += len(GateDimentions[0][dimention])
+        Xwidthlist.append(len(GateDimentions[0][dimention]))
     Larestnumberpossiblebylength = 2**Xwidth
     print(f"Combinations possible: {Larestnumberpossiblebylength}")
 
@@ -50,29 +52,28 @@ def WhatGateCLI(GateDimentions: list) -> list:
                     templist.append(0)
                 elif binarynumber[-binnum] == '1':
                     templist.append(1)
-                
 
-        #print(f"{templist}, {len(templist)} long")
-
-    
+        #converter regular binary to what i need
         while len(templist) < Xwidth:
             templist.append(0)
 
-        print(f"{templist}, {len(templist)} long")
+        #iterate though all the inputs
+        
+        index = 0
 
-    Gates = {
-        1: gate.AND_GATE(1,1),
-        2: gate.NOT_GATE(1),
-        3: gate.OR_GATE(1,1),
-        4: gate.NAND_GATE(1,1),
-        5: gate.XOR_GATE(1,1),
-        6: gate.ADDER(1,1,1),
-        7: gate.TWOBITADDER([1,1],[1,1],1),
-        8: gate.FOURBITADDER([1,1,1,1],[1,1,1,1],1),
-        9: gate.EIGHTBITADDER([1,1,1,1,1,1,1,1],[1,1,1,1,1,1,1,1],1), 
-    }
+        combinations.append([])
 
-    #Gates.get(intgatechosen, "didnt work :(")
+        for input in range(0, len(Xwidthlist)):
+            #should make a list that looks like this: [[[0,0,0,0],[0,0,0,0],[0]],[[0,0,0,0],[0,0,0,0],[1]],[[0,0,0,0],[0,0,0,1],[0]]]
+            evenTemperList = []
+
+
+            for inputlenght in range(0, Xwidthlist[input]):
+                evenTemperList.append(templist[index])
+
+                index += 1
+
+            combinations[num].append(evenTemperList)
 
     return 0
 
