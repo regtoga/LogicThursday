@@ -77,6 +77,8 @@ def XOR_GATE(X1: bool, X2: bool) -> bool:
 
 
 #not really a gate!
+
+#ADDERS
 def ADDER(X1: bool, X2: bool, CarryIn: bool) -> bool:
     """Takes input(x, y, z) as in x1 + y1 carry in z"""
     SUM = XOR_GATE(XOR_GATE(X1, X2), CarryIn)

@@ -2,6 +2,7 @@
     Name: utilsV1.py
     Author: Aidan Newberry
     Created: 10/3/2023
+    Updated: 10/8/2023
     Purpose: A utility module with commonly used functions
 """
 
@@ -23,7 +24,7 @@ def get_title(program_title):
     return title_string
 
 
-def get_float(prompt):
+def get_float(prompt: str) -> float:
     """
         Get a float from the user with try catch
         The prompt string parameter is used to ask the user 
@@ -48,6 +49,26 @@ def get_float(prompt):
         #Call function from the beginning
         #this is a recursive function call
         return get_float(prompt)
+    
+def get_int(prompt: str) -> int:
+    """Gets a int from user with a try catch statement
+    Uses prompt provided in function call
+    """
+    #Ask the user for an input based on the what parameter
+    num = input(prompt)
+
+    try:
+        return int(num)
+    
+    except ValueError:
+        print(f'You entered; {num}, which is not a integer .')
+        print(f"Let's try that again.\n")
+
+        #Call function from the beginning
+        #this is a recursive function call
+        return get_int(prompt)
+
+    print()
 
 def binary_to_decimal(Xbools: list) -> int:
     """Takes an input of binary and converts it into decimal"""
@@ -64,6 +85,30 @@ def binary_to_decimal(Xbools: list) -> int:
         exponent = exponent - 1
     #print(decimalnumber)
     return decimalnumber
+
+def TakesAList_turnsinto_individualBools(Xbools: list) -> bool:
+    listlen = len(Xbools)
+
+    if listlen == 2:
+        X1 = Xbools[0]
+        X2 = Xbools[1]
+        return X1, X2
+    elif listlen == 4:
+        X1 = Xbools[0]
+        X2 = Xbools[1]
+        X3 = Xbools[2]
+        X4 = Xbools[3]
+        return X1, X2, X3, X4
+    elif listlen == 8:
+        X1 = Xbools[0]
+        X2 = Xbools[1]
+        X3 = Xbools[2]
+        X4 = Xbools[3]
+        X5 = Xbools[4]
+        X6 = Xbools[5]
+        X7 = Xbools[6]
+        X8 = Xbools[7]
+        return X1, X2, X3, X4, X5, X6, X7, X8
 
 def twoBitList_into_individual_bools(Xbools: list) -> bool:
     """Takes a list 2 long a sepperates it into 4 seperate variables"""
