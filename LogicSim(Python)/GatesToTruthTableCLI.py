@@ -8,13 +8,13 @@ import utilsV1 as utils
 
 def main():
 
-    #dimentionsgate = GetDimentionsOfGateCLI()
-    dimentionsgate = [[[0,0,0,0],[0,0,0,0],[0]],[[0,0,0,0],[0]]]
+    dimentionsgate = GetDimentionsOfGateCLI()
+    #dimentionsgate = [[[0,0,0,0],[0,0,0,0],[0]],[[0,0,0,0],[0]]]
     print(dimentionsgate)
 
-    somewierdlist = WhatGateCLI(dimentionsgate)
-
-    print("")
+    Combinations, results = WhatGateCLI(dimentionsgate)
+    #utils.format_truth_table(Combinations, results)
+    print(f"length of Combinations = {len(Combinations)} AND length of results = {len(results)}")
 
 def WhatGateCLI(GateDimentions: list) -> list:
     """
@@ -26,8 +26,9 @@ def WhatGateCLI(GateDimentions: list) -> list:
 
     #Example dimentions: [[[0,0,0,0],[0,0,0,0],[0]],[[0,0,0,0],[0]]]
         
-    #Example Combinations List: [[[0,0,0,0],[0,0,0,0],[0]],[[0,0,0,0],[0,0,0,0],[1]],[[0,0,0,0],[0,0,0,1],[0]]]
+    #Example Combinations and results List: [[[0,0,0,0],[0,0,0,0],[0]],[[0,0,0,0],[0,0,0,0],[1]],[[0,0,0,0],[0,0,0,1],[0]]]
     combinations = []
+    results = []
 
     #finds the largest number representable in binary using the ammount of zeros present in the inputs
     Xdimentions = len(GateDimentions[0])
@@ -37,7 +38,7 @@ def WhatGateCLI(GateDimentions: list) -> list:
         Xwidth += len(GateDimentions[0][dimention])
         Xwidthlist.append(len(GateDimentions[0][dimention]))
     Larestnumberpossiblebylength = 2**Xwidth
-    print(f"Combinations possible: {Larestnumberpossiblebylength}")
+    #print(f"Combinations possible: {Larestnumberpossiblebylength}")
 
     #Find every possible combination
     for num in range(0, Larestnumberpossiblebylength):
@@ -62,6 +63,7 @@ def WhatGateCLI(GateDimentions: list) -> list:
         index = 0
 
         combinations.append([])
+        results.append([])
 
         for input in range(0, len(Xwidthlist)):
             #should make a list that looks like this: [[[0,0,0,0],[0,0,0,0],[0]],[[0,0,0,0],[0,0,0,0],[1]],[[0,0,0,0],[0,0,0,1],[0]]]
@@ -75,7 +77,15 @@ def WhatGateCLI(GateDimentions: list) -> list:
 
             combinations[num].append(evenTemperList)
 
-    return 0
+        #start actually turning each combination into a result
+        
+        if intgatechosen == 8:
+            results[num].append(gate.FOURBITADDER(combinations[num][0],combinations[num][1],combinations[num][2]))
+            #print(gate.FOURBITADDER(combinations[num][0],combinations[num][1],combinations[num][2]))
+        elif intgatechosen == 9:
+            results[num].append(gate.EIGHTBITADDER(combinations[num][0],combinations[num][1],combinations[num][2]))
+
+    return combinations, results
 
 
 def GetDimentionsOfGateCLI() -> list:
