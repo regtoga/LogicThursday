@@ -8,11 +8,14 @@ import utilsV1 as utils
 
 def main():
 
+    #should idealy be after the gate chosen so we can tell what that the mask should be
     dimentionsgate = GetDimentionsOfGateCLI()
     #dimentionsgate = [[[0],[0]],[[0]]]
+
     print(dimentionsgate)
 
     #print all gate types
+    print(" (1) NOT: \n (2) AND: \n (3) OR: \n (4) NAND: \n (5) XOR: \n (6) ADDER: \n (7) TWOBITADDER \n (8) FOURBITADDER \n (9) EIGHTBITADDER \n")
 
     Combinations, results = WhatGateCLI(dimentionsgate)
 
@@ -84,19 +87,17 @@ def WhatGateCLI(GateDimentions: list) -> list:
             combinations[num].append(evenTemperList)
 
         #start actually turning each combination into a result
+        #for gates that take only a bool we need to add another [0] pointer so that it will return a bool and not a list
         if intgatechosen == 1:
-            #this gate was wierd and didn't return a list so i had to put [] around it inside the append
-            #print(combinations[num][0][0])
             results[num].append([gate.NOT_GATE(combinations[num][0][0])])
         elif intgatechosen == 2:
-            #print(f"{combinations[num][0]}{combinations[num][1]}")
-            results[num].append(gate.AND_GATE(combinations[num][0][0],combinations[num][1][0]))
+            results[num].append([gate.AND_GATE(combinations[num][0][0],combinations[num][1][0])])
         elif intgatechosen == 3:
-            results[num].append(gate.OR_GATE(combinations[num][0][0],combinations[num][1][0]))
+            results[num].append([gate.OR_GATE(combinations[num][0][0],combinations[num][1][0])])
         elif intgatechosen == 4:
-            results[num].append(gate.NAND_GATE(combinations[num][0][0],combinations[num][1][0]))
+            results[num].append([gate.NAND_GATE(combinations[num][0][0],combinations[num][1][0])])
         elif intgatechosen == 5:
-            results[num].append(gate.XOR_GATE(combinations[num][0][0],combinations[num][1][0]))
+            results[num].append([gate.XOR_GATE(combinations[num][0][0],combinations[num][1][0])])
         elif intgatechosen == 6:
             results[num].append(gate.ADDER(combinations[num][0][0],combinations[num][1][0],combinations[num][2][0]))
         elif intgatechosen == 7:
