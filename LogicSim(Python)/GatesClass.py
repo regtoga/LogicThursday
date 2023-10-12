@@ -1,5 +1,17 @@
 import utilsV1 as utils
 
+def NOT_GATE(X1: bool) -> bool:
+    """accept one bool and does the NOT calculation on it.\n
+        Truth Table:\n
+        *--------------*\n
+        |INPUT1|OUTPUT1|\n
+        |   0  |   1   |\n
+        |   1  |   0   |\n
+        *--------------*\n"""
+    #print(f"NOT of {X1} = {int(not(X1))}")
+    NOT = (int(not(X1)))
+    return NOT
+
 def AND_GATE(X1: bool, X2: bool) -> bool:
     """accept two bools and does the AND calculation on them.\n
         Truth Table:\n
@@ -14,18 +26,6 @@ def AND_GATE(X1: bool, X2: bool) -> bool:
     #print(f"AND of {X1}, {X2} = {X1 and X2}")
     AND = ((X1 and X2))
     return AND
-
-def NOT_GATE(X1: bool) -> bool:
-    """accept one bool and does the NOT calculation on it.\n
-        Truth Table:\n
-        *--------------*\n
-        |INPUT1|OUTPUT1|\n
-        |   0  |   1   |\n
-        |   1  |   0   |\n
-        *--------------*\n"""
-    #print(f"NOT of {X1} = {int(not(X1))}")
-    NOT = (int(not(X1)))
-    return NOT
 
 def OR_GATE(X1: bool, X2: bool) -> bool:
     """accept two bools and does the OR calculation on them.\n

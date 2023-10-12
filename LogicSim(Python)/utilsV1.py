@@ -68,8 +68,6 @@ def get_int(prompt: str) -> int:
         #this is a recursive function call
         return get_int(prompt)
 
-    print()
-
 def binary_to_decimal(Xbools: list) -> int:
     """Takes an input of binary and converts it into decimal"""
     exponent = len(Xbools)-1
@@ -155,6 +153,7 @@ def format_truth_table(Xbools: list, Ybools: list) -> str:
     """Returns a String truth table taking in the binary 2DX List (input) and 2DY list (output)
 
         Input Table input example:\n
+
         XboolsEXAMPLE = [[0,0,1,1], [0,1,0,1]]\n
         YboolsEXAMPLE = [[0,0,0,1]]\n
 
@@ -192,20 +191,61 @@ def format_truth_table(Xbools: list, Ybools: list) -> str:
 
     TruthTable = ""
 
+    #print("")
+    #print(f"{Xbools}")
+    #print(f"{Ybools}")
+    #print("")
+
+    #Xbools = [[0,0],[1,0],[0,1],[1,1]]
+    #Ybools = [[0],[0],[1],[1]]
+
     #for each layer down table do:
-    for lenght in range(0, len(Xbools[0])):
+    for lenght in range(0, len(Xbools)):
         #for each layer wide do:
-        for widthx in range(0, len(Xbools)):
+        for widthx in range(0, len(Xbools[lenght])):
             
-            TruthTable += str(Xbools[widthx][lenght])
+            TruthTable += str(Xbools[lenght][widthx])
 
             TruthTable += "|"
         
-        for widthy in range(0, len(Ybools)):
+        for widthy in range(0, len(Ybools[lenght])):
             TruthTable += "|"
 
-            TruthTable += str(Ybools[widthy][lenght])
+            TruthTable += str(Ybools[lenght][widthy])
                 
         TruthTable += "\n"
 
     return TruthTable
+
+def individualInput_into_TruthTableFormat(input: list) -> list:
+    #[[[0,0,0,0],[0,0,0,0],[0]],[[0,0,0,0],[0]]]
+    listlength = len(input)
+    
+    
+
+    results = []
+
+    #print(f"{listlength}, {lengthofinput}, {ammountofinputs}")
+    
+    for EachItemInInputList in range(0, listlength):
+
+        tempList = []
+
+        for EachInputInInputList in range(0, len(input[EachItemInInputList])):
+
+            #print(input[EachItemInInputList][EachInputInInputList])
+
+            for EachBoolInInputsList in range(0, len(input[EachItemInInputList][EachInputInInputList])):
+
+                tempList.append(input[EachItemInInputList][EachInputInInputList][EachBoolInInputsList])
+            
+            
+        results.append(tempList)
+
+        #print(f"{results}")
+
+    return results
+                
+
+
+    

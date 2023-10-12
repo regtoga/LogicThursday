@@ -9,12 +9,18 @@ import utilsV1 as utils
 def main():
 
     dimentionsgate = GetDimentionsOfGateCLI()
-    #dimentionsgate = [[[0,0,0,0],[0,0,0,0],[0]],[[0,0,0,0],[0]]]
+    #dimentionsgate = [[[0],[0]],[[0]]]
     print(dimentionsgate)
 
+    #print all gate types
+
     Combinations, results = WhatGateCLI(dimentionsgate)
-    #utils.format_truth_table(Combinations, results)
+
+    comboformat = utils.individualInput_into_TruthTableFormat(Combinations)
+    resultsformat = utils.individualInput_into_TruthTableFormat(results)
+    truthTable = utils.format_truth_table(comboformat, resultsformat)
     print(f"length of Combinations = {len(Combinations)} AND length of results = {len(results)}")
+    print(truthTable)
 
 def WhatGateCLI(GateDimentions: list) -> list:
     """
@@ -78,12 +84,27 @@ def WhatGateCLI(GateDimentions: list) -> list:
             combinations[num].append(evenTemperList)
 
         #start actually turning each combination into a result
-        
-        if intgatechosen == 8:
-            results[num].append(gate.FOURBITADDER(combinations[num][0],combinations[num][1],combinations[num][2]))
-            #print(gate.FOURBITADDER(combinations[num][0],combinations[num][1],combinations[num][2]))
+        if intgatechosen == 1:
+            #this gate was wierd and didn't return a list so i had to put [] around it inside the append
+            #print(combinations[num][0][0])
+            results[num].append([gate.NOT_GATE(combinations[num][0][0])])
+        elif intgatechosen == 2:
+            #print(f"{combinations[num][0]}{combinations[num][1]}")
+            results[num].append(gate.AND_GATE(combinations[num][0][0],combinations[num][1][0]))
+        elif intgatechosen == 3:
+            results[num].append(gate.OR_GATE(combinations[num][0][0],combinations[num][1][0]))
+        elif intgatechosen == 4:
+            results[num].append(gate.NAND_GATE(combinations[num][0][0],combinations[num][1][0]))
+        elif intgatechosen == 5:
+            results[num].append(gate.XOR_GATE(combinations[num][0][0],combinations[num][1][0]))
+        elif intgatechosen == 6:
+            results[num].append(gate.ADDER(combinations[num][0][0],combinations[num][1][0],combinations[num][2][0]))
+        elif intgatechosen == 7:
+            results[num].append(gate.TWOBITADDER(combinations[num][0],combinations[num][1],combinations[num][2][0]))
+        elif intgatechosen == 8:
+            results[num].append(gate.FOURBITADDER(combinations[num][0],combinations[num][1],combinations[num][2][0]))
         elif intgatechosen == 9:
-            results[num].append(gate.EIGHTBITADDER(combinations[num][0],combinations[num][1],combinations[num][2]))
+            results[num].append(gate.EIGHTBITADDER(combinations[num][0],combinations[num][1],combinations[num][2][0]))
 
     return combinations, results
 
