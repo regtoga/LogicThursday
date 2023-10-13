@@ -7,17 +7,10 @@ import GatesClass as gate
 import utilsV1 as utils
 
 def main():
-
-    #should idealy be after the gate chosen so we can tell what that the mask should be
-    dimentionsgate = GetDimentionsOfGateCLI()
-    #dimentionsgate = [[[0],[0]],[[0]]]
-
-    print(dimentionsgate)
-
     #print all gate types
     print(" (1) NOT: \n (2) AND: \n (3) OR: \n (4) NAND: \n (5) XOR: \n (6) ADDER: \n (7) TWOBITADDER \n (8) FOURBITADDER \n (9) EIGHTBITADDER \n")
 
-    Combinations, results = WhatGateCLI(dimentionsgate)
+    Combinations, results = WhatGateCLI()
 
     comboformat = utils.individualInput_into_TruthTableFormat(Combinations)
     resultsformat = utils.individualInput_into_TruthTableFormat(results)
@@ -25,13 +18,30 @@ def main():
     print(f"length of Combinations = {len(Combinations)} AND length of results = {len(results)}")
     print(truthTable)
 
-def WhatGateCLI(GateDimentions: list) -> list:
+def WhatGateCLI() -> list:
     """
     User will choose a gate to test and using the GateDimentions provided it will 
     iterate though every possible way the gate could be executed
     """
-    
     intgatechosen = utils.get_int("Enter integer code for the gate you want to find the truth table for: ")
+
+    GateDimentionValues = {
+        1:[[[0]],[[0]]],
+        2:[[[0],[0]],[[0]]],
+        3:[[[0],[0]],[[0]]],
+        4:[[[0],[0]],[[0]]],
+        5:[[[0],[0]],[[0]]],
+        6:[[[0],[0],[0]],[[0],[0]]],
+        7:[[[0,0],[0,0],[0]],[[0,0],[0]]],
+        8:[[[0,0,0,0],[0,0,0,0],[0]],[[0,0,0,0],[0]]],
+        9:[[[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0]],[[0,0,0,0,0,0,0,0],[0]]],
+    }
+
+    GateDimentions = GateDimentionValues.get(intgatechosen, f"{intgatechosen} did not correspond to a built in gate.")
+    print(GateDimentions)
+    if GateDimentions == f"{intgatechosen} did not correspond to a built in gate.":
+        print("You must correct your actions by imputing your own gate mask!")
+        GateDimentions = GetDimentionsOfGateCLI()
 
     #Example dimentions: [[[0,0,0,0],[0,0,0,0],[0]],[[0,0,0,0],[0]]]
         
