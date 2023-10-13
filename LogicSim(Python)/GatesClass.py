@@ -131,6 +131,23 @@ def EIGHTBITADDER(XBools: list, YBools: list, CarryIn: bool) -> bool:
 
     return output, carryout
 
+def ALU(XBools: list, YBools: list, Subtract: bool) -> bool:
+    """Takes two binary numbers as lists and either adds or subtracts them depending on the 3rd bool input "subtract?"\n
+        returns a binary number as a list, and three output bools, carryout, negative and zero
+    """
+    Y4, Y3, Y2, Y1 = utils.fourBitList_into_individual_bools(YBools)
+
+    ADDERout, carryout = FOURBITADDER(XBools, [XOR_GATE(Y4,Subtract),XOR_GATE(Y3,Subtract),XOR_GATE(Y2,Subtract),XOR_GATE(Y1,Subtract)], Subtract)
+    
+    Z4, Z3, Z2, Z1 = utils.fourBitList_into_individual_bools(ADDERout)
+
+    zero = AND_GATE(AND_GATE(AND_GATE(NOT_GATE(Z4),NOT_GATE(Z3)),NOT_GATE(Z2)),NOT_GATE(Z1))
+    negative = Z4
+    
+    return ADDERout, carryout, negative, zero
+
+
+#extra stuff that doenst even matter
 def TWOBITADDERsmall(XBools: list, YBools: list, CarryIn: bool) -> bool:
     """Takes input(xx, yy, z) as in x1 + y1 carry in z"""
     X2, X1 = utils.twoBitList_into_individual_bools(XBools)

@@ -8,7 +8,7 @@ import utilsV1 as utils
 
 def main():
     #print all gate types
-    print(" (1) NOT: \n (2) AND: \n (3) OR: \n (4) NAND: \n (5) XOR: \n (6) ADDER: \n (7) TWOBITADDER \n (8) FOURBITADDER \n (9) EIGHTBITADDER \n")
+    print(" (1) NOT: \n (2) AND: \n (3) OR: \n (4) NAND: \n (5) XOR: \n (6) ADDER: \n (7) TWOBITADDER \n (8) FOURBITADDER \n (9) EIGHTBITADDER \n (10) ALU \n")
 
     Combinations, results = WhatGateCLI()
 
@@ -35,6 +35,7 @@ def WhatGateCLI() -> list:
         7:[[[0,0],[0,0],[0]],[[0,0],[0]]],
         8:[[[0,0,0,0],[0,0,0,0],[0]],[[0,0,0,0],[0]]],
         9:[[[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0]],[[0,0,0,0,0,0,0,0],[0]]],
+        10:[[[0,0,0,0],[0,0,0,0],[0]],[[0,0,0,0],[0],[0],[0]]]
     }
 
     GateDimentions = GateDimentionValues.get(intgatechosen, f"{intgatechosen} did not correspond to a built in gate.")
@@ -116,6 +117,8 @@ def WhatGateCLI() -> list:
             results[num].append(gate.FOURBITADDER(combinations[num][0],combinations[num][1],combinations[num][2][0]))
         elif intgatechosen == 9:
             results[num].append(gate.EIGHTBITADDER(combinations[num][0],combinations[num][1],combinations[num][2][0]))
+        elif intgatechosen == 10:
+            results[num].append(gate.ALU(combinations[num][0],combinations[num][1],combinations[num][2][0]))
 
     return combinations, results
 
