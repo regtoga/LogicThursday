@@ -163,7 +163,17 @@ def ALU(XBools: list, YBools: list, Subtract: bool) -> bool:
 #memory?
 class set_reset_latch():
     """Works as intended, needs to be made as an object because 
-    then it will be able to store values"""
+    then it will be able to store values. Working example:\n
+    
+    latch = GatesClass.set_reset_latch()\n
+    while True:\n
+    \tX1 = util.get_int("Enter 0 or 1: ")\n
+    \tX2 = util.get_int("Enter 0 or 1: ")\n
+    \toutput = latch.Latch2(X1,X2)\n
+    
+    print(output)\n
+
+    """
     def __init__(self) -> None:
         self.firstime = 1
         self.seccondfirsttime = 1
