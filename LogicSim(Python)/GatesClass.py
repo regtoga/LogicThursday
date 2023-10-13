@@ -42,7 +42,20 @@ def OR_GATE(X1: bool, X2: bool) -> bool:
     OR = ((X1 or X2))
     return OR
 
-
+def NOR_GATE(X1: bool, X2: bool) -> bool:
+    """accept two bools and does the OR calculation on them.\n
+        Truth Table:\n
+        *---------------------*\n
+        |INPUT1|INPUT2|OUTPUT1|\n
+        |   0  |   0  |   1   |\n
+        |   0  |   1  |   0   |\n
+        |   1  |   0  |   0   |\n
+        |   1  |   1  |   0   |\n
+        *---------------------*\n
+    """
+    #print(f"OR of {X1}, {X2} = {X1 or X2}")
+    NOR = (NOT_GATE(OR_GATE(X1,X2)))
+    return NOR
 
 #harder gates
 def NAND_GATE(X1: bool, X2: bool) -> bool:
@@ -145,6 +158,42 @@ def ALU(XBools: list, YBools: list, Subtract: bool) -> bool:
     negative = Z4
     
     return ADDERout, carryout, negative, zero
+
+
+#memory?
+class set_reset_latch():
+    """Works as intended, needs to be made as an object because 
+    then it will be able to store values"""
+    def __init__(self) -> None:
+        self.firstime = 1
+        self.seccondfirsttime = 1
+
+    def computevaluesonce(self):
+        if self.firstime == 1:
+            self.oldNor1 = 0
+            self.oldNor2 = 1
+            self.firstime = 0
+    
+    def computeoldNor1(self, set):
+        if self.firstime != 1:
+            self.oldNor1 = NOR_GATE(self.oldNor2, set)
+
+    def computeoldNor2(self, reset):
+        if self.firstime != 1:
+            self.oldNor2 = NOR_GATE(self.oldNor1, reset)
+
+    def Latch2(self, set:bool, reset:bool) -> bool:
+        self.computevaluesonce()
+
+        self.computeoldNor2(reset)
+        self.newNor1 = NOR_GATE(self.oldNor2, set)
+
+        self.computeoldNor1(set)
+        self.newNor2 = NOR_GATE(self.oldNor1, reset)
+
+        self.seccondfirsttime = 0
+
+        return self.newNor2
 
 
 #extra stuff that doenst even matter
