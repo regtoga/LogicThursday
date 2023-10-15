@@ -146,7 +146,7 @@ def EIGHTBITADDER(XBools: list, YBools: list, CarryIn: bool) -> bool:
 
 def ALU(XBools: list, YBools: list, Subtract: bool) -> bool:
     """Takes two binary numbers as lists and either adds or subtracts them depending on the 3rd bool input "subtract?"\n
-        returns a binary number as a list, and three output bools, carryout, negative and zero
+        returns a binary number as a list, and three output bools, carryout, negative and zero: uses a different number system than everything prior to the creation of this gate
     """
     Y4, Y3, Y2, Y1 = utils.fourBitList_into_individual_bools(YBools)
 
