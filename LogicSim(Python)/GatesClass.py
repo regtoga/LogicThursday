@@ -275,6 +275,30 @@ class four_bit_register():
         Xoutbits = utils.fourIndividualBools_into_fourBitList(Xout4, Xout3, Xout2, Xout1)
         return Xoutbits
 
+#seven segment display, should work if im not too dumb to setup all the functions
+def sevensegdisplaydriver(Xlist:list) -> list:
+    X4, X3, X2, X1 = utils.fourBitList_into_individual_bools(Xlist)
+
+    output1 = X4
+
+    output2 = OR_GATE(XOR_GATE((XOR_GATE(X4,X3)),(NOR_GATE(X4,OR_GATE(X2, X1)))),(OR_GATE(AND_GATE(OR_GATE(XOR_GATE(X3,X2),NOT_GATE(X1)),X1),NOR_GATE(NOR_GATE(NOT_GATE(X3),X2),X1))))
+    
+    output3 = NAND_GATE(AND_GATE(XOR_GATE(X4,X3),OR_GATE(X2,X1)), OR_GATE(X2,X1))
+    
+    output4 = OR_GATE(NAND_GATE(NAND_GATE(AND_GATE(XOR_GATE(X4,X3),OR_GATE(X2,X1)), OR_GATE(X2,X1)),OR_GATE(X2, X1)), X1)
+    
+    output5 = OR_GATE(AND_GATE(OR_GATE(XOR_GATE(X3,X2),NOT_GATE(X1)),X1),NOR_GATE(NOR_GATE(NOT_GATE(X3),X2),X1))
+    
+    output6 = NOR_GATE(NOR_GATE(NOT_GATE(X3),X2),X1)
+    
+    output7 = NAND_GATE(NAND_GATE(AND_GATE(XOR_GATE(X4,X3),OR_GATE(X2,X1)), OR_GATE(X2,X1)),OR_GATE(X2, X1))
+    
+    output8 = OR_GATE(XOR_GATE(NOR_GATE(X4,OR_GATE(X2,X1)),OR_GATE(XOR_GATE(X3,X2),NOT_GATE(X1))),NOR_GATE(NOT_GATE(X3),X2))
+
+    finoutput = [output1, output2, output3, output4, output5, output6, output7, output8,]
+
+    return finoutput
+
 
 #extra stuff that doenst even matter
 def TWOBITADDERsmall(XBools: list, YBools: list, CarryIn: bool) -> bool:
