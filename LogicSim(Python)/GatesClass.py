@@ -160,50 +160,120 @@ def ALU(XBools: list, YBools: list, Subtract: bool) -> bool:
     return ADDERout, carryout, negative, zero
 
 
-#memory?
+#memory!------------------------
 class set_reset_latch():
     """Works as intended, needs to be made as an object because 
     then it will be able to store values. Working example:\n
     
-    latch = GatesClass.set_reset_latch()\n
-    while True:\n
-    \tX1 = util.get_int("Enter 0 or 1: ")\n
-    \tX2 = util.get_int("Enter 0 or 1: ")\n
-    \toutput = latch.Latch2(X1,X2)\n
-    
-    print(output)\n
+    memory = gate.set_reset_latch()\n
+
+    for i in range(0,3):\n
+        \tset = util.get_int("Enter 0 or 1: ")\n
+        \treset = util.get_int("Enter 0 or 1: ")\n
+        \toutput = memory.Latch(set,reset)\n
+        \tprint(f"while set = {set} and reset = {reset}, the output was: {output}")\n
 
     """
     def __init__(self) -> None:
-        self.firstime = 1
-        self.seccondfirsttime = 1
+        self.oldoutput = 0
 
-    def computevaluesonce(self):
-        if self.firstime == 1:
-            self.oldNor1 = 0
-            self.oldNor2 = 1
-            self.firstime = 0
+    def Latch(self, set:bool, reset:bool) -> bool:
+
+        self.output = AND_GATE(OR_GATE(self.oldoutput,set),NOT_GATE(reset))
+        self.oldoutput = self.output
+        return self.output
     
-    def computeoldNor1(self, set):
-        if self.firstime != 1:
-            self.oldNor1 = NOR_GATE(self.oldNor2, set)
+class data_latch():
+    """Works as intended, needs to be made as an object because 
+    then it will be able to store values."""
 
-    def computeoldNor2(self, reset):
-        if self.firstime != 1:
-            self.oldNor2 = NOR_GATE(self.oldNor1, reset)
+    def __init__(self) -> None:
+        self.latch1 = set_reset_latch()
 
-    def Latch2(self, set:bool, reset:bool) -> bool:
-        self.computevaluesonce()
+    def datalatch(self, data:bool, store:bool) -> bool:
+        output = self.latch1.Latch(AND_GATE(data, store), AND_GATE(NOT_GATE(data), store))
+        return output
 
-        self.computeoldNor2(reset)
-        self.newNor1 = NOR_GATE(self.oldNor2, set)
 
-        self.computeoldNor1(set)
-        self.newNor2 = NOR_GATE(self.oldNor1, reset)
+class DataFlipFlop():
+    """needs to be ran as object\n
+    
+        latch = gate.DataFlipFlop()\n
+        for i in range(0,10):\n
 
-        self.seccondfirsttime = 0
+            \tX1 = util.get_int("Enter 0 or 1: ")\n
+            \tclock = util.get_int("Enter 0 or 1: ")\n
+            \toutput = latch.FlipFlop(X1,clock)\n
+            \tprint(f"while data = {X1} and clock = {clock}, the output was: {output}")\n
 
-        return self.newNor2
+    THIS WORKS! if you feel that it doesnt its because you forgot how it was designed, 
+    it only stores data on the rising edge of a pulse meaning if the clock pin 
+    isnt chainging from 0 to 1 it wont do anything 
+    """
+
+    def __init__(self) -> None:
+        self.latch1 = data_latch()
+        self.latch2 = data_latch()
+        self.oldclock = 0
+
+    def FlipFlop(self, data:bool, clock:bool) -> bool:
+
+        output = self.latch2.datalatch(self.latch1.datalatch(data, NOT_GATE(self.oldclock)),clock)
+        self.oldclock = clock
+        return output
+
+
+class SynchronousRegister():
+    """a register that stores data only when the store signle is on and when the rising edge of the clock happens!"""
+    def __init__(self) -> None:
+        self.flipflop1 = DataFlipFlop()
+        self.outputnew = 0
+
+    def register(self, data:bool, store:bool, clock:bool) -> bool:
+        self.outputold = self.outputnew
+
+        OR = OR_GATE(AND_GATE(self.outputold, NOT_GATE(store)), AND_GATE(data, store))
+        self.outputnew = self.flipflop1.FlipFlop(OR, clock)
+
+        return self.outputnew 
+    
+
+class four_bit_register():
+    """Example code to run this:
+    
+        register = gate.four_bit_register()\n
+
+        while True == True:\n
+            X4 = util.get_int("Enter 0 or 1: ")\n
+            X3 = util.get_int("Enter 0 or 1: ")\n
+            X2 = util.get_int("Enter 0 or 1: ")\n
+            X1 = util.get_int("Enter 0 or 1: ")\n
+            print(f"input = {[X4, X3, X2, X1]}")\n
+
+            store = util.get_int("Enter 0 or 1: ")\n
+
+            clock = util.get_int("Enter 0 or 1: ")\n
+
+            output = register.four_bit_register([X4, X3, X2, X1],store, clock)\n
+            
+            print(f"output = {output}")\n
+    """
+    def __init__(self) -> None:
+        self.register4 = SynchronousRegister()
+        self.register3 = SynchronousRegister()
+        self.register2 = SynchronousRegister()
+        self.register1 = SynchronousRegister()
+
+    def four_bit_register(self, Xbits:list, store:bool, clock:bool) -> list:
+        X4, X3, X2, X1 = utils.fourBitList_into_individual_bools(Xbits)
+
+        Xout4 = self.register4.register(X4, store, clock)
+        Xout3 = self.register3.register(X3, store, clock)
+        Xout2 = self.register2.register(X2, store, clock)
+        Xout1 = self.register1.register(X1, store, clock)
+
+        Xoutbits = utils.fourIndividualBools_into_fourBitList(Xout4, Xout3, Xout2, Xout1)
+        return Xoutbits
 
 
 #extra stuff that doenst even matter
