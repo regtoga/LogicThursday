@@ -1,3 +1,8 @@
+#Name: GatesClass.py
+#Author: Aidan Newberry
+#Created: 10/14/2023
+#Purpose: Define Gates and other Circuts for general use.
+
 import utilsV1 as utils
 
 def NOT_GATE(X1: bool) -> bool:
@@ -89,7 +94,7 @@ def XOR_GATE(X1: bool, X2: bool) -> bool:
 
 
 
-#not really a gate!
+#not really gates!
 
 #ADDERS
 def ADDER(X1: bool, X2: bool, CarryIn: bool) -> bool:

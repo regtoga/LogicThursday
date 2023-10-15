@@ -3,13 +3,12 @@
 #Created: 10/6/2023
 #Purpose: CLI to turn a predefined Gate array into a TruthTable.
 
-import GatesClass as gate
 import utilsV1 as utils
+import GataDataFunctions as GateData
 
 def main():
     #print all gate types
-    print(" (1) NOT: \n (2) SevenSegdisplayDriver: \n (3) AND: \n (4) OR: \n (5) NOR \n (6) NAND: \n (7) XOR: \n (8) ADDER: \n (9) TWOBITADDER \n (10) FOURBITADDER \n (11) EIGHTBITADDER \n (12) ALU \n")
-
+    GateData.PrintAllGateTypes()
     Combinations, results = WhatGateCLI()
 
     comboformat = utils.individualInput_into_TruthTableFormat(Combinations)
@@ -23,31 +22,14 @@ def WhatGateCLI() -> list:
     User will choose a gate to test and using the GateDimentions provided it will 
     iterate though every possible way the gate could be executed
     """
+
     intgatechosen = utils.get_int("Enter integer code for the gate you want to find the truth table for: ")
 
-    GateDimentionValues = {
-        1:[[[0]],[[0]]],
-        2:[[[0,0,0,0]],[[0],[0],[0],[0],[0],[0],[0],[0]]],
-        3:[[[0],[0]],[[0]]],
-        4:[[[0],[0]],[[0]]],
-        5:[[[0],[0]],[[0]]],
-        6:[[[0],[0]],[[0]]],
-        7:[[[0],[0]],[[0]]],
-        8:[[[0],[0],[0]],[[0],[0]]],
-        9:[[[0,0],[0,0],[0]],[[0,0],[0]]],
-        10:[[[0,0,0,0],[0,0,0,0],[0]],[[0,0,0,0],[0]]],
-        11:[[[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0]],[[0,0,0,0,0,0,0,0],[0]]],
-        12:[[[0,0,0,0],[0,0,0,0],[0]],[[0,0,0,0],[0],[0],[0]]]
-    }
-
-    GateDimentions = GateDimentionValues.get(intgatechosen, f"{intgatechosen} did not correspond to a built in gate.")
-    print(GateDimentions)
-    if GateDimentions == f"{intgatechosen} did not correspond to a built in gate.":
-        print("You must correct your actions by imputing your own gate mask!")
-        GateDimentions = GetDimentionsOfGateCLI()
-
+    #GateData.GateDimentionValuesfunction is a function that will return GateDimentions weather the gate the user wants is predefined or not.
     #Example dimentions: [[[0,0,0,0],[0,0,0,0],[0]],[[0,0,0,0],[0]]]
-        
+    GateDimentions = GateData.GateDimentionValuesfunction(intgatechosen)
+
+    
     #Example Combinations and results List: [[[0,0,0,0],[0,0,0,0],[0]],[[0,0,0,0],[0,0,0,0],[1]],[[0,0,0,0],[0,0,0,1],[0]]]
     combinations = []
     results = []
@@ -101,30 +83,8 @@ def WhatGateCLI() -> list:
 
         #start actually turning each combination into a result
         #for gates that take only a bool we need to add another [0] pointer so that it will return a bool and not a list
-        if intgatechosen == 1:
-            results[num].append([gate.NOT_GATE(combinations[num][0][0])])
-        elif intgatechosen == 2:
-            results[num].append([gate.sevensegdisplaydriver(combinations[num][0])])
-        elif intgatechosen == 3:
-            results[num].append([gate.AND_GATE(combinations[num][0][0],combinations[num][1][0])])
-        elif intgatechosen == 4:
-            results[num].append([gate.OR_GATE(combinations[num][0][0],combinations[num][1][0])])
-        elif intgatechosen == 5:
-            results[num].append([gate.NOR_GATE(combinations[num][0][0],combinations[num][1][0])])
-        elif intgatechosen == 6:
-            results[num].append([gate.NAND_GATE(combinations[num][0][0],combinations[num][1][0])])
-        elif intgatechosen == 7:
-            results[num].append([gate.XOR_GATE(combinations[num][0][0],combinations[num][1][0])])
-        elif intgatechosen == 8:
-            results[num].append(gate.ADDER(combinations[num][0][0],combinations[num][1][0],combinations[num][2][0]))
-        elif intgatechosen == 9:
-            results[num].append(gate.TWOBITADDER(combinations[num][0],combinations[num][1],combinations[num][2][0]))
-        elif intgatechosen == 10:
-            results[num].append(gate.FOURBITADDER(combinations[num][0],combinations[num][1],combinations[num][2][0]))
-        elif intgatechosen == 11:
-            results[num].append(gate.EIGHTBITADDER(combinations[num][0],combinations[num][1],combinations[num][2][0]))
-        elif intgatechosen == 12:
-            results[num].append(gate.ALU(combinations[num][0],combinations[num][1],combinations[num][2][0]))  
+        #GateData.ChooseGateToUse is a fancy function that takes some of the edge off of making adding a new hardcoded gate
+        results[num].append(GateData.ChooseGateToUse(intgatechosen, combinations, num))
 
     return combinations, results
 
