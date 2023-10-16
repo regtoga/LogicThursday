@@ -1,3 +1,5 @@
+#A simple file to test the functions of gates until i build a proper one
+
 import GatesClass as gate
 import utilsV1 as util
 
