@@ -248,4 +248,59 @@ def individualInput_into_TruthTableFormat(input: list) -> list:
                 
 
 
+class fileArchitect():
+    """This class holds a bunch of functions for manipulaing files"""
+
+    #Define Self variables
+    def __init__(self):
+        self.localfilename = ""
     
+    def Create_File(self, locationfromuser: str, filenamefromuser: str, Truthtable: list) -> str:
+        """Creates a file using the arguments, and makes a global name for the file so other blocks can access it"""
+        try:
+            if filenamefromuser == "" and locationfromuser == "":
+                #create a file object
+                Author = open(f"./{len(Truthtable)}_Combinations.txt", "x")
+                self.localfilename = f"./{len(Truthtable)}_Combinations.txt"
+                #print(f"Created file {len(answerstxt)}_equled_{mewanttxt}.txt in Downloads")
+                return f"./{len(Truthtable)}_Combinations.txt in whatever location you ran this."
+            elif filenamefromuser != "" and locationfromuser == "":
+                #create a file object
+                Author = open(f"./{filenamefromuser}.txt", "x")
+                self.localfilename = f"./{filenamefromuser}.txt"
+                #print(f"Created file {len(answerstxt)}_equled_{mewanttxt}.txt in Downloads")
+                return f"./{filenamefromuser}.txt in whatever location you ran this."
+            else:
+                Author = open(f"{locationfromuser}{filenamefromuser}.txt", "x")
+                self.localfilename = f"{locationfromuser}{filenamefromuser}.txt"
+                #print(f"Created file{filenamefromuser}.txt in {locationfromuser}")
+                return f"Created file{filenamefromuser}.txt in {locationfromuser}"
+        except:
+            print("Failed to create file because one with the same name allready exists")
+            return "Critical Failure"
+        #Close Author object
+        Author.close()
+
+    #function containging code about how to write a file   
+    def Write_File(self, answerstxt: list) -> str:
+        """Using a list parametere this function will write it to the file defined in the create file function"""
+        try:
+            Author = open(self.localfilename, "w")
+            Author.write(str(answerstxt)) 
+            Author.close()
+            return "Success!"
+        except:
+            print("Something Went wrong when writing the file")
+            return "Critical Failure"
+
+    #function containging code about how to read a file
+    def Read_File(self) -> str:
+        """Returns a string containing all the information on the file"""
+        try:
+            Author = open(self.localfilename, "r")
+            _contents = Author
+            Author.close()
+            return _contents
+        except:
+            print("Something Went wrong when reading the file")
+            return "Critical Failure"    

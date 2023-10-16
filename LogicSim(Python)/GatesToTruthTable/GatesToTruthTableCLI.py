@@ -6,7 +6,11 @@
 import utilsV1 as utils
 import GataDataFunctions as GateData
 
+
 def main():
+
+    archie = utils.fileArchitect()
+
     #print all gate types
     GateData.PrintAllGateTypes()
     Combinations, results = WhatGateCLI()
@@ -15,7 +19,25 @@ def main():
     resultsformat = utils.individualInput_into_TruthTableFormat(results)
     truthTable = utils.format_truth_table(comboformat, resultsformat)
     print(f"length of Combinations = {len(Combinations)} AND length of results = {len(results)}")
-    print(truthTable)
+    if len(Combinations) < 100:
+        print(truthTable)
+
+    export = input("Do you want to export results into a text file? (Y/N)")
+    if export == "Y" or export == "y":
+        default = input("Do you want to use default file location and name? (Y/N)")
+
+        locationfromuser = ""
+        filenamefromuser = ""
+
+        if default == "N" or default == "n":
+            filenamefromuser = input("Enter the name you want for you text file: EX(banan) becomes banan.txt: ")
+            locationfromuser = input("Enter a location for your txt file: EX(D:\windows folders\Downloads\) \nI would recomend leaving this blank:")
+            
+
+        print(archie.Create_File(locationfromuser, filenamefromuser, Combinations))
+        print(archie.Write_File(truthTable))
+
+        exit()
 
 def WhatGateCLI() -> list:
     """
