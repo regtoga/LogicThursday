@@ -149,6 +149,8 @@ def EIGHTBITADDER(XBools: list, YBools: list, CarryIn: bool) -> bool:
 
     return output, carryout
 
+
+
 def ALU(XBools: list, YBools: list, Subtract: bool) -> bool:
     """Takes two binary numbers as lists and either adds or subtracts them depending on the 3rd bool input "subtract?"\n
         returns a binary number as a list, and three output bools, carryout, negative and zero: uses a different number system than everything prior to the creation of this gate
@@ -344,3 +346,22 @@ def EIGHTBITADDERsmall(XBools: list, YBools: list, CarryIn: bool) -> bool:
     output = utils.eightIndividualBools_into_eightBitList(out8, out7, out6, out5, out4, out3, out2, out1)
 
     return output, carryout
+
+def SixTeenBitAdderSmall(XBools: list, YBools: list, CarryIn: bool) -> bool: 
+    X16, X15, X14, X13, X12, X11, X10, X9, X8, X7, X6, X5, X4, X3, X2, X1 = utils.sixteenBitList_into_individualbools(XBools)
+    Y16, Y15, Y14, Y13, Y12, Y11, Y10, Y9, Y8, Y7, Y6, Y5, Y4, Y3, Y2, Y1 = utils.sixteenBitList_into_individualbools(YBools)
+    
+    xout1, adder1out = EIGHTBITADDERsmall([X8, X7, X6, X5, X4, X3, X2, X1], [Y8, Y7, Y6, Y5, Y4, Y3, Y2, Y1], CarryIn)
+    xout2, carryout = EIGHTBITADDERsmall([X16, X15, X14, X13, X12, X11, X10, X9], [Y16, Y15, Y14, Y13, Y12, Y11, Y10, Y9], adder1out)
+    
+    out8, out7, out6, out5, out4, out3, out2, out1 = utils.eightBitList_into_individual_bools(xout1)
+    out16, out15, out14, out13, out12, out11, out10, out9 = utils.eightBitList_into_individual_bools(xout2)
+    output = utils.sixteenindividualbools_into_sixteenbitlist(out16, out15, out14, out13, out12, out11, out10, out9, out8, out7, out6, out5, out4, out3, out2, out1)
+
+    return output, carryout
+
+def ThirtytwoBitAdderSmall(XBools: list, YBools: list, CarryIn: bool) -> bool: 
+    print()
+
+def SixtyFourBitADDER(XBools: list, YBools: list, CarryIn: bool) -> bool:
+    print()

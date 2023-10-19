@@ -17,7 +17,8 @@ def PrintAllGateTypes() -> str:
         9:"(9) TWOBITADDER \n",
         10:"(10) FOURBITADDER \n",
         11:"(11) EIGHTBITADDER \n",
-        12:"(12) ALU \n"
+        12:"(12) SIXTEENBITADDER \n",
+        13:"(13) ALU \n"
     }
 
     for gate in range(0, len(GateTypes)):
@@ -40,7 +41,8 @@ def GateDimentionValuesfunction(intgatechosen:int) -> list:
         9:[[[0,0],[0,0],[0]],[[0,0],[0]]],
         10:[[[0,0,0,0],[0,0,0,0],[0]],[[0,0,0,0],[0]]],
         11:[[[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0]],[[0,0,0,0,0,0,0,0],[0]]],
-        12:[[[0,0,0,0],[0,0,0,0],[0]],[[0,0,0,0],[0],[0],[0]]]
+        12:[[[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0]],[[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0]]],
+        13:[[[0,0,0,0],[0,0,0,0],[0]],[[0,0,0,0],[0],[0],[0]]]
     }
 
     
@@ -78,6 +80,8 @@ def ChooseGateToUse(intgatechosen:int, combinations:list, num:int) -> list:
     elif intgatechosen == 11:
         return (gate.EIGHTBITADDER(combinations[num][0],combinations[num][1],combinations[num][2][0]))
     elif intgatechosen == 12:
+        return (gate.SixTeenBitAdderSmall(combinations[num][0],combinations[num][1],combinations[num][2][0]))
+    elif intgatechosen == 13:
         return (gate.ALU(combinations[num][0],combinations[num][1],combinations[num][2][0]))
 
 
