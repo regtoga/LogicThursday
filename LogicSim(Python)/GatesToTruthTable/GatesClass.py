@@ -361,7 +361,27 @@ def SixTeenBitAdderSmall(XBools: list, YBools: list, CarryIn: bool) -> bool:
     return output, carryout
 
 def ThirtytwoBitAdderSmall(XBools: list, YBools: list, CarryIn: bool) -> bool: 
-    print()
+    X32, X31, X30, X29, X27, X27, X26, X25, X24, X23, X22, X21, X20, X19, X18, X17, X16, X15, X14, X13, X12, X11, X10, X9, X8, X7, X6, X5, X4, X3, X2, X1 = utils.thirtytwobitlist_into_thirtytwoindividualbools(XBools)
+    Y32, Y31, Y30, Y29, Y27, Y27, Y26, Y25, Y24, Y23, Y22, Y21, Y20, Y19, Y18, Y17, Y16, Y15, Y14, Y13, Y12, Y11, Y10, Y9, Y8, Y7, Y6, Y5, Y4, Y3, Y2, Y1 = utils.thirtytwobitlist_into_thirtytwoindividualbools(YBools)
+
+    xout1, adder1out = SixTeenBitAdderSmall([X16, X15, X14, X13, X12, X11, X10, X9, X8, X7, X6, X5, X4, X3, X2, X1],[Y16, Y15, Y14, Y13, Y12, Y11, Y10, Y9, Y8, Y7, Y6, Y5, Y4, Y3, Y2, Y1],CarryIn)
+    xout2, carryout = SixTeenBitAdderSmall([X32, X31, X30, X29, X27, X27, X26, X25, X24, X23, X22, X21, X20, X19, X18, X17],[Y32, Y31, Y30, Y29, Y27, Y27, Y26, Y25, Y24, Y23, Y22, Y21, Y20, Y19, Y18, Y17],adder1out)
+
+    out16, out15, out14, out13, out12, out11, out10, out9, out8, out7, out6, out5, out4, out3, out2, out1 = utils.sixteenBitList_into_individualbools(xout1)
+    out32, out31, out30, out29, out28, out27, out26, out25, out24, out23, out22, out21, out20, out19, out18, out17 = utils.sixteenBitList_into_individualbools(xout2)
+    output = utils.thirtyTwoindividualbools_into_thirtytwobitlist(out32, out31, out30, out29, out28, out27, out26, out25, out24, out23, out22, out21, out20, out19, out18, out17, out16, out15, out14, out13, out12, out11, out10, out9, out8, out7, out6, out5, out4, out3, out2, out1)
+
+    return output, carryout
 
 def SixtyFourBitADDERSmall(XBools: list, YBools: list, CarryIn: bool) -> bool:
-    print()
+    X64, X63, X62, X61, X60, X59, X58, X57, X56, X55, X54, X53, X52, X51, X50, X49, X48, X47, X46, X45, X44, X43, X42, X41, X40, X39, X38, X37, X36, X35, X34, X33, X32, X31, X30, X29, X27, X27, X26, X25, X24, X23, X22, X21, X20, X19, X18, X17, X16, X15, X14, X13, X12, X11, X10, X9, X8, X7, X6, X5, X4, X3, X2, X1 = utils.sixtyfourbitlist_into_sixtyfourindividualbools(XBools)
+    Y64, Y63, Y62, Y61, Y60, Y59, Y58, Y57, Y56, Y55, Y54, Y53, Y52, Y51, Y50, Y49, Y48, Y47, Y46, Y45, Y44, Y43, Y42, Y41, Y40, Y39, Y38, Y37, Y36, Y35, Y34, Y33, Y32, Y31, Y30, Y29, Y27, Y27, Y26, Y25, Y24, Y23, Y22, Y21, Y20, Y19, Y18, Y17, Y16, Y15, Y14, Y13, Y12, Y11, Y10, Y9, Y8, Y7, Y6, Y5, Y4, Y3, Y2, Y1 = utils.sixtyfourbitlist_into_sixtyfourindividualbools(YBools)
+
+    xout1, adder1out = ThirtytwoBitAdderSmall([X32, X31, X30, X29, X27, X27, X26, X25, X24, X23, X22, X21, X20, X19, X18, X17, X16, X15, X14, X13, X12, X11, X10, X9, X8, X7, X6, X5, X4, X3, X2, X1],[Y32, Y31, Y30, Y29, Y27, Y27, Y26, Y25, Y24, Y23, Y22, Y21, Y20, Y19, Y18, Y17, Y16, Y15, Y14, Y13, Y12, Y11, Y10, Y9, Y8, Y7, Y6, Y5, Y4, Y3, Y2, Y1],CarryIn)
+    xout2, carryout = ThirtytwoBitAdderSmall([X64, X63, X62, X61, X60, X59, X58, X57, X56, X55, X54, X53, X52, X51, X50, X49, X48, X47, X46, X45, X44, X43, X42, X41, X40, X39, X38, X37, X36, X35, X34, X33],[Y64, Y63, Y62, Y61, Y60, Y59, Y58, Y57, Y56, Y55, Y54, Y53, Y52, Y51, Y50, Y49, Y48, Y47, Y46, Y45, Y44, Y43, Y42, Y41, Y40, Y39, Y38, Y37, Y36, Y35, Y34, Y33],adder1out)
+
+    out32, out31, out30, out29, out28, out27, out26, out25, out24, out23, out22, out21, out20, out19, out18, out17, out16, out15, out14, out13, out12, out11, out10, out9, out8, out7, out6, out5, out4, out3, out2, out1 = utils.thirtytwobitlist_into_thirtytwoindividualbools(xout1)
+    out64, out63, out62, out61, out60, out59, out58, out57, out56, out55, out54, out53, out52, out51, out50, out49, out48, out47, out46, out45, out44, out43, out42, out41, out40, out39, out38, out37, out36, out35, out34, out33 = utils.thirtytwobitlist_into_thirtytwoindividualbools(xout2)
+    output = utils.sixtyfourindividualbools_into_sixtyfourbitlist(out64, out63, out62, out61, out60, out59, out58, out57, out56, out55, out54, out53, out52, out51, out50, out49, out48, out47, out46, out45, out44, out43, out42, out41, out40, out39, out38, out37, out36, out35, out34, out33, out32, out31, out30, out29, out28, out27, out26, out25, out24, out23, out22, out21, out20, out19, out18, out17, out16, out15, out14, out13, out12, out11, out10, out9, out8, out7, out6, out5, out4, out3, out2, out1)
+    
+    return output, carryout

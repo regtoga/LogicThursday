@@ -50,24 +50,41 @@ import utilsV1 as util
 
 
 #def testALU():
-X4 = util.get_int("Enter 0 or 1: ")
-X3 = util.get_int("Enter 0 or 1: ")
-X2 = util.get_int("Enter 0 or 1: ")
-X1 = util.get_int("Enter 0 or 1: ")
-print([X4,X3,X2,X1])
-print(f"{[X4,X3,X2,X1]} ='s {util.binary_to_decimal([X4,X3,X2,X1])}")
+#X4 = util.get_int("Enter 0 or 1: ")
+#X3 = util.get_int("Enter 0 or 1: ")
+#X2 = util.get_int("Enter 0 or 1: ")
+#X1 = util.get_int("Enter 0 or 1: ")
+#print([X4,X3,X2,X1])
+#print(f"{[X4,X3,X2,X1]} ='s {util.binary_to_decimal([X4,X3,X2,X1])}")
 
-Y4 = util.get_int("Enter 0 or 1: ")
-Y3 = util.get_int("Enter 0 or 1: ")
-Y2 = util.get_int("Enter 0 or 1: ")
-Y1 = util.get_int("Enter 0 or 1: ")
-print(f"{[Y4,Y3,Y2,Y1]} ='s {util.binary_to_decimal([Y4,Y3,Y2,Y1])}")
+#Y4 = util.get_int("Enter 0 or 1: ")
+#Y3 = util.get_int("Enter 0 or 1: ")
+#Y2 = util.get_int("Enter 0 or 1: ")
+#Y1 = util.get_int("Enter 0 or 1: ")
+#print(f"{[Y4,Y3,Y2,Y1]} ='s {util.binary_to_decimal([Y4,Y3,Y2,Y1])}")
 
-Subtract = util.get_int("Enter 0 or 1 (key: 0 ='s add || 1 ='s subtract): ")
+#Subtract = util.get_int("Enter 0 or 1 (key: 0 ='s add || 1 ='s subtract): ")
 
-ADDERout, carryout, negative, zero = gate.ALU([X4,X3,X2,X1],[Y4,Y3,Y2,Y1],Subtract)
+#ADDERout, carryout, negative, zero = gate.ALU([X4,X3,X2,X1],[Y4,Y3,Y2,Y1],Subtract)
 
-if Subtract == 0:
-    print(f"{[X4,X3,X2,X1]} + {[Y4,Y3,Y2,Y1]} = {util.binary_to_decimal(ADDERout)}")
-else:
-    print(f"{[X4,X3,X2,X1]} - {[Y4,Y3,Y2,Y1]} = {util.binary_to_decimal(ADDERout)}")
+#if Subtract == 0:
+#    print(f"{[X4,X3,X2,X1]} + {[Y4,Y3,Y2,Y1]} = {util.binary_to_decimal(ADDERout)}")
+#else:
+#    print(f"{[X4,X3,X2,X1]} - {[Y4,Y3,Y2,Y1]} = {util.binary_to_decimal(ADDERout)}")
+
+
+#def testsixtyfourbitadder():
+
+X = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1]
+Y = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0]
+Z = 1
+
+print(f"{X}\n='s\n{util.binary_to_decimal(X)}")
+print("")
+print(f"{Y}\n='s\n{util.binary_to_decimal(Y)}")
+print("")
+ADDERout, carryout = gate.SixtyFourBitADDERSmall(X,Y,Z)
+
+print(f"{X}\n{Y}\n{ADDERout}")
+print("")
+print(f"{util.binary_to_decimal(X)}\n+\n{util.binary_to_decimal(Y)}\n=\n{util.binary_to_decimal(ADDERout)}")
