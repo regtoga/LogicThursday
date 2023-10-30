@@ -30,38 +30,44 @@ import utilsV1 as util
 
 
 
-register = gate.four_bit_register()
+#register = gate.four_bit_register()
 
-while True == True:
-    X4 = util.get_int("Enter 0 or 1: ")
-    X3 = util.get_int("Enter 0 or 1: ")
-    X2 = util.get_int("Enter 0 or 1: ")
-    X1 = util.get_int("Enter 0 or 1: ")
-    print(f"input = {[X4, X3, X2, X1]}")
+#while True == True:
+    #X4 = util.get_int("Enter 0 or 1: ")
+    #X3 = util.get_int("Enter 0 or 1: ")
+    #X2 = util.get_int("Enter 0 or 1: ")
+    #X1 = util.get_int("Enter 0 or 1: ")
+    #print(f"input = {[X4, X3, X2, X1]}")
 
-    store = util.get_int("Enter 0 or 1: ")
+    #store = util.get_int("Enter 0 or 1: ")
 
-    clock = util.get_int("Enter 0 or 1: ")
+    #clock = util.get_int("Enter 0 or 1: ")
 
-    output = register.four_bit_register([X4, X3, X2, X1],store, clock)
+    #output = register.four_bit_register([X4, X3, X2, X1],store, clock)
     
-    print(f"output = {output}")
+    #print(f"output = {output}")
 
 
 
-def testALU():
-    X4 = util.get_int("Enter 0 or 1: ")
-    X3 = util.get_int("Enter 0 or 1: ")
-    X2 = util.get_int("Enter 0 or 1: ")
-    X1 = util.get_int("Enter 0 or 1: ")
-    print([X4,X3,X2,X1])
+#def testALU():
+X4 = util.get_int("Enter 0 or 1: ")
+X3 = util.get_int("Enter 0 or 1: ")
+X2 = util.get_int("Enter 0 or 1: ")
+X1 = util.get_int("Enter 0 or 1: ")
+print([X4,X3,X2,X1])
+print(f"{[X4,X3,X2,X1]} ='s {util.binary_to_decimal([X4,X3,X2,X1])}")
 
-    Y4 = util.get_int("Enter 0 or 1: ")
-    Y3 = util.get_int("Enter 0 or 1: ")
-    Y2 = util.get_int("Enter 0 or 1: ")
-    Y1 = util.get_int("Enter 0 or 1: ")
-    print([Y4,Y3,Y2,Y1])
+Y4 = util.get_int("Enter 0 or 1: ")
+Y3 = util.get_int("Enter 0 or 1: ")
+Y2 = util.get_int("Enter 0 or 1: ")
+Y1 = util.get_int("Enter 0 or 1: ")
+print(f"{[Y4,Y3,Y2,Y1]} ='s {util.binary_to_decimal([Y4,Y3,Y2,Y1])}")
 
-    Subtract = util.get_int("Enter 0 or 1: ")
+Subtract = util.get_int("Enter 0 or 1 (key: 0 ='s add || 1 ='s subtract): ")
 
-    print(gate.ALU([X4,X3,X2,X1],[Y4,Y3,Y2,Y1],Subtract))
+ADDERout, carryout, negative, zero = gate.ALU([X4,X3,X2,X1],[Y4,Y3,Y2,Y1],Subtract)
+
+if Subtract == 0:
+    print(f"{[X4,X3,X2,X1]} + {[Y4,Y3,Y2,Y1]} = {util.binary_to_decimal(ADDERout)}")
+else:
+    print(f"{[X4,X3,X2,X1]} - {[Y4,Y3,Y2,Y1]} = {util.binary_to_decimal(ADDERout)}")

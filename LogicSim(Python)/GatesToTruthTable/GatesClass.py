@@ -363,5 +363,5 @@ def SixTeenBitAdderSmall(XBools: list, YBools: list, CarryIn: bool) -> bool:
 def ThirtytwoBitAdderSmall(XBools: list, YBools: list, CarryIn: bool) -> bool: 
     print()
 
-def SixtyFourBitADDER(XBools: list, YBools: list, CarryIn: bool) -> bool:
+def SixtyFourBitADDERSmall(XBools: list, YBools: list, CarryIn: bool) -> bool:
     print()
