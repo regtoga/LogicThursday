@@ -22,7 +22,7 @@ def main():
     if len(Combinations) < 100:
         print(truthTable)
 
-    export = input("Do you want to export results into a text file? (Y/N)")
+    export = input("Do you want to export formatted results into a text file? (Y/N)")
     if export == "Y" or export == "y":
         default = input("Do you want to use default file location and name? (Y/N)")
 
@@ -106,7 +106,8 @@ def WhatGateCLI() -> list:
         #start actually turning each combination into a result
         #for gates that take only a bool we need to add another [0] pointer so that it will return a bool and not a list
         #GateData.ChooseGateToUse is a fancy function that takes some of the edge off of making adding a new hardcoded gate
-        results[num].append(GateData.ChooseGateToUse(intgatechosen, combinations, num))
+        gateanswer = GateData.ChooseGateToUse(intgatechosen, combinations, num)
+        results[num].append(gateanswer)
 
     #ask if user wants raw truthtable
     rawTruthTable = utils.get_int("Do you want the raw truthtable: (0 = NO | 1 = YES): ")

@@ -102,7 +102,7 @@ def ADDER(X1: bool, X2: bool, CarryIn: bool) -> bool:
     SUM = XOR_GATE(XOR_GATE(X1, X2), CarryIn)
     CARRYOUT = OR_GATE(AND_GATE(XOR_GATE(X1, X2), CarryIn), AND_GATE(X2, X1))
 
-    return SUM, CARRYOUT
+    return [SUM, CARRYOUT]
 
 def TWOBITADDER(XBools: list, YBools: list, CarryIn: bool) -> bool:
     """Takes input(xx, yy, z) as in x1 + y1 carry in z"""
@@ -113,7 +113,7 @@ def TWOBITADDER(XBools: list, YBools: list, CarryIn: bool) -> bool:
     xout2, carryout = ADDER(X2, Y2, adder1out)
 
     output = utils.twoIndividualBools_into_twoBitList(xout2, xout1)
-    return output, carryout
+    return [output, carryout]
 
 def FOURBITADDER(XBools: list, YBools: list, CarryIn: bool) -> bool:
     """Takes input(xxxx, yyyy, z) as in x1 + y1 carry in z\n
@@ -129,7 +129,7 @@ def FOURBITADDER(XBools: list, YBools: list, CarryIn: bool) -> bool:
 
     output = utils.fourIndividualBools_into_fourBitList(xout4, xout3, xout2, xout1)
 
-    return output, carryout
+    return [output, carryout]
 
 def EIGHTBITADDER(XBools: list, YBools: list, CarryIn: bool) -> bool: 
     """Takes input(xxxxxxxx, yyyyyyyy, z) as in x1 + y1 carry in z"""
@@ -147,7 +147,7 @@ def EIGHTBITADDER(XBools: list, YBools: list, CarryIn: bool) -> bool:
 
     output = utils.eightIndividualBools_into_eightBitList(xout8, xout7, xout6, xout5, xout4, xout3, xout2, xout1)
 
-    return output, carryout
+    return [output, carryout]
 
 
 
@@ -164,7 +164,7 @@ def ALU(XBools: list, YBools: list, Subtract: bool) -> bool:
     zero = AND_GATE(AND_GATE(AND_GATE(NOT_GATE(Z4),NOT_GATE(Z3)),NOT_GATE(Z2)),NOT_GATE(Z1))
     negative = Z4
     
-    return ADDERout, carryout, negative, zero
+    return [ADDERout, carryout, negative, zero] # not shure if i need to have barckets around this
 
 
 #memory!------------------------

@@ -62,31 +62,33 @@ def ChooseGateToUse(intgatechosen:int, combinations:list, num:int) -> list:
     this function will return a single result"""
 
     if intgatechosen == 1:
-        return [gate.NOT_GATE(combinations[num][0][0])]
+        answer = [gate.NOT_GATE(combinations[num][0][0])]
     elif intgatechosen == 2:
-        return gate.sevensegdisplaydriver(combinations[num][0])
+        answer = gate.sevensegdisplaydriver(combinations[num][0])
     elif intgatechosen == 3:
-        return [gate.AND_GATE(combinations[num][0][0],combinations[num][1][0])]
+        answer = [gate.AND_GATE(combinations[num][0][0],combinations[num][1][0])]
     elif intgatechosen == 4:
-        return [gate.OR_GATE(combinations[num][0][0],combinations[num][1][0])]
+        answer = [gate.OR_GATE(combinations[num][0][0],combinations[num][1][0])]
     elif intgatechosen == 5:
-        return [gate.NOR_GATE(combinations[num][0][0],combinations[num][1][0])]
+        answer = [gate.NOR_GATE(combinations[num][0][0],combinations[num][1][0])]
     elif intgatechosen == 6:
-        return [gate.NAND_GATE(combinations[num][0][0],combinations[num][1][0])]
+        answer = [gate.NAND_GATE(combinations[num][0][0],combinations[num][1][0])]
     elif intgatechosen == 7:
-        return [gate.XOR_GATE(combinations[num][0][0],combinations[num][1][0])]
+        answer = [gate.XOR_GATE(combinations[num][0][0],combinations[num][1][0])]
     elif intgatechosen == 8:
-        return (gate.ADDER(combinations[num][0][0],combinations[num][1][0],combinations[num][2][0]))
+        answer = (gate.ADDER(combinations[num][0][0],combinations[num][1][0],combinations[num][2][0]))
     elif intgatechosen == 9:
-        return (gate.TWOBITADDER(combinations[num][0],combinations[num][1],combinations[num][2][0]))
+        answer = (gate.TWOBITADDER(combinations[num][0],combinations[num][1],combinations[num][2][0]))
     elif intgatechosen == 10:
-        return (gate.FOURBITADDER(combinations[num][0],combinations[num][1],combinations[num][2][0]))
+        answer = (gate.FOURBITADDER(combinations[num][0],combinations[num][1],combinations[num][2][0]))
     elif intgatechosen == 11:
-        return (gate.EIGHTBITADDER(combinations[num][0],combinations[num][1],combinations[num][2][0]))
+        answer = (gate.EIGHTBITADDER(combinations[num][0],combinations[num][1],combinations[num][2][0]))
     elif intgatechosen == 12:
-        return (gate.SixTeenBitAdderSmall(combinations[num][0],combinations[num][1],combinations[num][2][0]))
+        answer = (gate.SixTeenBitAdderSmall(combinations[num][0],combinations[num][1],combinations[num][2][0]))
     elif intgatechosen == 13:
-        return (gate.ALU(combinations[num][0],combinations[num][1],combinations[num][2][0]))
+        answer = (gate.ALU(combinations[num][0],combinations[num][1],combinations[num][2][0]))
+
+    return answer
 
 def GatesAvailable(intgatechosen:int=0, X1:bool=0, X2:bool=0) -> bool:
     GateTypesAvailable = {

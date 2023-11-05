@@ -85,41 +85,35 @@ class TruthTableToGatesCLI():
 
     def potentialGatepacker(truthTable:list, inputOutputMask:list, GateMask:list) -> list:
         """Potential gate = 
-        [ADDER,[[[X1,#]], [[X2,#]], [[X3,#]]],[[[Y1,[7,[[7,[X1,X2]],X3]]]],[[Y2, [Y2, [4,[[3,[[7,[X1,X2]],X3]],[3,[X2,X1]]]]]]]]]
+        ["ADDER",[["X1","bool"], ["X2","bool"], ["X3","bool"]],[["Y1",[7,[[7,["X1","X2"]],"X3"]]],["Y2",[4,[[3,[[7,["X1","X2"]],"X3"]],[3,["X2","X1"]]]]]]]
         or
         [
             ADDER, 
             [
-                [
-                    [X1, #]
-                ], 
-                [
-                    [X2, #]
-                ], 
-                [
-                    [X3, #]
-                ]
+                ["X1","bool"], 
+                ["X2","bool"], 
+                ["X3","bool"]
             ],
             [
                 [
-                    [Y1,[7,[[7,[X1,X2]],X3]]] #SUM
+                    ["Y1",[7,[[7,["X1","X2"]],"X3"]]] #SUM
                 ], 
                 [
-                    [Y2, [4,[[3,[[7,[X1,X2]],X3]],[3,[X2,X1]]]]] #Carry Out
+                    ["Y2",[4,[[3,[[7,["X1","X2"]],"X3"]],[3,["X2","X1"]]]]] #Carry Out
                 ]
             ]
         ]
 
         input/output mask: [[[0],[0],[0]],[[0],[0]]]
-        Truthtable:        [[0], [1], [1]], [[1], [1], [1]]], [[(0, 0)], [(1, 0)], [(1, 0)], [(0, 1)], [(1, 0)], [(0, 1)], [(0, 1)], [(1, 1)]]]
+        Truthtable:        [[[[0], [0], [0]], [[1], [0], [0]], [[0], [1], [0]], [[1], [1], [0]], [[0], [0], [1]], [[1], [0], [1]], [[0], [1], [1]], [[1], [1], [1]]], [[[0, 0]], [[1, 0]], [[1, 0]], [[0, 1]], [[1, 0]], [[0, 1]], [[0, 1]], [[1, 1]]]]
         GateMask:          [3, 4, 7]
         """
 
-        truthTable = [[[[0], [1], [1]], [[1], [1], [1]]], [[(0, 0)], [(1, 0)], [(1, 0)], [(0, 1)], [(1, 0)], [(0, 1)], [(0, 1)], [(1, 1)]]]
+        truthTable = [[[[0], [0], [0]], [[1], [0], [0]], [[0], [1], [0]], [[1], [1], [0]], [[0], [0], [1]], [[1], [0], [1]], [[0], [1], [1]], [[1], [1], [1]]], [[[0, 0]], [[1, 0]], [[1, 0]], [[0, 1]], [[1, 0]], [[0, 1]], [[0, 1]], [[1, 1]]]]
         inputOutputMask = [[[0],[0],[0]],[[0],[0]]]
         GateMask = [3, 4, 7]
 
-        HardPotentialGate = ["ADDER",[["X1","bool"], ["X2","bool"], ["X3","bool"]],[[["Y1",[7,[[7,["X1","X2"]],"X3"]]]],[["Y2", [4,[[3,[[7,["X1","X2"]],"X3"]],[3,["X2","X1"]]]]]]]]
+        HardPotentialGate = ["ADDER",[["X1","bool"], ["X2","bool"], ["X3","bool"]],[["Y1",[7,[[7,["X1","X2"]],"X3"]]],["Y2",[4,[[3,[[7,["X1","X2"]],"X3"]],[3,["X2","X1"]]]]]]]
         PotentialGate = []
         print(f"{truthTable}\n{inputOutputMask}\n{GateMask}")
 
@@ -144,55 +138,39 @@ class TruthTableToGatesCLI():
         name = logicMask[0]
         inputs = logicMask[1]
         outputsANDlogic = logicMask[2]
-        print(f"{name}, \n{inputs}, \n{outputsANDlogic}")
-        print("---")
-        print(f"TruthTableInputs: {TruthTable[0]}")
-        print("---")
 
         #this loops for every different input inside ofe the truthTable inputs side
-        
         for truthtablelen in range(0, len(TruthTable[0])):
-            print(f"TruthTableInput number: {truthtablelen}.")
-
             #This portion of the code needs to take the outputsandlogic into consideration and actually execute the code
             #EX mask [['Y1', [7, [[7, ['X1', 'X2']], 'X3']]], ['Y2', [4, [[3, [[7, ['X1', 'X2']], 'X3']], [3, ['X2', 'X1']]]]]]
-            numberoutputs = len(outputsANDlogic)
-
-            print(f"num outputs = {numberoutputs}")
-
-            
             currentlogicOut = [[]]
             for outputletters in outputsANDlogic:
-                
                 currentlist = outputletters
-                print(currentlist)
+
                 currentanswer = TruthTableToGatesCLI.outputLogicator(currentlist[1], TruthTable[0][truthtablelen])
-                print(f"{currentlist} ='ed {currentanswer}")
+
                 currentlogicOut[0].append(currentanswer)
-            print("")
 
             logicOut.append(currentlogicOut)
 
-            print(f"{currentlogicOut} and the correct answer was > {TruthTable[1][truthtablelen]}")
-
+            #short circuts the function if it finds something that doesnt work
             if currentlogicOut == TruthTable[1][truthtablelen]:
-                print(f"We had a winner!")
                 continue
             else:
                 return 0
 
+        #returns 1 if correct and 0 if not
         if logicOut == TruthTable[1]:
-            print(f"CORRECT LOGIC MASK!")
             return 1
         else:
             return 0
 
 
     def outputLogicator(logicIn:list, variablesIn:list):
-        #make a function that takes something that looks like this as input:
-        # [7, [7, ['X1', 'X2']], 'X3'] or:
-        # [4, [[3, [[7, ['X1', 'X2']], 'X3']], [3, ['X2', 'X1']]]]
-        # and outputs the result
+        """
+        a function that takes something that looks like this as input:
+        [7, [7, ['X1', 'X2']], 'X3'] or [4, [[3, [[7, ['X1', 'X2']], 'X3']], [3, ['X2', 'X1']]]]
+        """
         answer = "nothing"
         opperation = logicIn[0]
 
@@ -200,18 +178,15 @@ class TruthTableToGatesCLI():
 
         for logic in logicIn[1]:
             data.append(logic)
-
-        #data2 = logicIn[1]
-        print("")
  
         #IMPORTANT doesnt support lists yet! maby?
+        #as each function we are currently inputing is only two wide, we can get away with two identicle functions
         if type(data[0]) == str:
             X1 = int(data[0].replace("X",""))
             X1 = variablesIn[X1-1][0] #may have to take the 0 off the end 
             data[0] = X1
         else:
-            print(f"opperation: {opperation}")
-            print(f"data: {data}")
+            #may be able to take the if off to speed it up a little?
             if type(opperation) == int:
                 intodata1 = TruthTableToGatesCLI.outputLogicator(data[0], variablesIn)
                 data[0] = intodata1
@@ -222,8 +197,7 @@ class TruthTableToGatesCLI():
             X2 = variablesIn[X2-1][0] #may have to take the 0 off the end 
             data[1] = X2
         else:
-            print(f"opperation: {opperation}")
-            print(f"data: {data}")
+            #may be able to take the if off to speed it up a little?
             if type(opperation) == int:
                 intodata2 = TruthTableToGatesCLI.outputLogicator(data[1], variablesIn)
                 data[1] = intodata2
@@ -234,13 +208,23 @@ class TruthTableToGatesCLI():
         return answer
 
 
+
+
+
+
+#----------------------------Program starts here
+
+
+
+
+
 NewGateMaker = TruthTableToGatesCLI
 
 exampleLogicMask1 = ["ADDER",[["X1","bool"], ["X2","bool"], ["X3","bool"]],[["Y1",[7,[[7,["X1","X2"]],"X3"]]],["Y2",[4,[[3,[[7,["X1","X2"]],"X3"]],[3,["X2","X1"]]]]]]]
 ExampleTruthTable1 = [[[[0], [0], [0]], [[1], [0], [0]], [[0], [1], [0]], [[1], [1], [0]], [[0], [0], [1]], [[1], [0], [1]], [[0], [1], [1]], [[1], [1], [1]]], [[[0, 0]], [[1, 0]], [[1, 0]], [[0, 1]], [[1, 0]], [[0, 1]], [[0, 1]], [[1, 1]]]]
-NewGateMaker.logicMaskValidator(exampleLogicMask1, ExampleTruthTable1)
+output = NewGateMaker.logicMaskValidator(exampleLogicMask1, ExampleTruthTable1)
 
-#NewGateMaker.outputLogicator([2,[[2,["X1","X2"]],"X3"]],[1,1,1])
-
-#["Y1",[7,[[7,["X1","X2"]],"X3"]]]
-#["Y2",[4,[[3,[[7,["X1","X2"]],"X3"]],[3,["X2","X1"]]]]]
+if output == 1:
+    print("We had a winner!")
+else:
+    print("we did not have a winner!")
