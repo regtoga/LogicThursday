@@ -75,16 +75,18 @@ import utilsV1 as util
 
 #def testsixtyfourbitadder():
 
-X = [0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1]
-Y = [0,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0]
-Z = 0
+#X = [0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1]
+#Y = [0,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0]
+#Z = 0
 
-print(f"{X}\n='s\n{util.binary_to_decimal(X)}")
-print("")
-print(f"{Y}\n='s\n{util.binary_to_decimal(Y)}")
-print("")
-ADDERout, carryout = gate.SixtyFourBitADDERSmall(X,Y,Z)
+#print(f"{X}\n='s\n{util.binary_to_decimal(X)}")
+#print("")
+#print(f"{Y}\n='s\n{util.binary_to_decimal(Y)}")
+#print("")
+#ADDERout, carryout = gate.SixtyFourBitADDERSmall(X,Y,Z)
 
-print(f"{X}\n{Y}\n{ADDERout}")
-print("")
-print(f"{util.binary_to_decimal(X)}\n+\n{util.binary_to_decimal(Y)}\n=\n{util.binary_to_decimal(ADDERout)}")
+#print(f"{X}\n{Y}\n{ADDERout}")
+#print("")
+#print(f"{util.binary_to_decimal(X)}\n+\n{util.binary_to_decimal(Y)}\n=\n{util.binary_to_decimal(ADDERout)}")
+
+

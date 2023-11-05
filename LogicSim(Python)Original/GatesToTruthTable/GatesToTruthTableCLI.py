@@ -91,12 +91,12 @@ def WhatGateCLI() -> list:
         combinations.append([])
         results.append([])
 
-        for input in range(0, len(Xwidthlist)):
+        for input2 in range(0, len(Xwidthlist)):
             #should make a list that looks like this: [[[0,0,0,0],[0,0,0,0],[0]],[[0,0,0,0],[0,0,0,0],[1]],[[0,0,0,0],[0,0,0,1],[0]]]
             evenTemperList = []
 
 
-            for inputlenght in range(0, Xwidthlist[input]):
+            for inputlenght in range(0, Xwidthlist[input2]):
                 evenTemperList.append(templist[index])
 
                 index += 1
@@ -107,6 +107,27 @@ def WhatGateCLI() -> list:
         #for gates that take only a bool we need to add another [0] pointer so that it will return a bool and not a list
         #GateData.ChooseGateToUse is a fancy function that takes some of the edge off of making adding a new hardcoded gate
         results[num].append(GateData.ChooseGateToUse(intgatechosen, combinations, num))
+
+    #ask if user wants raw truthtable
+    rawTruthTable = utils.get_int("Do you want the raw truthtable: (0 = NO | 1 = YES): ")
+    
+    if rawTruthTable == 1:
+        rawTruthTableArchie = utils.fileArchitect()
+        default = utils.get_int("Do you want to use default file location and name? (0 = NO | 1 = YES): ")
+
+        locationfromuser = ""
+        formatfilename = (GateData.GetGateName(intgatechosen).replace(" ", "")).replace("\n", "")
+
+        filenamefromuser = f"rawtruthtablefor-{formatfilename}"
+
+        if default == 0:
+            filenamefromuser = input("Enter the name you want for you text file: EX(banan) becomes banan.txt: ")
+            locationfromuser = input("Enter a location for your txt file: EX(D:\windows folders\Downloads\) \nI would recomend leaving this blank:")
+            
+
+        print(rawTruthTableArchie.Create_File(locationfromuser, filenamefromuser, [combinations, results]))
+        print(rawTruthTableArchie.Write_File([combinations, results]))
+
 
     return combinations, results
 

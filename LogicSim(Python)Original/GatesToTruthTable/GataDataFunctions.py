@@ -1,30 +1,34 @@
 import GatesToTruthTableCLI as CLI
 import GatesClass as gate
 
+GateTypes = {
+    0:"(0) Use your own gate \n",
+    1:"(1) NOT \n",
+    2:"(2) SevenSegdisplayDriver \n",
+    3:"(3) AND \n",
+    4:"(4) OR \n",
+    5:"(5) NOR \n",
+    6:"(6) NAND \n",
+    7:"(7) XOR \n",
+    8:"(8) ADDER \n",
+    9:"(9) TWOBITADDER \n",
+    10:"(10) FOURBITADDER \n",
+    11:"(11) EIGHTBITADDER \n",
+    12:"(12) SIXTEENBITADDER \n",
+    13:"(13) ALU \n"
+}
+
 def PrintAllGateTypes() -> str:
     """Function that prints all hardcoded GateTypes"""
     outputstr = ""
-    GateTypes = {
-        0:"(0) Use your own gate \n",
-        1:"(1) NOT \n",
-        2:"(2) SevenSegdisplayDriver \n",
-        3:"(3) AND \n",
-        4:"(4) OR \n",
-        5:"(5) NOR \n",
-        6:"(6) NAND \n",
-        7:"(7) XOR \n",
-        8:"(8) ADDER: \n",
-        9:"(9) TWOBITADDER \n",
-        10:"(10) FOURBITADDER \n",
-        11:"(11) EIGHTBITADDER \n",
-        12:"(12) SIXTEENBITADDER \n",
-        13:"(13) ALU \n"
-    }
 
     for gate in range(0, len(GateTypes)):
         outputstr += f"{GateTypes.get(gate)}"
     
     print(outputstr)
+
+def GetGateName(index:int) -> str:
+    return GateTypes.get(index)
 
 def GateDimentionValuesfunction(intgatechosen:int) -> list:
     """Returns a predetermined imputmask unless user chooses something that isnt on the list, then they are 
@@ -84,4 +88,13 @@ def ChooseGateToUse(intgatechosen:int, combinations:list, num:int) -> list:
     elif intgatechosen == 13:
         return (gate.ALU(combinations[num][0],combinations[num][1],combinations[num][2][0]))
 
-
+def GatesAvailable(intgatechosen:int=0, X1:bool=0, X2:bool=0) -> bool:
+    GateTypesAvailable = {
+        1:gate.NOT_GATE(X1),
+        3:gate.AND_GATE(X1,X2),
+        4:gate.OR_GATE(X1,X2),
+        5:gate.NOR_GATE(X1,X2),
+        6:gate.NAND_GATE(X1,X2),
+        7:gate.XOR_GATE(X1,X2)
+    }
+    return GateTypesAvailable.get(intgatechosen)

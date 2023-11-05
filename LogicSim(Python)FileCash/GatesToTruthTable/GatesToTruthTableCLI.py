@@ -64,7 +64,6 @@ def WhatGateCLI() -> list:
         Xwidth += len(GateDimentions[0][dimention])
         Xwidthlist.append(len(GateDimentions[0][dimention]))
     Larestnumberpossiblebylength = 2**Xwidth
-    #print(f"Combinations possible: {Larestnumberpossiblebylength}")
 
     #Find every possible combination
     for num in range(0, Larestnumberpossiblebylength):
