@@ -107,6 +107,16 @@ class TruthTableToGatesCLI():
         input/output mask: [[[0],[0],[0]],[[0],[0]]]
         Truthtable:        [[[[0], [0], [0]], [[1], [0], [0]], [[0], [1], [0]], [[1], [1], [0]], [[0], [0], [1]], [[1], [0], [1]], [[0], [1], [1]], [[1], [1], [1]]], [[[0, 0]], [[1, 0]], [[1, 0]], [[0, 1]], [[1, 0]], [[0, 1]], [[0, 1]], [[1, 1]]]]
         GateMask:          [3, 4, 7]
+
+        gates able to use:
+            [0,[""]] #nothing
+            [1,[""]] #not
+            [3,["",""]] #AND
+            [4,["",""]] #OR
+            [5,["",""]] #NOR
+            [6,["",""]] #NAND
+            [7,["",""]] #XOR
+
         """
 
         truthTable = [[[[0], [0], [0]], [[1], [0], [0]], [[0], [1], [0]], [[1], [1], [0]], [[0], [0], [1]], [[1], [0], [1]], [[0], [1], [1]], [[1], [1], [1]]], [[[0, 0]], [[1, 0]], [[1, 0]], [[0, 1]], [[1, 0]], [[0, 1]], [[0, 1]], [[1, 1]]]]
@@ -155,8 +165,12 @@ class TruthTableToGatesCLI():
 
             #short circuts the function if it finds something that doesnt work
             if currentlogicOut == TruthTable[1][truthtablelen]:
+                #print(f"is:{currentlogicOut}")
+                #print(f"Supposed to be:{TruthTable[1][truthtablelen]}")
                 continue
             else:
+                #print(f"is:{currentlogicOut}")
+                #print(f"Supposed to be:{TruthTable[1][truthtablelen]}")
                 return 0
 
         #returns 1 if correct and 0 if not
@@ -179,29 +193,43 @@ class TruthTableToGatesCLI():
         for logic in logicIn[1]:
             data.append(logic)
  
-        #IMPORTANT doesnt support lists yet! maby?
+        X1 = "nothing"
+        #IMPORTANT doesnt support lists yet!
         #as each function we are currently inputing is only two wide, we can get away with two identicle functions
         if type(data[0]) == str:
             X1 = int(data[0].replace("X",""))
-            X1 = variablesIn[X1-1][0] #may have to take the 0 off the end 
+            if len(variablesIn[0]) > 1:
+                #print(f"{variablesIn} have a len of {len(variablesIn[0])}, X1 ='s {variablesIn[0][X1-1]}")
+                X1 = variablesIn[0][X1-1]
+            else:
+                X1 = variablesIn[X1-1][0]
             data[0] = X1
+            X1 = data[0]
         else:
             #may be able to take the if off to speed it up a little?
             if type(opperation) == int:
                 intodata1 = TruthTableToGatesCLI.outputLogicator(data[0], variablesIn)
                 data[0] = intodata1
-        X1 = data[0]
+                X1 = data[0]
+        
 
-        if len(data) == 2 and type(data[1]) == str:
-            X2 = int(data[1].replace("X",""))
-            X2 = variablesIn[X2-1][0] #may have to take the 0 off the end 
-            data[1] = X2
-        else:
-            #may be able to take the if off to speed it up a little?
-            if type(opperation) == int:
-                intodata2 = TruthTableToGatesCLI.outputLogicator(data[1], variablesIn)
-                data[1] = intodata2
-        X2 = data[1]
+        X2 = "nothing"
+        if len(data) == 2: 
+            if type(data[1]) == str:
+                X2 = int(data[1].replace("X",""))
+                if len(variablesIn[0]) > 1:
+                    X2 = variablesIn[0][X2-1]
+                else:
+                    X2 = variablesIn[X2-1][0]
+                data[1] = X2
+                X2 = data[1]        
+            else:
+                #may be able to take the if off to speed it up a little?
+                if type(opperation) == int:
+                    intodata2 = TruthTableToGatesCLI.outputLogicator(data[1], variablesIn)
+                    data[1] = intodata2
+                    X2 = data[1]
+        
 
         answer = GataDataFunctions.GatesAvailable(opperation,X1,X2)
 
@@ -213,11 +241,6 @@ class TruthTableToGatesCLI():
 
 
 #----------------------------Program starts here
-
-
-
-
-
 NewGateMaker = TruthTableToGatesCLI
 
 exampleLogicMask1 = ["ADDER",[["X1","bool"], ["X2","bool"], ["X3","bool"]],[["Y1",[7,[[7,["X1","X2"]],"X3"]]],["Y2",[4,[[3,[[7,["X1","X2"]],"X3"]],[3,["X2","X1"]]]]]]]
@@ -228,3 +251,13 @@ if output == 1:
     print("We had a winner!")
 else:
     print("we did not have a winner!")
+
+exampleLogicMask1 = ["sevensegdisplaydriver",[["X1","list"]],[["Y1", [0,["X4"]]],["Y2", [4,[[7,[[7,["X4","X3"]],[5,["X4",[4,["X2","X1"]]]]]],[4,[[3,[[4,[[7,["X3","X2"]],[1,["X1"]]]],"X1"]],[5,[[5,[[1,["X3"]],"X2"]],"X1"]]]]]]],["Y3", [6,[[3,[[7,["X4","X3"]],[4,["X2","X1"]]]],[4,["X2","X1"]]]]],["Y4", [4,[[6,[[6,[[3,[[7,["X4","X3"]],[4,["X2","X1"]]]],[4,["X2","X1"]]]],[4,["X2","X1"]]]],"X1"]]],["Y5", [4,[[3,[[4,[[7,["X3","X2"]],[1,["X1"]]]],"X1"]],[5,[[5,[[1,["X3"]],"X2"]],"X1"]]]]],["Y6", [5,[[5,[[1,["X3"]],"X2"]],"X1"]]],["Y7", [6,[[6,[[3,[[7,["X4","X3"]],[4,["X2","X1"]]]],[4,["X2","X1"]]]],[4,["X2","X1"]]]],"X1"],["Y8", [4,[[7,[[5,["X4",[4,["X2","X1"]]]],[4,[[7,["X3","X2"]],[1,["X1"]]]]]],[5,[[1,["X3"]],"X2"]]]]]]]
+ExampleTruthTable1 = [[[[0, 0, 0, 0]], [[1, 0, 0, 0]], [[0, 1, 0, 0]], [[1, 1, 0, 0]], [[0, 0, 1, 0]], [[1, 0, 1, 0]], [[0, 1, 1, 0]], [[1, 1, 1, 0]], [[0, 0, 0, 1]], [[1, 0, 0, 1]], [[0, 1, 0, 1]], [[1, 1, 0, 1]], [[0, 0, 1, 1]], [[1, 0, 1, 1]], [[0, 1, 1, 1]], [[1, 1, 1, 1]]], [[[0, 1, 1, 1, 1, 1, 1, 0]], [[0, 0, 1, 1, 0, 0, 0, 0]], [[0, 1, 1, 0, 1, 1, 0, 1]], [[0, 1, 1, 1, 1, 0, 0, 1]], [[0, 0, 1, 1, 0, 0, 1, 1]], [[0, 1, 0, 1, 1, 0, 1, 1]], [[0, 1, 0, 1, 1, 1, 1, 1]], [[0, 1, 0, 1, 0, 0, 1, 0]], [[1, 1, 1, 1, 1, 1, 1, 1]], [[1, 1, 0, 1, 0, 0, 1, 0]], [[1, 1, 0, 1, 1, 1, 1, 1]], [[1, 1, 0, 1, 1, 0, 1, 1]], [[1, 0, 1, 1, 0, 0, 1, 1]], [[1, 1, 1, 1, 1, 0, 0, 1]], [[1, 1, 1, 0, 1, 1, 0, 1]], [[1, 0, 1, 1, 0, 0, 0, 0]]]]
+output = NewGateMaker.logicMaskValidator(exampleLogicMask1, ExampleTruthTable1)
+
+if output == 1:
+    print("We had a winner!")
+else:
+    print("we did not have a winner!")
+    

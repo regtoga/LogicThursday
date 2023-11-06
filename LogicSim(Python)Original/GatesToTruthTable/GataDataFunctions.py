@@ -92,6 +92,7 @@ def ChooseGateToUse(intgatechosen:int, combinations:list, num:int) -> list:
 
 def GatesAvailable(intgatechosen:int=0, X1:bool=0, X2:bool=0) -> bool:
     GateTypesAvailable = {
+        0:X1,
         1:gate.NOT_GATE(X1),
         3:gate.AND_GATE(X1,X2),
         4:gate.OR_GATE(X1,X2),

@@ -272,7 +272,7 @@ class four_bit_register():
         self.register1 = SynchronousRegister()
 
     def four_bit_register(self, Xbits:list, store:bool, clock:bool) -> list:
-        X4, X3, X2, X1 = utils.fourBitList_into_individual_bools(Xbits)
+        X1, X2, X3, X4 = utils.fourBitList_into_individual_bools(Xbits)
 
         Xout4 = self.register4.register(X4, store, clock)
         Xout3 = self.register3.register(X3, store, clock)
@@ -284,7 +284,7 @@ class four_bit_register():
 
 #seven segment display, should work if im not too dumb to setup all the functions
 def sevensegdisplaydriver(Xlist:list) -> list:
-    X4, X3, X2, X1 = utils.fourBitList_into_individual_bools(Xlist)
+    X1, X2, X3, X4 = utils.fourBitList_into_individual_bools(Xlist)
 
     output1 = X4
 
