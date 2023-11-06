@@ -47,6 +47,23 @@ import utilsV1 as util
     
     #print(f"output = {output}")
 
+X2 = util.get_int("Enter 0 or 1: ")
+X1 = util.get_int("Enter 0 or 1: ")
+print([X2,X1])
+print(f"{[X2,X1]} ='s {util.binary_to_decimal([X2,X1])}")
+
+
+Y2 = util.get_int("Enter 0 or 1: ")
+Y1 = util.get_int("Enter 0 or 1: ")
+print(f"{[Y2,Y1]} ='s {util.binary_to_decimal([Y2,Y1])}")
+
+Z1 = util.get_int("Enter 0 or 1: ")
+print(f"{Y1}")
+
+stuff = gate.TWOBITADDERformyself([X1,X2],[Y1,Y2],Z1)
+print(gate.TWOBITADDERformyself([X1,X2],[Y1,Y2],Z1))
+
+print(f"{[X2,X1]} + {[Y2,Y1]} = {util.binary_to_decimal(stuff)}")
 
 
 #def testALU():
@@ -100,9 +117,14 @@ import utilsV1 as util
 ["Y8", [4,[[7,[[5,["X4",[4,["X2","X1"]]]],[4,[[7,["X3","X2"]],[1,["X1"]]]]]],[5,[[1,["X3"]],"X2"]]]]]
 """
 
-exampleLogicMask1 = ["sevensegdisplaydriver",[["X1","list"],["X2","list"],["X3","bool"]],[]]
+"""exampleLogicMask1 = ["sevensegdisplaydriver",[["X1","list"],["X2","list"],["X3","bool"]],[]]
 
-
+#XOR_GATE(XOR_GATE(X1, Y1), CarryIn)
+["Y1", [7,[[7,["X1","X3"]],"X5"]]],
+#XOR_GATE(XOR_GATE(X2, Y2), OR_GATE(AND_GATE(XOR_GATE(X1, Y1), CarryIn), AND_GATE(X1, Y1)))
+["Y2", [7,[[7,["X2","X4"]],[4,[[3,[[7,["X1","X3"]],"X5"]],[3,["X1","X3"]]]]]]],
+#OR_GATE(AND_GATE(XOR_GATE(X2, Y2), OR_GATE(AND_GATE(XOR_GATE(X1, Y1), CarryIn), AND_GATE(X1, Y1))), AND_GATE(X2, Y2))
+["Y3", [4,[[3,[[7,["X2","X4"]],[4,[[3,[[7,["X1","X3"]],"X5"]],[3,["X1","X3"]]]]]],[3,["X2","X4"]]]]]
 
 [0,[""]] #nothing
 [1,[""]] #not
@@ -112,6 +134,39 @@ exampleLogicMask1 = ["sevensegdisplaydriver",[["X1","list"],["X2","list"],["X3",
 [6,["",""]] #NAND
 [7,["",""]] #XOR
 
+["Y1", [7,[[7,["X1","X3"]],"X5"]]],["Y2", [7,[[7,["X2","X4"]],[4,[[3,[[7,["X1","X3"]],"X5"]],[3,["X1","X3"]]]]]]],["Y3", [4,[[3,[[7,["X2","X4"]],[4,[[3,[[7,["X1","X3"]],"X5"]],[3,["X1","X3"]]]]]],[3,["X2","X4"]]]]]
+"""
 
 
+
+"""
+X1 = "nothing"
+if type(data[0]) == str:
+    X1 = int(data[0].replace("X",""))
+    #list detector
+    if len(variablesIn[0]) > 1:
+        X1 = variablesIn[0][X1-1]
+    else:
+        X1 = variablesIn[X1-1][0]
+    data[0] = X1
+elif type(opperation) == int:
+    data[0] = TruthTableToGatesCLI.outputLogicator(data[0], variablesIn)
+    X1 = data[0]
+"""
+
+"""
+X2 = "nothing"
+if len(data) == 2: 
+    if type(data[1]) == str:
+        #list detector
+        X2 = int(data[1].replace("X",""))
+        if len(variablesIn[0]) > 1:
+            X2 = variablesIn[0][X2-1]
+        else:
+            X2 = variablesIn[X2-1][0]
+        data[1] = X2       
+    elif type(opperation) == int:
+        data[1] = TruthTableToGatesCLI.outputLogicator(data[1], variablesIn)
+        X2 = data[1]
+"""
 

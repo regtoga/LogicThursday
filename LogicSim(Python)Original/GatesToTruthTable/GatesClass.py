@@ -104,6 +104,18 @@ def ADDER(X1: bool, X2: bool, CarryIn: bool) -> bool:
 
     return [SUM, CARRYOUT]
 
+#made this so i could translate to my logic mask format :)
+def TWOBITADDERFORMYSELF(XBools: list, YBools: list, CarryIn: bool)->bool:
+    X1, X2 = utils.twoBitList_into_individual_bools(XBools)
+    Y1, Y2 = utils.twoBitList_into_individual_bools(YBools)
+
+    xout1 = XOR_GATE(XOR_GATE(X1, Y1), CarryIn)
+    xout2 = XOR_GATE(XOR_GATE(X2, Y2), OR_GATE(AND_GATE(XOR_GATE(X1, Y1), CarryIn), AND_GATE(X1, Y1)))
+    carryout = OR_GATE(AND_GATE(XOR_GATE(X2, Y2), OR_GATE(AND_GATE(XOR_GATE(X1, Y1), CarryIn), AND_GATE(X1, Y1))), AND_GATE(X2, Y2))
+
+    output = utils.twoIndividualBools_into_twoBitList(xout2, xout1)
+    return [output, carryout]
+
 def TWOBITADDER(XBools: list, YBools: list, CarryIn: bool) -> bool:
     """Takes input(xx, yy, z) as in x1 + y1 carry in z"""
     X2, X1 = utils.twoBitList_into_individual_bools(XBools)
