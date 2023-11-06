@@ -83,10 +83,10 @@ def XOR_GATE(X1: bool, X2: bool) -> bool:
         Truth Table:\n
         *---------------------*\n
         |INPUT1|INPUT2|OUTPUT1|\n
-        |   0  |   0  |   1   |\n
-        |   0  |   1  |   0   |\n
-        |   1  |   0  |   0   |\n
-        |   1  |   1  |   1   |\n
+        |   0  |   0  |   0   |\n
+        |   0  |   1  |   1   |\n
+        |   1  |   0  |   1   |\n
+        |   1  |   1  |   0   |\n
         *---------------------*\n
     """
     XOR = AND_GATE(OR_GATE(X1, X2), NAND_GATE(X1, X2))
@@ -105,16 +105,13 @@ def ADDER(X1: bool, X2: bool, CarryIn: bool) -> bool:
     return [SUM, CARRYOUT]
 
 #made this so i could translate to my logic mask format :)
-def TWOBITADDERFORMYSELF(XBools: list, YBools: list, CarryIn: bool)->bool:
-    X1, X2 = utils.twoBitList_into_individual_bools(XBools)
-    Y1, Y2 = utils.twoBitList_into_individual_bools(YBools)
+def TWOBITADDERFORMYSELF(X1, X2, X3, X4, X5)->bool:
 
-    xout1 = XOR_GATE(XOR_GATE(X1, Y1), CarryIn)
-    xout2 = XOR_GATE(XOR_GATE(X2, Y2), OR_GATE(AND_GATE(XOR_GATE(X1, Y1), CarryIn), AND_GATE(X1, Y1)))
-    carryout = OR_GATE(AND_GATE(XOR_GATE(X2, Y2), OR_GATE(AND_GATE(XOR_GATE(X1, Y1), CarryIn), AND_GATE(X1, Y1))), AND_GATE(X2, Y2))
+    xout1 = XOR_GATE(XOR_GATE(X1, X3), X5)
+    xout2 = XOR_GATE(XOR_GATE(X2, X4), OR_GATE(AND_GATE(XOR_GATE(X1, X3), X5), AND_GATE(X1, X3)))
+    carryout = OR_GATE(AND_GATE(XOR_GATE(X2, X4), OR_GATE(AND_GATE(XOR_GATE(X1, X3), X5), AND_GATE(X1, X3))), AND_GATE(X2, X4))
 
-    output = utils.twoIndividualBools_into_twoBitList(xout2, xout1)
-    return [output, carryout]
+    return [xout1, xout2, carryout]
 
 def TWOBITADDER(XBools: list, YBools: list, CarryIn: bool) -> bool:
     """Takes input(xx, yy, z) as in x1 + y1 carry in z"""

@@ -15,8 +15,8 @@ GateTypes = {
     10:"(10) FOURBITADDER \n",
     11:"(11) EIGHTBITADDER \n",
     12:"(12) SIXTEENBITADDER \n",
-    13:"(13) ALU \n"
-}
+    13:"(13) ALU \n",
+    }
 
 def PrintAllGateTypes() -> str:
     """Function that prints all hardcoded GateTypes"""
@@ -61,7 +61,10 @@ def ChooseGateToUse(intgatechosen:int, combinations:list, num:int) -> list:
     """Using the integer provided by user to determine what gate to test, a list of inputs, and an index, 
     this function will return a single result"""
 
-    if intgatechosen == 1:
+    if intgatechosen == 0:
+        print("Put your gate here")
+        answer = gate.TWOBITADDERFORMYSELF(combinations[num][0][0],combinations[num][1][0],combinations[num][2][0],combinations[num][3][0],combinations[num][4][0])
+    elif intgatechosen == 1:
         answer = [gate.NOT_GATE(combinations[num][0][0])]
     elif intgatechosen == 2:
         answer = gate.sevensegdisplaydriver(combinations[num][0])
