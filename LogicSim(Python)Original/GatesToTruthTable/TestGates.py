@@ -47,7 +47,7 @@ import utilsV1 as util
     
     #print(f"output = {output}")
 
-print(f"XOR: {gate.XOR_GATE(1,0)}")
+#print(f"XOR: {gate.XOR_GATE(1,0)}")
 
 X2 = util.get_int("Enter 0 or 1: ")
 X1 = util.get_int("Enter 0 or 1: ")
@@ -128,23 +128,6 @@ print(stuff)
 ["Y8", [4,[[7,[[5,["X4",[4,["X2","X1"]]]],[4,[[7,["X3","X2"]],[1,["X1"]]]]]],[5,[[1,["X3"]],"X2"]]]]]
 """
 
-exampleLogicMask1 = ["sevensegdisplaydriver",[["X1","list"],["X2","list"],["X3","bool"]],[]]
-
-
-#XOR_GATE(XOR_GATE(X1, X3), X5)
-["Y1", [7,[[7,["X1","X3"]],"X5"]]],
-#XOR_GATE(XOR_GATE(X2, X4), OR_GATE(AND_GATE(XOR_GATE(X1, X3), X5), AND_GATE(X1, X3)))
-["Y2", [7,[[7,["X2","X4"]],[4,[[3,[[7,["X1","X3"]],"X5"]],[3,["X1","X3"]]]]]]],
-#OR_GATE(AND_GATE(XOR_GATE(X2, X4), OR_GATE(AND_GATE(XOR_GATE(X1, X3), X5), AND_GATE(X1, X3))), AND_GATE(X2, X4))
-["Y3", [4,[[3,[[7,["X2","X4"]],[4,[[3,[[7,["X1","X3"]],"X5"]],[3,["X1","X3"]]]]]],[3,["X2","X4"]]]]]
-
-#XOR_GATE(XOR_GATE(X1, Y1), CarryIn)
-["Y1", [7,[[7,["X1","X3"]],"X5"]]],
-#XOR_GATE(XOR_GATE(X2, Y2), OR_GATE(AND_GATE(XOR_GATE(X1, Y1), CarryIn), AND_GATE(X1, Y1)))
-["Y2", [7,[[7,["X2","X4"]],[4,[[3,[[7,["X1","X3"]],"X5"]],[3,["X1","X3"]]]]]]],
-#OR_GATE(AND_GATE(XOR_GATE(X2, Y2), OR_GATE(AND_GATE(XOR_GATE(X1, Y1), CarryIn), AND_GATE(X1, Y1))), AND_GATE(X2, Y2))
-["Y3", [4,[[3,[[7,["X2","X4"]],[4,[[3,[[7,["X1","X3"]],"X5"]],[3,["X1","X3"]]]]]],[3,["X2","X4"]]]]]
-
 [0,[""]] #nothing
 [1,[""]] #not
 [3,["",""]] #AND
@@ -152,8 +135,6 @@ exampleLogicMask1 = ["sevensegdisplaydriver",[["X1","list"],["X2","list"],["X3",
 [5,["",""]] #NOR
 [6,["",""]] #NAND
 [7,["",""]] #XOR
-
-["Y1", [7,[[7,["X1","X3"]],"X5"]]],["Y2", [7,[[7,["X2","X4"]],[4,[[3,[[7,["X1","X3"]],"X5"]],[3,["X1","X3"]]]]]]],["Y3", [4,[[3,[[7,["X2","X4"]],[4,[[3,[[7,["X1","X3"]],"X5"]],[3,["X1","X3"]]]]]],[3,["X2","X4"]]]]]
 
 
 

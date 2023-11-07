@@ -145,8 +145,8 @@ class TruthTableToGatesCLI():
 
         logicOut = []
 
-        name = logicMask[0]
-        inputs = logicMask[1]
+        #name = logicMask[0]
+        #inputs = logicMask[1]
         outputsANDlogic = logicMask[2]
 
         #this loops for every different input inside ofe the truthTable inputs side
@@ -159,24 +159,29 @@ class TruthTableToGatesCLI():
 
                 gateinputs = TruthTableToGatesCLI.variableUnifier(TruthTable[0][truthtablelen])
 
-                print(f"current list{currentlist[1]}\nGate inputs{gateinputs} ")
+                #print("-"*30)
+                #print(f"current list{currentlist[1]}\nGate inputs{gateinputs}\n")
                 currentanswer = TruthTableToGatesCLI.outputLogicator(currentlist[1], gateinputs)
 
                 currentlogicOut[0].append(currentanswer)
 
+            #print("-"*30)
             logicOut.append(currentlogicOut)
 
             #short circuts the function if it finds something that doesnt work
             currentTruthTableUnified = [TruthTableToGatesCLI.variableUnifier(TruthTable[1][truthtablelen][0])]
 
             if currentlogicOut == currentTruthTableUnified:
-                print(f"is:{currentlogicOut}")
-                print(f"Supposed to be:{currentTruthTableUnified}")
+                #print(f"Gate inputs{gateinputs}")
+                #print(f"is:{currentlogicOut}")
+                #print(f"Supposed to be:{currentTruthTableUnified}")
                 continue
             else:
+                print(f"Gate inputs{gateinputs}")
                 print(f"is:{currentlogicOut}")
-                print(f"Supposed to be:{currentTruthTableUnified}")
+                print(f"Supposed to be:{currentTruthTableUnified}\n")
                 return 0
+            
 
         #returns 1 if correct and 0 if not
         if logicOut == TruthTable[1]:
@@ -207,7 +212,7 @@ class TruthTableToGatesCLI():
             X2, data = TruthTableToGatesCLI.inputFinder(data, variablesIn, opperation, 2)
 
         answer = GataDataFunctions.GatesAvailable(opperation,X1,X2)
-        print(f"opperation: {opperation}, X1: {X1}, X2: {X2}, answer: {answer}")
+        #print(f"LogicIn: {logicIn}\nCurrentData: {data}\nopperation: {opperation}, X1: {X1}, X2: {X2}, answer: {answer} \n")
         return answer
     
     def inputFinder(data:list, variables:list, opperation, inputnum:int):
@@ -248,7 +253,7 @@ class TruthTableToGatesCLI():
 def logicMaskValidatorValidator():
     NewGateMaker = TruthTableToGatesCLI
 
-    """exampleLogicMask1 = ["ADDER",[["X1","bool"], ["X2","bool"], ["X3","bool"]],[["Y1",[7,[[7,["X1","X2"]],"X3"]]],["Y2",[4,[[3,[[7,["X1","X2"]],"X3"]],[3,["X2","X1"]]]]]]]
+    exampleLogicMask1 = ["ADDER",[["X1","bool"], ["X2","bool"], ["X3","bool"]],[["Y1",[7,[[7,["X1","X2"]],"X3"]]],["Y2",[4,[[3,[[7,["X1","X2"]],"X3"]],[3,["X2","X1"]]]]]]]
     ExampleTruthTable1 = [[[[0], [0], [0]], [[1], [0], [0]], [[0], [1], [0]], [[1], [1], [0]], [[0], [0], [1]], [[1], [0], [1]], [[0], [1], [1]], [[1], [1], [1]]], [[[0, 0]], [[1, 0]], [[1, 0]], [[0, 1]], [[1, 0]], [[0, 1]], [[0, 1]], [[1, 1]]]]
     output1 = NewGateMaker.logicMaskValidator(exampleLogicMask1, ExampleTruthTable1)
 
@@ -257,6 +262,7 @@ def logicMaskValidatorValidator():
     else:
         print("we did not have a winner!")
 
+
     exampleLogicMask2 = ["sevensegdisplaydriver",[["X1","list"]],[["Y1", [0,["X4"]]],["Y2", [4,[[7,[[7,["X4","X3"]],[5,["X4",[4,["X2","X1"]]]]]],[4,[[3,[[4,[[7,["X3","X2"]],[1,["X1"]]]],"X1"]],[5,[[5,[[1,["X3"]],"X2"]],"X1"]]]]]]],["Y3", [6,[[3,[[7,["X4","X3"]],[4,["X2","X1"]]]],[4,["X2","X1"]]]]],["Y4", [4,[[6,[[6,[[3,[[7,["X4","X3"]],[4,["X2","X1"]]]],[4,["X2","X1"]]]],[4,["X2","X1"]]]],"X1"]]],["Y5", [4,[[3,[[4,[[7,["X3","X2"]],[1,["X1"]]]],"X1"]],[5,[[5,[[1,["X3"]],"X2"]],"X1"]]]]],["Y6", [5,[[5,[[1,["X3"]],"X2"]],"X1"]]],["Y7", [6,[[6,[[3,[[7,["X4","X3"]],[4,["X2","X1"]]]],[4,["X2","X1"]]]],[4,["X2","X1"]]]],"X1"],["Y8", [4,[[7,[[5,["X4",[4,["X2","X1"]]]],[4,[[7,["X3","X2"]],[1,["X1"]]]]]],[5,[[1,["X3"]],"X2"]]]]]]]
     ExampleTruthTable2 = [[[[0, 0, 0, 0]], [[1, 0, 0, 0]], [[0, 1, 0, 0]], [[1, 1, 0, 0]], [[0, 0, 1, 0]], [[1, 0, 1, 0]], [[0, 1, 1, 0]], [[1, 1, 1, 0]], [[0, 0, 0, 1]], [[1, 0, 0, 1]], [[0, 1, 0, 1]], [[1, 1, 0, 1]], [[0, 0, 1, 1]], [[1, 0, 1, 1]], [[0, 1, 1, 1]], [[1, 1, 1, 1]]], [[[0, 1, 1, 1, 1, 1, 1, 0]], [[0, 0, 1, 1, 0, 0, 0, 0]], [[0, 1, 1, 0, 1, 1, 0, 1]], [[0, 1, 1, 1, 1, 0, 0, 1]], [[0, 0, 1, 1, 0, 0, 1, 1]], [[0, 1, 0, 1, 1, 0, 1, 1]], [[0, 1, 0, 1, 1, 1, 1, 1]], [[0, 1, 0, 1, 0, 0, 1, 0]], [[1, 1, 1, 1, 1, 1, 1, 1]], [[1, 1, 0, 1, 0, 0, 1, 0]], [[1, 1, 0, 1, 1, 1, 1, 1]], [[1, 1, 0, 1, 1, 0, 1, 1]], [[1, 0, 1, 1, 0, 0, 1, 1]], [[1, 1, 1, 1, 1, 0, 0, 1]], [[1, 1, 1, 0, 1, 1, 0, 1]], [[1, 0, 1, 1, 0, 0, 0, 0]]]]
     output2 = NewGateMaker.logicMaskValidator(exampleLogicMask2, ExampleTruthTable2)
@@ -264,12 +270,25 @@ def logicMaskValidatorValidator():
     if output2 == 1:
         print("We had a winner!")
     else:
-        print("we did not have a winner!")"""
+        print("we did not have a winner!")
 
 
-    exampleLogicMask3 = ["TwoBitAdder",[["X1","list"],["X2","list"],["X3","bool"]],[["Y1", [7,[[7,["X1","X3"]],"X5"]]],["Y2", [7,[[7,["X2","X4"]],[4,[[3,[[7,["X1","X3"]],"X5"]],[3,["X1","X2"]]]]]]],["Y3", [4,[[3,[[7,["X2","X4"]],[4,[[3,[[7,["X2","X3"]],"X5"]],[3,["X2","X3"]]]]]],[3,["X2","X4"]]]]]]]
+    exampleLogicMask3 = ["TwoBitAdder",[["X1","list"],["X2","list"],["X3","bool"]],[["Y1", [7,[[7,["X1","X3"]],"X5"]]],["Y2", [7,[[7,["X2","X4"]],[4,[[3,[[7,["X1","X3"]],"X5"]],[3,["X1","X3"]]]]]]],["Y3", [4,[[3,[[7,["X2","X4"]],[4,[[3,[[7,["X1","X3"]],"X5"]],[3,["X1","X3"]]]]]],[3,["X2","X4"]]]]]]]
     ExampleTruthTable3 = [[[[0], [0], [0], [0], [0]], [[1], [0], [0], [0], [0]], [[0], [1], [0], [0], [0]], [[1], [1], [0], [0], [0]], [[0], [0], [1], [0], [0]], [[1], [0], [1], [0], [0]], [[0], [1], [1], [0], [0]], [[1], [1], [1], [0], [0]], [[0], [0], [0], [1], [0]], [[1], [0], [0], [1], [0]], [[0], [1], [0], [1], [0]], [[1], [1], [0], [1], [0]], [[0], [0], [1], [1], [0]], [[1], [0], [1], [1], [0]], [[0], [1], [1], [1], [0]], [[1], [1], [1], [1], [0]], [[0], [0], [0], [0], [1]], [[1], [0], [0], [0], [1]], [[0], [1], [0], [0], [1]], [[1], [1], [0], [0], [1]], [[0], [0], [1], [0], [1]], [[1], [0], [1], [0], [1]], [[0], [1], [1], [0], [1]], [[1], [1], [1], [0], [1]], [[0], [0], [0], [1], [1]], [[1], [0], [0], [1], [1]], [[0], [1], [0], [1], [1]], [[1], [1], [0], [1], [1]], [[0], [0], [1], [1], [1]], [[1], [0], [1], [1], [1]], [[0], [1], [1], [1], [1]], [[1], [1], [1], [1], [1]]], [[[0, 0, 0]], [[1, 0, 0]], [[0, 1, 0]], [[1, 1, 0]], [[1, 0, 0]], [[0, 1, 0]], [[1, 1, 0]], [[0, 0, 1]], [[0, 1, 0]], [[1, 1, 0]], [[0, 0, 1]], [[1, 0, 1]], [[1, 1, 0]], [[0, 0, 1]], [[1, 0, 1]], [[0, 1, 1]], [[1, 0, 0]], [[0, 1, 0]], [[1, 1, 0]], [[0, 0, 1]], [[0, 1, 0]], [[1, 1, 0]], [[0, 0, 1]], [[1, 0, 1]], [[1, 1, 0]], [[0, 0, 1]], [[1, 0, 1]], [[0, 1, 1]], [[0, 0, 1]], [[1, 0, 1]], [[0, 1, 1]], [[1, 1, 1]]]]
     output3 = NewGateMaker.logicMaskValidator(exampleLogicMask3, ExampleTruthTable3)
+
+    if output3 == 1:
+        print("We had a winner!")
+    else:
+        print("we did not have a winner!")
+
+
+def testindividualVar():
+    NewGateMaker2 = TruthTableToGatesCLI
+
+    exampleLogicMask3 = ["TwoBitAdder",[["X1","list"],["X2","list"],["X3","bool"]],[["Y1", [7,[[7,["X1","X3"]],"X5"]]],["Y2", [7,[[7,["X2","X4"]],[4,[[3,[[7,["X1","X3"]],"X5"]],[3,["X1","X3"]]]]]]],["Y3", [4,[[3,[[7,["X2","X4"]],[4,[[3,[[7,["X1","X3"]],"X5"]],[3,["X1","X3"]]]]]],[3,["X2","X4"]]]]]]]
+    ExampleTruthTable3 = [[[[0], [1], [1], [0], [0]]], [[[1, 1, 0]]]]
+    output3 = NewGateMaker2.logicMaskValidator(exampleLogicMask3, ExampleTruthTable3)
 
     if output3 == 1:
         print("We had a winner!")

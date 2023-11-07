@@ -93,7 +93,7 @@ def ChooseGateToUse(intgatechosen:int, combinations:list, num:int) -> list:
 
     return answer
 
-def GatesAvailable(intgatechosen:int=0, X1:bool=0, X2:bool=0) -> bool:
+def GatesAvailable(intgatechosen:int="WRONG", X1:bool="WRONG", X2:bool="WRONG") -> bool:
     GateTypesAvailable = {
         0:X1,
         1:gate.NOT_GATE(X1),
