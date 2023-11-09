@@ -7,13 +7,13 @@ import utilsV1 as utils
 import GataDataFunctions as GateData
 
 
-def main():
+def main(anyExports:bool=False):
 
     archie = utils.fileArchitect()
 
     #print all gate types
     GateData.PrintAllGateTypes()
-    Combinations, results = WhatGateCLI()
+    Combinations, results, GateDimentions = WhatGateCLI(anyExports)
 
     comboformat = utils.individualInput_into_TruthTableFormat(Combinations)
     resultsformat = utils.individualInput_into_TruthTableFormat(results)
@@ -22,24 +22,28 @@ def main():
     if len(Combinations) < 100:
         print(truthTable)
 
-    export = input("Do you want to export formatted results into a text file? (Y/N)")
-    if export == "Y" or export == "y":
-        default = input("Do you want to use default file location and name? (Y/N)")
+    if anyExports == True:
 
-        locationfromuser = ""
-        filenamefromuser = ""
+        export = input("Do you want to export formatted results into a text file? (Y/N)")
+        if export == "Y" or export == "y":
+            default = input("Do you want to use default file location and name? (Y/N)")
 
-        if default == "N" or default == "n":
-            filenamefromuser = input("Enter the name you want for you text file: EX(banan) becomes banan.txt: ")
-            locationfromuser = input("Enter a location for your txt file: EX(D:\windows folders\Downloads\) \nI would recomend leaving this blank:")
-            
+            locationfromuser = ""
+            filenamefromuser = ""
 
-        print(archie.Create_File(locationfromuser, filenamefromuser, Combinations))
-        print(archie.Write_File(truthTable))
+            if default == "N" or default == "n":
+                filenamefromuser = input("Enter the name you want for you text file: EX(banan) becomes banan.txt: ")
+                locationfromuser = input("Enter a location for your txt file: EX(D:\windows folders\Downloads\) \nI would recomend leaving this blank:")
+                
 
-        exit()
+            print(archie.Create_File(locationfromuser, filenamefromuser, Combinations))
+            print(archie.Write_File(truthTable))
 
-def WhatGateCLI() -> list:
+            exit()
+    
+    return [Combinations, results], GateDimentions
+
+def WhatGateCLI(anyExports) -> list:
     """
     User will choose a gate to test and using the GateDimentions provided it will 
     iterate though every possible way the gate could be executed
@@ -50,6 +54,27 @@ def WhatGateCLI() -> list:
     #GateData.GateDimentionValuesfunction is a function that will return GateDimentions weather the gate the user wants is predefined or not.
     #Example dimentions: [[[0,0,0,0],[0,0,0,0],[0]],[[0,0,0,0],[0]]]
     GateDimentions = GateData.GateDimentionValuesfunction(intgatechosen)
+
+    #allows submission of truthtable though the CLI
+    if intgatechosen == 0:
+        #You should add functionality where if the truth table is valid, automatically generate GateDimentions!
+        while True:
+            TruthTable = input("Enter a truthTable manually or by pointing to a file: ")
+
+            TruthTable = utils.convert_string_to_list(TruthTable)
+
+
+            if TruthTable != None:
+                try:
+                    if type(TruthTable[0][0][0]) == list and type(TruthTable[0][0][1] == list):
+                        print("Valid TruthTable, Moving on!")
+                        combinations = TruthTable[0]
+                        results = TruthTable[1]
+                        return combinations, results, GateDimentions
+                except:
+                    print("That TruthTable sucked lol.")
+            else:
+                print("I havent added Manually pointing to a file yet! :) ttyl.")
 
     
     #Example Combinations and results List: [[[0,0,0,0],[0,0,0,0],[0]],[[0,0,0,0],[0,0,0,0],[1]],[[0,0,0,0],[0,0,0,1],[0]]]
@@ -109,28 +134,30 @@ def WhatGateCLI() -> list:
         gateanswer = GateData.ChooseGateToUse(intgatechosen, combinations, num)
         results[num].append(gateanswer)
 
-    #ask if user wants raw truthtable
-    rawTruthTable = utils.get_int("Do you want the raw truthtable: (0 = NO | 1 = YES): ")
-    
-    if rawTruthTable == 1:
-        rawTruthTableArchie = utils.fileArchitect()
-        default = utils.get_int("Do you want to use default file location and name? (0 = NO | 1 = YES): ")
+    #Export Raw TruthTable, this gets skipped if user enters his own raw truthTable
+    if anyExports == True:
+        #ask if user wants raw truthtable
+        rawTruthTable = utils.get_int("Do you want the raw truthtable: (0 = NO | 1 = YES): ")
 
-        locationfromuser = ""
-        formatfilename = (GateData.GetGateName(intgatechosen).replace(" ", "")).replace("\n", "")
+        if rawTruthTable == 1:
+            rawTruthTableArchie = utils.fileArchitect()
+            default = utils.get_int("Do you want to use default file location and name? (0 = NO | 1 = YES): ")
 
-        filenamefromuser = f"rawtruthtablefor-{formatfilename}"
+            locationfromuser = ""
+            formatfilename = (GateData.GetGateName(intgatechosen).replace(" ", "")).replace("\n", "")
 
-        if default == 0:
-            filenamefromuser = input("Enter the name you want for you text file: EX(banan) becomes banan.txt: ")
-            locationfromuser = input("Enter a location for your txt file: EX(D:\windows folders\Downloads\) \nI would recomend leaving this blank:")
-            
+            filenamefromuser = f"rawtruthtablefor-{formatfilename}"
 
-        print(rawTruthTableArchie.Create_File(locationfromuser, filenamefromuser, [combinations, results]))
-        print(rawTruthTableArchie.Write_File([combinations, results]))
+            if default == 0:
+                filenamefromuser = input("Enter the name you want for you text file: EX(banan) becomes banan.txt: ")
+                locationfromuser = input("Enter a location for your txt file: EX(D:\windows folders\Downloads\) \nI would recomend leaving this blank:")
+                
+
+            print(rawTruthTableArchie.Create_File(locationfromuser, filenamefromuser, [combinations, results]))
+            print(rawTruthTableArchie.Write_File([combinations, results]))
 
 
-    return combinations, results
+    return combinations, results, GateDimentions
 
 
 def GetDimentionsOfGateCLI() -> list:
@@ -169,4 +196,4 @@ def GetDimentionsOfGateCLI() -> list:
     return dimentions
 
 if __name__ == "__main__":
-    main()
+    main(True)

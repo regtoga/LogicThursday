@@ -63,7 +63,7 @@ def ChooseGateToUse(intgatechosen:int, combinations:list, num:int) -> list:
 
     if intgatechosen == 0:
         print("Put your gate here")
-        answer = gate.TWOBITADDERFORMYSELF(combinations[num][0][0],combinations[num][1][0],combinations[num][2][0],combinations[num][3][0],combinations[num][4][0])
+        answer = "DIY"
     elif intgatechosen == 1:
         answer = [gate.NOT_GATE(combinations[num][0][0])]
     elif intgatechosen == 2:

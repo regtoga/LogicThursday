@@ -5,6 +5,7 @@
     Updated: 10/8/2023
     Purpose: A utility module with commonly used functions
 """
+import ast
 
 def get_title(program_title):
     """
@@ -380,7 +381,34 @@ def individualInput_into_TruthTableFormat(input: list) -> list:
         #print(f"{results}")
 
     return results
-                
+
+def convert_string_to_list(string_list):
+    """
+    Funtion that takes a list in as a string and outputs a list variable
+    # Input as a string
+    string_list = input("Enter a string list in Python list format: ")
+
+    # Convert the string to a real list
+    result_list = convert_string_to_list(string_list)
+
+    if result_list is not None:
+    print("Converted list:", result_list)
+    """
+    try:
+        # Use ast.literal_eval to safely evaluate the string as a Python literal
+        real_list = ast.literal_eval(string_list)
+        
+        if type(real_list) == list:
+            return real_list
+        else:
+            #print("Input is not a valid list.")
+            return None
+    except (SyntaxError, ValueError):
+        #print("Input is not a valid list.")
+        return None
+
+
+
 
 
 class fileArchitect():
@@ -439,3 +467,5 @@ class fileArchitect():
         except:
             print("Something Went wrong when reading the file")
             return "Critical Failure"    
+
+    
