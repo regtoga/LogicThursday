@@ -114,17 +114,38 @@ class TruthTableToGatesCLI():
 
         internalTimeTaken = time.time()
         logicMasks = []
+        print(f"Starting mask = {logicMask}")
         while True:
             #code goes here
+
+            #temp logic mask maker... NEEDS TO BE REPLACED WITH A FUNCTION THAT GENERATES 
+            # THE OUTPUTS AND APPENDS EACH OF THEM INDIVIDUALLY TO THE LOGIC MASK
             logicMask = HardlogicMask
 
-            #logicMask = TruthTableToGatesCLI.potentialGatepacker(inputmask, inputgatemask, TruthTable, depthmask)
-            print(f"Starting mask = {logicMask}")
+            #Gates were allowed to use when generating an answer:
+            inputgatemask = inputgatemask
+            
+            #temp way to iterate though the outputs.
+            #What should happen is after one of the inputs is generated it will be validated if it is false it will generate a new input,
+            #Once it is done it will go to the next input, should reduce headway
+            outputslist = []
+            for outputs in range(1, len(justoutputsfromIOmask)+1):
+                
+                masksingleResult = TruthTableToGatesCLI.logicMaskValidator(logicMask, TruthTable, outputs)
+                outputslist.append(masksingleResult)
+                
+                if masksingleResult == 0:
+                    break
 
-            maskResults = TruthTableToGatesCLI.logicMaskValidator(logicMask, TruthTable)
             
 
             #code ends here
+            maskResults = 0  
+
+            for outputsingle in outputslist:
+                if outputsingle != 0:
+                    maskResults = 1
+
             if maskResults == 1:
                 #determing if mask already has been found
                 inside = False
@@ -155,60 +176,11 @@ class TruthTableToGatesCLI():
                     return f"LogicMasks were: \n{logicMasks}\n"
                 internalTimeTaken = time.time()
 
-
-    def potentialGatepacker(GateMask:list, inputOutputMask:list, truthTable:list, depthmask:list) -> list:
-        """Potential gate = 
-        ["ADDER",[["X1","bool"], ["X2","bool"], ["X3","bool"]],[["Y1",[7,[[7,["X1","X2"]],"X3"]]],["Y2",[4,[[3,[[7,["X1","X2"]],"X3"]],[3,["X2","X1"]]]]]]]
-        or
-        [
-            ADDER, 
-            [
-                ["X1","bool"], 
-                ["X2","bool"], 
-                ["X3","bool"]
-            ],
-            [
-                [
-                    ["Y1",[7,[[7,["X1","X2"]],"X3"]]] #SUM
-                ], 
-                [
-                    ["Y2",[4,[[3,[[7,["X1","X2"]],"X3"]],[3,["X2","X1"]]]]] #Carry Out
-                ]
-            ]
-        ]
-
-        input/output mask: [[[0],[0],[0]],[[0],[0]]]
-        Truthtable:        [[[[0], [0], [0]], [[1], [0], [0]], [[0], [1], [0]], [[1], [1], [0]], [[0], [0], [1]], [[1], [0], [1]], [[0], [1], [1]], [[1], [1], [1]]], [[[0, 0]], [[1, 0]], [[1, 0]], [[0, 1]], [[1, 0]], [[0, 1]], [[0, 1]], [[1, 1]]]]
-        GateMask:          [3, 4, 7]
-
-        gates able to use:
-            [0,[""]] #nothing
-            [1,[""]] #not
-            [3,["",""]] #AND
-            [4,["",""]] #OR
-            [5,["",""]] #NOR
-            [6,["",""]] #NAND
-            [7,["",""]] #XOR
-
-        """
-
-        truthTable = [[[[0], [0], [0]], [[1], [0], [0]], [[0], [1], [0]], [[1], [1], [0]], [[0], [0], [1]], [[1], [0], [1]], [[0], [1], [1]], [[1], [1], [1]]], [[[0, 0]], [[1, 0]], [[1, 0]], [[0, 1]], [[1, 0]], [[0, 1]], [[0, 1]], [[1, 1]]]]
-        inputOutputMask = [[[0],[0],[0]],[[0],[0]]]
-        GateMask = [3, 4, 7]
-
-        
-        PotentialGate = []
-        print(f"{truthTable}\n{inputOutputMask}\n{GateMask}")
-
-
-
-        return PotentialGate
-
     #----------------------------------- function should try all combinations of the program and compare the ouput with the truth table
-    def logicMaskValidator(logicMask:list="", TruthTable:list="") -> bool:
+    def logicMaskValidator(logicMask:list="", TruthTable:list="", TestThisInput:int=0) -> bool:
         """gate format [name, [inputs], [outputs, [Logic]]]
         returns true or false depending on if the logic mask actually fufills the desired outcome"""
-        
+
         if logicMask == "" or TruthTable == "":
             return False
 
@@ -217,6 +189,33 @@ class TruthTableToGatesCLI():
         #name = logicMask[0]
         #inputs = logicMask[1]
         outputsANDlogic = logicMask[2]
+
+        #will only test for one of the nessesary fields
+        if TestThisInput != 0:
+            outputsANDlogic = [logicMask[2][TestThisInput-1]]
+            for truthtablelen in range(0, len(TruthTable[0])):
+                
+                currentlogicOut = [[]]
+
+                for outputletters in outputsANDlogic:
+                    currentlist = outputletters
+
+                    gateinputs = TruthTableToGatesCLI.variableUnifier(TruthTable[0][truthtablelen])
+
+                    currentanswer = TruthTableToGatesCLI.outputLogicator(currentlist[1], gateinputs)
+
+                    currentlogicOut[0].append(currentanswer)
+
+                logicOut.append(currentlogicOut)
+
+                currentTruthTableUnified = [TruthTableToGatesCLI.variableUnifier([TruthTable[1][truthtablelen][0][TestThisInput-1]])]
+
+                if currentlogicOut == currentTruthTableUnified:
+                    continue
+                else:
+                    return 0
+            return 1
+
 
         #this loops for every different input inside ofe the truthTable inputs side
         for truthtablelen in range(0, len(TruthTable[0])):
@@ -246,9 +245,9 @@ class TruthTableToGatesCLI():
                 #print(f"Supposed to be:{currentTruthTableUnified}")
                 continue
             else:
-                print(f"Gate inputs{gateinputs}")
-                print(f"is:{currentlogicOut}")
-                print(f"Supposed to be:{currentTruthTableUnified}\n")
+                #print(f"Gate inputs{gateinputs}")
+                #print(f"is:{currentlogicOut}")
+                #print(f"Supposed to be:{currentTruthTableUnified}\n")
                 return 0
             
 
@@ -271,8 +270,8 @@ class TruthTableToGatesCLI():
         for logic in logicIn[1]:
             data.append(logic)
 
-        #IMPORTANT doesnt support multiple lists yet!
-        #as each function we are currently inputing is only two wide, we can get away with two identicle functions
+    
+        #two different variables go though the same function and it returns their values, probbly easily expandible to more vars?
         X1 = "nothing"
         X1, data = TruthTableToGatesCLI.inputFinder(data, variablesIn, opperation, 1)
 
@@ -351,6 +350,54 @@ class TruthTableToGatesCLI():
         return name
 
 
+
+
+NewGateMaker = TruthTableToGatesCLI
+
+#----------------------------Program starts here
+
+TruthTable, inputmask = GatesToTruthTableCLI.main()
+
+inputgatemask = TruthTableToGatesCLI.GateTypeSelectorCLI()
+
+name = TruthTableToGatesCLI.GetGateNameCLI()
+
+start_time = time.time()
+#Enter Program here
+
+print(NewGateMaker.logicMaskMaker(inputmask, inputgatemask, TruthTable, name))
+
+#logicMaskValidatorValidator()
+
+print("--- %s seconds ---" % (time.time() - start_time))
+
+
+
+
+
+
+
+
+
+
+def DifferenceinTimeTester():
+    start_time = time.time()
+
+    for i in range(0,1000000):
+        GatesClass.TWOBITADDER([0,1],[1,0],1)
+
+    print("--- %s seconds ---" % (time.time() - start_time))
+
+#----------
+
+    start_time = time.time()
+
+    for i in range(0,1000000):
+        GatesClass.TWOBITADDERFORMYSELF(0,1,1,0,1)
+
+    print("--- %s seconds ---" % (time.time() - start_time))
+
+
 def logicMaskValidatorValidator():
     """Helps test the logicMaskValidator inorder to make shure it actually works"""
     NewGateMaker = TruthTableToGatesCLI
@@ -395,22 +442,3 @@ def logicMaskValidatorValidator():
         print("We had a winner!")
     else:
         print("we did not have a winner!")"""
-
-NewGateMaker = TruthTableToGatesCLI
-
-#----------------------------Program starts here
-
-TruthTable, inputmask = GatesToTruthTableCLI.main()
-
-inputgatemask = TruthTableToGatesCLI.GateTypeSelectorCLI()
-
-name = TruthTableToGatesCLI.GetGateNameCLI()
-
-start_time = time.time()
-#Enter Program here
-
-print(NewGateMaker.logicMaskMaker(inputmask, inputgatemask, TruthTable, name))
-
-#logicMaskValidatorValidator()
-
-print("--- %s seconds ---" % (time.time() - start_time))
