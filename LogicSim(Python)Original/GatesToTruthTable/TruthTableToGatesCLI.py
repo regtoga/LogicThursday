@@ -86,8 +86,77 @@ import utilsV1
 class TruthTableToGatesCLI():
     def __init__(self) -> None:
         pass
+    
+    def logicMaskMaker(inputmask:list, inputgatemask:list, TruthTable:list, name:str="UserCreatedGate", depthmask:list=[1,10], timelimit:int=10):
+        """Takes in a input mask ([[[0],[0],[0]],[[0],[0]]]) and creates the logic mask ([Y2, [Logic]]) based on a the inputGateMask, and depth mask
+            the depth mask is just a way for the program to know the range of depth its allowed to search up to for each function, [Y1, []].
+            If i do one input at a time and stop searching for that input when it finds the correct var, it should be MUCH quicker than if i dont.
+        """
+        HardlogicMask = ["ADDER",[["X1","bool"], ["X2","bool"], ["X3","bool"]],[["Y1",[7,[[7,["X1","X2"]],"X3"]]],["Y2",[4,[[3,[[7,["X1","X2"]],"X3"]],[3,["X2","X1"]]]]]]]
+        
+        logicMask = [name,[],[]]
 
-    def potentialGatepacker(truthTable:list, inputOutputMask:list, GateMask:list) -> list:
+        justinputsfromIOmask = inputmask[0]
+        justoutputsfromIOmask = inputmask[1]
+
+        inputnum = 1
+        for input in justinputsfromIOmask:
+            if len(input) > 1:
+                logicMask[1].append([f"X{inputnum}","list"])
+            else:
+                logicMask[1].append([f"X{inputnum}","bool"])
+            inputnum += 1
+
+        outputnum = 1
+        for output in justoutputsfromIOmask:
+            logicMask[2].append([f"Y{outputnum}",[]])
+            outputnum += 1    
+
+        internalTimeTaken = time.time()
+        logicMasks = []
+        while True:
+            #code goes here
+            logicMask = HardlogicMask
+
+            #logicMask = TruthTableToGatesCLI.potentialGatepacker(inputmask, inputgatemask, TruthTable, depthmask)
+            print(f"Starting mask = {logicMask}")
+
+            maskResults = TruthTableToGatesCLI.logicMaskValidator(logicMask, TruthTable)
+            
+
+            #code ends here
+            if maskResults == 1:
+                #determing if mask already has been found
+                inside = False
+                for logicMasK in logicMasks:
+                   if logicMasK == logicMask:
+                       inside = True
+                       continue 
+
+                if inside == False:
+                    logicMasks.append(logicMask)
+
+                    print("Found one!")
+                    #Doesnt actually work
+                    #Determing if the gate is too large to nicely fit on the screen
+                    if True == True:
+                        print(f"It looked like\n{logicMask}\n")
+                        
+                    contineTheSearch = utilsV1.get_int("Do you want to continue searching for more valid answers? (1 = yes, 0 = no): ")
+                    if contineTheSearch == 0:
+                        return f"LogicMasks were: \n{logicMasks}\n"
+                    internalTimeTaken = time.time()
+                
+
+                
+            elif time.time() - internalTimeTaken > timelimit:
+                contineTheSearch = utilsV1.get_int("Nothing has happend in a while... want to continue searching? (1 = yes, 0 = no): ")
+                if contineTheSearch == 0:
+                    return f"LogicMasks were: \n{logicMasks}\n"
+                internalTimeTaken = time.time()
+
+
+    def potentialGatepacker(GateMask:list, inputOutputMask:list, truthTable:list, depthmask:list) -> list:
         """Potential gate = 
         ["ADDER",[["X1","bool"], ["X2","bool"], ["X3","bool"]],[["Y1",[7,[[7,["X1","X2"]],"X3"]]],["Y2",[4,[[3,[[7,["X1","X2"]],"X3"]],[3,["X2","X1"]]]]]]]
         or
@@ -134,53 +203,6 @@ class TruthTableToGatesCLI():
 
 
         return PotentialGate
-    
-    def logicMaskMaker(inputmask:list, inputgatemask:list, TruthTable:list, depthmask:list=[1,10], timelimit:int=10):
-        """Takes in a input mask ([[[0],[0],[0]],[[0],[0]]]) and creates the logic mask ([Y2, [Logic]]) based on a the inputGateMask, and depth mask
-            the depth mask is just a way for the program to know the range of depth its allowed to search up to for each function, [Y1, []].
-            If i do one input at a time and stop searching for that input when it finds the correct var, it should be MUCH quicker than if i dont.
-        """
-        HardlogicMask = ["ADDER",[["X1","bool"], ["X2","bool"], ["X3","bool"]],[["Y1",[7,[[7,["X1","X2"]],"X3"]]],["Y2",[4,[[3,[[7,["X1","X2"]],"X3"]],[3,["X2","X1"]]]]]]]
-        
-        internalTimeTaken = time.time()
-        logicMasks = []
-        while True:
-            #code goes here
-            logicMask = HardlogicMask
-
-
-            maskResults = TruthTableToGatesCLI.logicMaskValidator(logicMask, TruthTable)
-            
-
-            #code ends here
-            if maskResults == 1:
-                #determing if mask already has been found
-                inside = False
-                for logicMasK in logicMasks:
-                   if logicMasK == logicMask:
-                       inside = True 
-
-                if inside == False:
-                    logicMasks.append(logicMask)
-
-                    print("Found one!")
-                    #Doesnt actually work
-                    #Determing if the gate is too large to nicely fit on the screen
-                    if True == True:
-                        print(f"It looked like\n{logicMask}\n")
-                        
-                    contineTheSearch = utilsV1.get_int("Do you want to continue searching for more valid answers? (1 = yes, 0 = no): ")
-                    if contineTheSearch == 0:
-                        return f"LogicMasks were: \n{logicMasks}\n"
-                    internalTimeTaken = time.time()
-                
-
-                
-            elif time.time() - internalTimeTaken > timelimit:
-                contineTheSearch = utilsV1.get_int("Nothing has happend in a while... want to continue searching? (1 = yes, 0 = no): ")
-                if contineTheSearch == 0:
-                    return f"LogicMasks were: \n{logicMasks}\n"
-                internalTimeTaken = time.time()
 
     #----------------------------------- function should try all combinations of the program and compare the ouput with the truth table
     def logicMaskValidator(logicMask:list="", TruthTable:list="") -> bool:
@@ -323,6 +345,10 @@ class TruthTableToGatesCLI():
                 else:
                     print("")
                     return ChosenGateLocatorValues
+                
+    def GetGateNameCLI():
+        name = input("Enter Name for the logic that you are Creating: ")
+        return name
 
 
 def logicMaskValidatorValidator():
@@ -378,10 +404,12 @@ TruthTable, inputmask = GatesToTruthTableCLI.main()
 
 inputgatemask = TruthTableToGatesCLI.GateTypeSelectorCLI()
 
+name = TruthTableToGatesCLI.GetGateNameCLI()
+
 start_time = time.time()
 #Enter Program here
 
-print(NewGateMaker.logicMaskMaker(inputmask, inputgatemask, TruthTable))
+print(NewGateMaker.logicMaskMaker(inputmask, inputgatemask, TruthTable, name))
 
 #logicMaskValidatorValidator()
 
