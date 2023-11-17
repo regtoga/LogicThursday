@@ -236,9 +236,9 @@ class TruthTableToGatesCLI():
 
                 logicOut.append(currentlogicOut)
 
-                currentTruthTableUnified = [utilsV1.variableUnifier([TruthTable[1][truthtablelen][0][TestThisInput-1]])]
+                currentTruthTableUnified = utilsV1.variableUnifier(TruthTable[1][truthtablelen][0])
 
-                if currentlogicOut == currentTruthTableUnified:
+                if currentlogicOut == [[currentTruthTableUnified[TestThisInput-1]]]:
                     continue
                 else:
                     return 0
@@ -376,6 +376,7 @@ depth = [0, utilsV1.get_int("Enter Depth for which the computer should search: "
 start_time = time.time()
 #Enter Program here
 
+
 #------------------
 inputmask = [[[0],[0]],[[0]]]
 inputgatemask = [3]
@@ -392,6 +393,16 @@ inputgatemask = [0,6,7]
 TruthTable = [[[[0], [0], [0]], [[1], [0], [0]], [[0], [1], [0]], [[1], [1], [0]], [[0], [0], [1]], [[1], [0], [1]], [[0], [1], [1]], [[1], [1], [1]]], [[[0, 0]], [[1, 0]], [[1, 0]], [[0, 1]], [[1, 0]], [[0, 1]], [[0, 1]], [[1, 1]]]]
 name = "ADDER"
 depth = [0,2]
+#------------------
+
+answer = NewGateMaker.logicMaskMaker(inputmask, inputgatemask, TruthTable, depth, name)
+
+#------------------
+inputmask = [[[0],[0],[0],[0],[0]],[[0],[0],[0]]]
+inputgatemask = [0,6,7]
+TruthTable = [[[[0, 0], [0, 0], [0]], [[1, 0], [0, 0], [0]], [[0, 1], [0, 0], [0]], [[1, 1], [0, 0], [0]], [[0, 0], [1, 0], [0]], [[1, 0], [1, 0], [0]], [[0, 1], [1, 0], [0]], [[1, 1], [1, 0], [0]], [[0, 0], [0, 1], [0]], [[1, 0], [0, 1], [0]], [[0, 1], [0, 1], [0]], [[1, 1], [0, 1], [0]], [[0, 0], [1, 1], [0]], [[1, 0], [1, 1], [0]], [[0, 1], [1, 1], [0]], [[1, 1], [1, 1], [0]], [[0, 0], [0, 0], [1]], [[1, 0], [0, 0], [1]], [[0, 1], [0, 0], [1]], [[1, 1], [0, 0], [1]], [[0, 0], [1, 0], [1]], [[1, 0], [1, 0], [1]], [[0, 1], [1, 0], [1]], [[1, 1], [1, 0], [1]], [[0, 0], [0, 1], [1]], [[1, 0], [0, 1], [1]], [[0, 1], [0, 1], [1]], [[1, 1], [0, 1], [1]], [[0, 0], [1, 1], [1]], [[1, 0], [1, 1], [1]], [[0, 1], [1, 1], [1]], [[1, 1], [1, 1], [1]]], [[[[0, 0], 0]], [[[1, 0], 0]], [[[0, 1], 0]], [[[1, 1], 0]], [[[1, 0], 0]], [[[0, 0], 1]], [[[1, 1], 0]], [[[0, 1], 1]], [[[0, 1], 0]], [[[1, 1], 0]], [[[1, 0], 0]], [[[0, 0], 1]], [[[1, 1], 0]], [[[0, 1], 1]], [[[0, 0], 1]], [[[1, 0], 1]], [[[0, 1], 0]], [[[1, 1], 0]], [[[1, 0], 0]], [[[0, 0], 1]], [[[1, 1], 0]], [[[0, 1], 1]], [[[0, 0], 1]], [[[1, 0], 1]], [[[1, 0], 0]], [[[0, 0], 1]], [[[1, 1], 0]], [[[0, 1], 1]], [[[0, 0], 1]], [[[1, 0], 1]], [[[0, 1], 1]], [[[1, 1], 1]]]]
+name = "2ADDER"
+depth = [0,1]
 #------------------
 
 answer = NewGateMaker.logicMaskMaker(inputmask, inputgatemask, TruthTable, depth, name)
