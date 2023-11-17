@@ -7,13 +7,13 @@ import utilsV1 as utils
 import GataDataFunctions as GateData
 
 
-def main(anyExports:bool=False):
+def main(anyExports:bool=False, ManualGateMaskSubmisson:bool=False):
 
     archie = utils.fileArchitect()
 
     #print all gate types
     GateData.PrintAllGateTypes()
-    Combinations, results, GateDimentions = WhatGateCLI(anyExports)
+    Combinations, results, GateDimentions = WhatGateCLI(anyExports, ManualGateMaskSubmisson)
 
     comboformat = utils.individualInput_into_TruthTableFormat(Combinations)
     resultsformat = utils.individualInput_into_TruthTableFormat(results)
@@ -43,7 +43,7 @@ def main(anyExports:bool=False):
     
     return [Combinations, results], GateDimentions
 
-def WhatGateCLI(anyExports) -> list:
+def WhatGateCLI(anyExports, ManualGateMaskSubmisson) -> list:
     """
     User will choose a gate to test and using the GateDimentions provided it will 
     iterate though every possible way the gate could be executed
@@ -56,7 +56,8 @@ def WhatGateCLI(anyExports) -> list:
     GateDimentions = GateData.GateDimentionValuesfunction(intgatechosen)
 
     #allows submission of truthtable though the CLI
-    if intgatechosen == 0:
+    if intgatechosen == 0 and ManualGateMaskSubmisson == False:
+
         #You should add functionality where if the truth table is valid, automatically generate GateDimentions!
         while True:
             TruthTable = input("Enter a truthTable manually or by pointing to a file: ")
@@ -75,6 +76,25 @@ def WhatGateCLI(anyExports) -> list:
                     print("That TruthTable sucked lol.")
             else:
                 print("I havent added Manually pointing to a file yet! :) ttyl.")
+
+
+    if ManualGateMaskSubmisson == True:
+            while True:
+                UserInputMask = input("Enter a Mask in maunally or by pointing to a file: ")
+
+                UserInputMask = utils.convert_string_to_list(UserInputMask)
+
+                if UserInputMask != None:
+                    try:
+                        if type(UserInputMask[0]) == str and type(UserInputMask[1]) == list and type(UserInputMask[2]) == list:
+
+
+                            print("Please DADDY FIX ME!!!")
+
+
+                            continue
+                    except:
+                        print("That wasnt right")
 
     
     #Example Combinations and results List: [[[0,0,0,0],[0,0,0,0],[0]],[[0,0,0,0],[0,0,0,0],[1]],[[0,0,0,0],[0,0,0,1],[0]]]
@@ -196,4 +216,13 @@ def GetDimentionsOfGateCLI() -> list:
     return dimentions
 
 if __name__ == "__main__":
-    main(True)
+    userinput = 0
+    while True:
+        userinput = utils.get_int("What type of input do you have? Mask(1) or RawTable(2): ")
+
+        if userinput == 1:
+            main(True)
+        if userinput == 2:
+            main(True, True)
+
+    
