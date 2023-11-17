@@ -189,18 +189,27 @@ class TruthTableToGatesCLI():
             out = []
             for gate in gates:
                 if gate == 0 or gate == 1:
-                    out.extend([[gate, [variable1]] for variable1 in variables])
+                    for variable1 in variables:
+                        out.extend([[gate, [variable1]]])
+                        #print([gate, [variable1]])
                 else:    
-                    out.extend([[gate, [variable1,variable2]] for variable1 in variables for variable2 in variables])
+                    for variable1 in variables:
+                        for variable2 in variables:
+                            out.extend([[gate, [variable1,variable2]]])
+                            #print([gate, [variable1,variable2]])
+
             return out
         
 
         combinations = []
         for gate in gates:
             if gate == 0 or gate == 1:
-                combinations.extend([[gate, [variable1]] for variable1 in variables])
-            else:    
-                combinations.extend([[gate, [variable1,variable2]] for variable1 in variables for variable2 in variables])
+                for variable1 in variables:
+                    combinations.extend([[gate, [variable1]]])
+            else:
+                for variable1 in variables:
+                    for variable2 in variables:
+                        combinations.extend([[gate, [variable1,variable2]]])
         depth -= 1
         return TruthTableToGatesCLI.generate_combinations(depth, gates, combinations)
 
@@ -377,7 +386,7 @@ start_time = time.time()
 #Enter Program here
 
 
-#------------------
+"""#------------------
 inputmask = [[[0],[0]],[[0]]]
 inputgatemask = [3]
 TruthTable = [[[[0], [0]], [[1], [0]], [[0], [1]], [[1], [1]]], [[[0]], [[0]], [[0]], [[1]]]]
@@ -395,14 +404,14 @@ name = "ADDER"
 depth = [0,2]
 #------------------
 
-answer = NewGateMaker.logicMaskMaker(inputmask, inputgatemask, TruthTable, depth, name)
+answer = NewGateMaker.logicMaskMaker(inputmask, inputgatemask, TruthTable, depth, name)"""
 
 #------------------
 inputmask = [[[0],[0],[0],[0],[0]],[[0],[0],[0]]]
 inputgatemask = [0,6,7]
 TruthTable = [[[[0, 0], [0, 0], [0]], [[1, 0], [0, 0], [0]], [[0, 1], [0, 0], [0]], [[1, 1], [0, 0], [0]], [[0, 0], [1, 0], [0]], [[1, 0], [1, 0], [0]], [[0, 1], [1, 0], [0]], [[1, 1], [1, 0], [0]], [[0, 0], [0, 1], [0]], [[1, 0], [0, 1], [0]], [[0, 1], [0, 1], [0]], [[1, 1], [0, 1], [0]], [[0, 0], [1, 1], [0]], [[1, 0], [1, 1], [0]], [[0, 1], [1, 1], [0]], [[1, 1], [1, 1], [0]], [[0, 0], [0, 0], [1]], [[1, 0], [0, 0], [1]], [[0, 1], [0, 0], [1]], [[1, 1], [0, 0], [1]], [[0, 0], [1, 0], [1]], [[1, 0], [1, 0], [1]], [[0, 1], [1, 0], [1]], [[1, 1], [1, 0], [1]], [[0, 0], [0, 1], [1]], [[1, 0], [0, 1], [1]], [[0, 1], [0, 1], [1]], [[1, 1], [0, 1], [1]], [[0, 0], [1, 1], [1]], [[1, 0], [1, 1], [1]], [[0, 1], [1, 1], [1]], [[1, 1], [1, 1], [1]]], [[[[0, 0], 0]], [[[1, 0], 0]], [[[0, 1], 0]], [[[1, 1], 0]], [[[1, 0], 0]], [[[0, 0], 1]], [[[1, 1], 0]], [[[0, 1], 1]], [[[0, 1], 0]], [[[1, 1], 0]], [[[1, 0], 0]], [[[0, 0], 1]], [[[1, 1], 0]], [[[0, 1], 1]], [[[0, 0], 1]], [[[1, 0], 1]], [[[0, 1], 0]], [[[1, 1], 0]], [[[1, 0], 0]], [[[0, 0], 1]], [[[1, 1], 0]], [[[0, 1], 1]], [[[0, 0], 1]], [[[1, 0], 1]], [[[1, 0], 0]], [[[0, 0], 1]], [[[1, 1], 0]], [[[0, 1], 1]], [[[0, 0], 1]], [[[1, 0], 1]], [[[0, 1], 1]], [[[1, 1], 1]]]]
 name = "2ADDER"
-depth = [0,1]
+depth = [0,3]
 #------------------
 
 answer = NewGateMaker.logicMaskMaker(inputmask, inputgatemask, TruthTable, depth, name)
