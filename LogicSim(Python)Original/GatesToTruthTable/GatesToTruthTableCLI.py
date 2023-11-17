@@ -48,8 +48,9 @@ def WhatGateCLI(anyExports, ManualGateMaskSubmisson) -> list:
     User will choose a gate to test and using the GateDimentions provided it will 
     iterate though every possible way the gate could be executed
     """
-
-    intgatechosen = utils.get_int("Enter integer code for the gate you want to find the truth table for: ")
+    intgatechosen = 0
+    if ManualGateMaskSubmisson == False:
+        intgatechosen = utils.get_int("Enter integer code for the gate you want to find the truth table for: ")
 
     #GateData.GateDimentionValuesfunction is a function that will return GateDimentions weather the gate the user wants is predefined or not.
     #Example dimentions: [[[0,0,0,0],[0,0,0,0],[0]],[[0,0,0,0],[0]]]
@@ -87,12 +88,7 @@ def WhatGateCLI(anyExports, ManualGateMaskSubmisson) -> list:
                 if UserInputMask != None:
                     try:
                         if type(UserInputMask[0]) == str and type(UserInputMask[1]) == list and type(UserInputMask[2]) == list:
-
-
-                            print("Please DADDY FIX ME!!!")
-
-
-                            continue
+                            break
                     except:
                         print("That wasnt right")
 
@@ -151,7 +147,15 @@ def WhatGateCLI(anyExports, ManualGateMaskSubmisson) -> list:
         #start actually turning each combination into a result
         #for gates that take only a bool we need to add another [0] pointer so that it will return a bool and not a list
         #GateData.ChooseGateToUse is a fancy function that takes some of the edge off of making adding a new hardcoded gate
-        gateanswer = GateData.ChooseGateToUse(intgatechosen, combinations, num)
+        #if ManualGateMaskSubmission = True than it will use the gate mask that the user has to do the calculation
+        if ManualGateMaskSubmisson == False:
+            gateanswer = GateData.ChooseGateToUse(intgatechosen, combinations, num)
+        else:
+            templistforUserInputMask = []
+            for out in UserInputMask[2]:
+                templistforUserInputMask.append(outputLogicator(out[1], utils.variableUnifier(combinations[num])))
+            gateanswer = templistforUserInputMask
+
         results[num].append(gateanswer)
 
     #Export Raw TruthTable, this gets skipped if user enters his own raw truthTable
@@ -214,6 +218,48 @@ def GetDimentionsOfGateCLI() -> list:
         dimentions[1].append(outputbitlist)
 
     return dimentions
+
+#kinda just stole all of these straight from the TruthTableToGatesCLI --------------------------
+def outputLogicator(logicIn:list, variablesIn:list):
+        """
+        a function that takes something that looks like this as input:
+        [7, [7, ['X1', 'X2']], 'X3'] or [4, [[3, [[7, ['X1', 'X2']], 'X3']], [3, ['X2', 'X1']]]]
+        """
+        answer = "nothing"
+        opperation = logicIn[0]
+
+        data = []
+        for logic in logicIn[1]:
+            data.append(logic)
+
+    
+        #two different variables go though the same function and it returns their values, probbly easily expandible to more vars?
+        X1 = "nothing"
+        X1, data = inputFinder(data, variablesIn, opperation, 1)
+
+        X2 = "nothing"
+        if len(data) == 2: 
+            X2, data = inputFinder(data, variablesIn, opperation, 2)
+
+        answer = GateData.GatesAvailable(opperation,X1,X2)
+        #print(f"LogicIn: {logicIn}\nCurrentData: {data}\nopperation: {opperation}, X1: {X1}, X2: {X2}, answer: {answer} \n")
+        return answer
+    
+def inputFinder(data:list, variables:list, opperation, inputnum:int):
+    """allows for the creation of more variables to search though at a time by method(ifying) the variable search"""
+    X = "nothing"
+    inputnum = inputnum - 1
+    if type(data[inputnum]) == str:
+        X = int(data[inputnum].replace("X",""))
+        X = variables[X-1]
+
+        data[inputnum] = X
+
+    elif type(opperation) == int:
+        data[inputnum] = outputLogicator(data[inputnum], variables)
+        X = data[inputnum]
+    return X, data
+#---------------------------------------------------------------------------------------------------------------------------------#
 
 if __name__ == "__main__":
     userinput = 0

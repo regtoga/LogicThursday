@@ -407,7 +407,24 @@ def convert_string_to_list(string_list):
         #print("Input is not a valid list.")
         return None
 
+def variableUnifier(variables:list):
+        """a function to unify different types of 2d lists
+        [[0], [0], [0]] -> [0, 0, 0]
+        [[0, 0, 0, 0]] -> [0, 0, 0, 0]
+        [[0, 0], [0, 0], [0]] -> [0, 0, 0, 0, 0]
+        [[0, 0], 0] -> [0, 0, 0]"""
+        output = []
 
+        for var in variables:
+            if type(var) == list:
+                for varinvar in var:
+                    output.append(varinvar)
+            else:
+                output.append(var)
+        
+        #print(f"{variables} len(variables) = {len(variables)} output = {output}")
+        
+        return output
 
 
 

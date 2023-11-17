@@ -104,6 +104,10 @@ def ADDER(X1: bool, X2: bool, CarryIn: bool) -> bool:
 
     return [SUM, CARRYOUT]
 
+#Here is an adder my computer generated:
+#['ADDER', [['X1', 'bool'], ['X2', 'bool'], ['X3', 'bool']], [['Y1', [0, [[7, [[0, ['X1']], [7, ['X2', 'X3']]]]]]], ['Y2', [6, [[0, [[6, ['X1', 'X2']]]], [6, [[0, ['X3']], [7, ['X1', 'X2']]]]]]]]]
+
+
 #made this so i could translate to my logic mask format :)
 def TWOBITADDERFORMYSELF(X1, X2, X3, X4, X5)->bool:
 

@@ -228,7 +228,7 @@ class TruthTableToGatesCLI():
                 for outputletters in outputsANDlogic:
                     currentlist = outputletters
 
-                    gateinputs = TruthTableToGatesCLI.variableUnifier(TruthTable[0][truthtablelen])
+                    gateinputs = utilsV1.variableUnifier(TruthTable[0][truthtablelen])
 
                     currentanswer = TruthTableToGatesCLI.outputLogicator(currentlist[1], gateinputs)
 
@@ -236,7 +236,7 @@ class TruthTableToGatesCLI():
 
                 logicOut.append(currentlogicOut)
 
-                currentTruthTableUnified = [TruthTableToGatesCLI.variableUnifier([TruthTable[1][truthtablelen][0][TestThisInput-1]])]
+                currentTruthTableUnified = [utilsV1.variableUnifier([TruthTable[1][truthtablelen][0][TestThisInput-1]])]
 
                 if currentlogicOut == currentTruthTableUnified:
                     continue
@@ -253,7 +253,7 @@ class TruthTableToGatesCLI():
             for outputletters in outputsANDlogic:
                 currentlist = outputletters
 
-                gateinputs = TruthTableToGatesCLI.variableUnifier(TruthTable[0][truthtablelen])
+                gateinputs = utilsV1.variableUnifier(TruthTable[0][truthtablelen])
 
                 #print("-"*30)
                 #print(f"current list{currentlist[1]}\nGate inputs{gateinputs}\n")
@@ -265,7 +265,7 @@ class TruthTableToGatesCLI():
             logicOut.append(currentlogicOut)
 
             #short circuts the function if it finds something that doesnt work
-            currentTruthTableUnified = [TruthTableToGatesCLI.variableUnifier(TruthTable[1][truthtablelen][0])]
+            currentTruthTableUnified = [utilsV1.variableUnifier(TruthTable[1][truthtablelen][0])]
 
             if currentlogicOut == currentTruthTableUnified:
                 #print(f"Gate inputs{gateinputs}")
@@ -325,25 +325,6 @@ class TruthTableToGatesCLI():
             data[inputnum] = TruthTableToGatesCLI.outputLogicator(data[inputnum], variables)
             X = data[inputnum]
         return X, data
-
-    def variableUnifier(variables:list):
-        """a function to unify different types of 2d lists
-        [[0], [0], [0]] -> [0, 0, 0]
-        [[0, 0, 0, 0]] -> [0, 0, 0, 0]
-        [[0, 0], [0, 0], [0]] -> [0, 0, 0, 0, 0]
-        [[0, 0], 0] -> [0, 0, 0]"""
-        output = []
-
-        for var in variables:
-            if type(var) == list:
-                for varinvar in var:
-                    output.append(varinvar)
-            else:
-                output.append(var)
-        
-        #print(f"{variables} len(variables) = {len(variables)} output = {output}")
-        
-        return output
     
     def GateTypeSelectorCLI():
         AvailableGateLocatorValues = [0,1,3,4,5,6,7]
