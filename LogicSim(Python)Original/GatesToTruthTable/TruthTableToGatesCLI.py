@@ -87,7 +87,7 @@ class TruthTableToGatesCLI():
     def __init__(self) -> None:
         pass
     
-    def logicMaskMaker(inputmask:list, inputgatemask:list, TruthTable:list, depthmask:list, name:str="UserCreatedGate", timelimit:int=10):
+    def logicMaskMaker(inputmask:list, inputgatemask:list, TruthTable:list, depthmask:list, name:str="UserCreatedGate", timelimit:int=99999999999999):
         """Takes in a input mask ([[[0],[0],[0]],[[0],[0]]]) and creates the logic mask ([Y2, [Logic]]) based on a the inputGateMask, and depth mask
             the depth mask is just a way for the program to know the range of depth its allowed to search up to for each function, [Y1, []].
             If i do one input at a time and stop searching for that input when it finds the correct var, it should be MUCH quicker than if i dont.
@@ -118,100 +118,228 @@ class TruthTableToGatesCLI():
             logicMask[2].append([f"Y{outputnum}",[]])
             outputnum += 1    
 
-        internalTimeTaken = time.time()
+        
+
         logicMasks = []
         print(f"Starting mask = {logicMask}")
         maskResults = 0
 
-
-        print("Generating combinations")
-        combinations = NewGateMaker.generate_combinations(depthmask[1], inputgatemask, inputvars)
-        print(f"combinations finished! there were {len(combinations)} of them")
-
         while True:
             #code goes here
-            
             for output in range(0, len(justoutputsfromIOmask)):
-                
-                for combo in combinations:
-                    logicMask[2][output][1] = combo
+                internalTimeTaken = time.time()
+                workingmasks = []
+                #print("Masks reset")
+
+                maskResults, workingmask = TruthTableToGatesCLI.generate_combinations(depthmask[1], inputgatemask, inputvars, TruthTable, internalTimeTaken, workingmasks, logicMask, output)
+
+                if output != len(justoutputsfromIOmask):
+
+                    if maskResults == "Continue Thinking" and workingmask != None:
+                        workingmasks.append(workingmask)
+
+                    elif maskResults == "End of the line buddy" and workingmask != None:
+                        workingmasks.append(workingmask)
+                        logicMask[2][output][1] = [workingmask]
                     
-                    maskResults = TruthTableToGatesCLI.logicMaskValidator(logicMask, TruthTable, output+1)
-                    if maskResults == 1:
-                        #if the mask was a good mask make maskResults a one and the code will compare the logic masks to every old logic mask to make shure it hasnt been found already.
-                        break
+            else:
+                something = str(logicMask)
+                logicMasks.append(utilsV1.convert_string_to_list(something))
+                finalresult = f"Final results:\n"
+                for logicmassk in logicMasks:
+                    finalresult += f"{logicmassk}\n"
+                return finalresult
+        #code ends here
 
-                    #stop the code after a desegnated about of time
-                    if time.time() - internalTimeTaken > timelimit:
-                        #print(f"Tested: {logicMask[2][output]}")
-                        contineTheSearch = utilsV1.get_int("\nNothing has happend in a while... want to continue searching? (1 = yes, 0 = no): ")
-                        if contineTheSearch == 0:
+    def generate_combinations(depth:int, gates:list, variables:list, TruthTable:list, internalTimeTaken:float,  workingmasks:list, logicMask:list, outputnum:int):
 
-                            #temp
-                            archie = utilsV1.fileArchitect()
-
-                            stringstr = ""
-                            archie.Create_File("","",combinations)
-                            for comboo in combinations:
-                                stringstr += f"\n{comboo}"
-                            archie.Write_File(stringstr)
-
-                            return f"LogicMasks were: \n{logicMasks}\n"
-                        internalTimeTaken = time.time()
-
-                
-
-            #code ends here
-            if maskResults == 1:
-                #determing if mask already has been found
-                inside = False
-                for logicMasK in logicMasks:
-                   if logicMasK == logicMask:
-                       inside = True
-                       continue 
-
-                if inside == False:
-                    logicMasks.append(logicMask)
-
-                    print("Found one!")
-                    #Doesnt actually work
-                    #Determing if the gate is too large to nicely fit on the screen
-                    if True == True:
-                        print(f"It looked like\n{logicMask}\n")
-                        
-                    contineTheSearch = utilsV1.get_int("Do you want to continue searching for more valid answers? (1 = yes, 0 = no): ")
-                    if contineTheSearch == 0:
-                        return f"LogicMasks were: \n{logicMasks}\n"
-                    internalTimeTaken = time.time()
-
-    def generate_combinations(depth:int, gates:list, variables:list):
+        
+        logicMask3 = str(logicMask)
+        logicMask2 = utilsV1.convert_string_to_list(logicMask3)
+        
         if depth == 0:
-            out = []
+            
             for gate in gates:
                 if gate == 0 or gate == 1:
                     for variable1 in variables:
-                        out.extend([[gate, [variable1]]])
-                        #print([gate, [variable1]])
+
+                        Newbornmask = [gate, [variable1]]
+                        logicMask2[2][outputnum][1] = Newbornmask
+                        #print(f"{gate} - {variable1}        {Newbornmask}              {logicMask2[2][outputnum]}")
+                        newbornmaskresults = TruthTableToGatesCLI.logicMaskValidator(logicMask2, TruthTable, outputnum + 1)
+
+
+                        #Probbly can be turned into a function:
+
+                        #test if newborn mask has allready been found
+                        if newbornmaskresults == 1:
+
+                            if Newbornmask in workingmasks:
+                                pass
+                            else:
+                                #Doesnt actually work
+                                #Determing if the gate is too large to nicely fit on the screen
+                                if True == True:
+                                    #print(f"Found one! It looked like:\n{logicMask2}\n")
+                                    pass
+
+                                #Gets user input to see if they want to search for more valid answers
+                                #contineTheSearch = utilsV1.get_int("Do you want to continue searching for more valid answers? (1 = yes, 0 = no): ")
+                                contineTheSearch = 0
+
+                                if contineTheSearch == 0:
+                                    return "End of the line buddy", Newbornmask
+                                if contineTheSearch == 1:
+                                    return "Continue Thinking", Newbornmask
+
+                        internalTimeTaken = TruthTableToGatesCLI.timetostop(internalTimeTaken)
+
+                        if internalTimeTaken == True:
+                            return "End of the line buddy", None
+
+                        #i attempted to make it into a function
+                        #return TruthTableToGatesCLI.combotester(newbornmaskresults, Newbornmask, workingmasks, logicMask2, internalTimeTaken)
+     
                 else:    
                     for variable1 in variables:
                         for variable2 in variables:
-                            out.extend([[gate, [variable1,variable2]]])
+        
+                            Newbornmask = [gate, [variable1,variable2]]
+                            logicMask2[2][outputnum][1] = Newbornmask
+                            #print(f"{gate} - {variable1}        {Newbornmask}              {logicMask2[2][outputnum]}")
+                            newbornmaskresults = TruthTableToGatesCLI.logicMaskValidator(logicMask2, TruthTable, outputnum + 1)
+
+
+                            #Probbly can be turned into a function:
+
+                            #test if newborn mask has allready been found
+                            if newbornmaskresults == 1:
+
+                                if Newbornmask in workingmasks:
+                                    pass
+                                else:
+                                    #Doesnt actually work
+                                    #Determing if the gate is too large to nicely fit on the screen
+                                    if True == True:
+                                        #print(f"Found one! It looked like:\n{logicMask2}\n")
+                                        pass
+
+                                    #Gets user input to see if they want to search for more valid answers
+                                    #contineTheSearch = utilsV1.get_int("Do you want to continue searching for more valid answers? (1 = yes, 0 = no): ")
+                                    contineTheSearch = 0
+
+                                    if contineTheSearch == 0:
+                                        return "End of the line buddy", Newbornmask
+                                    if contineTheSearch == 1:
+                                        return "Continue Thinking", Newbornmask
+
+                            internalTimeTaken = TruthTableToGatesCLI.timetostop(internalTimeTaken)
+
+                            if internalTimeTaken == True:
+                                return "End of the line buddy", None
+
+                            #i attempted to make it into a function
+                            #return TruthTableToGatesCLI.combotester(newbornmaskresults, Newbornmask, workingmasks, logicMask2, internalTimeTaken)
+                            
+        if depth > 0:
+            #Makes every combination before the last one
+            combinations = []
+            for gate in gates:
+                if gate == 0 or gate == 1:
+                    for variable1 in variables:
+                        Newbornmask = [[gate, [variable1]]]
+                        combinations.extend(Newbornmask)
+                        #print(Newbornmask)
+
+                        #I think this is logic that will short circuit the program
+                        logicMask2[2][outputnum][1] = Newbornmask[0]
+                        newbornmaskresults = TruthTableToGatesCLI.logicMaskValidator(logicMask2, TruthTable, outputnum + 1)
+                        #Probbly can be turned into a function:
+
+                        #test if newborn mask has allready been found
+                        if newbornmaskresults == 1:
+
+                            if Newbornmask in workingmasks:
+                                pass
+                            else:
+                                #Doesnt actually work
+                                #Determing if the gate is too large to nicely fit on the screen
+                                if True == True:
+                                    #print(f"Found one! It looked like:\n{logicMask2}\n")
+                                    pass
+
+                                #Gets user input to see if they want to search for more valid answers
+                                #contineTheSearch = utilsV1.get_int("Do you want to continue searching for more valid answers? (1 = yes, 0 = no): ")
+                                contineTheSearch = 0
+
+                                if contineTheSearch == 0:
+                                    return "End of the line buddy", Newbornmask
+                                if contineTheSearch == 1:
+                                    return "Continue Thinking", Newbornmask
+
+                        internalTimeTaken = TruthTableToGatesCLI.timetostop(internalTimeTaken)
+
+                        if internalTimeTaken == True:
+                            return "End of the line buddy", None
+
+                        #i attempted to make it into a function
+                        #return TruthTableToGatesCLI.combotester(newbornmaskresults, Newbornmask, workingmasks, logicMask2, internalTimeTaken)
+                        
+                else:
+                    for variable1 in variables:
+                        for variable2 in variables:
+                            Newbornmask = [[gate, [variable1,variable2]]]
+                            combinations.extend(Newbornmask)
                             #print([gate, [variable1,variable2]])
 
-            return out
-        
+                            #I think this is logic that will short circuit the program
+                            logicMask2[2][outputnum][1] = Newbornmask[0]
+                            newbornmaskresults = TruthTableToGatesCLI.logicMaskValidator(logicMask2, TruthTable, outputnum + 1)
 
-        combinations = []
-        for gate in gates:
-            if gate == 0 or gate == 1:
-                for variable1 in variables:
-                    combinations.extend([[gate, [variable1]]])
-            else:
-                for variable1 in variables:
-                    for variable2 in variables:
-                        combinations.extend([[gate, [variable1,variable2]]])
-        depth -= 1
-        return TruthTableToGatesCLI.generate_combinations(depth, gates, combinations)
+                            #Probbly can be turned into a function:
+
+                            #test if newborn mask has allready been found
+                            if newbornmaskresults == 1:
+
+                                if Newbornmask in workingmasks:
+                                    pass
+                                else:
+                                    #Doesnt actually work
+                                    #Determing if the gate is too large to nicely fit on the screen
+                                    if True == True:
+                                        #print(f"Found one! It looked like:\n{logicMask2}\n")
+                                        pass
+
+
+                                    #Gets user input to see if they want to search for more valid answers
+                                    #contineTheSearch = utilsV1.get_int("Do you want to continue searching for more valid answers? (1 = yes, 0 = no): ")
+                                    contineTheSearch = 0
+
+                                    if contineTheSearch == 0:
+                                        return "End of the line buddy", Newbornmask
+                                    if contineTheSearch == 1:
+                                        return "Continue Thinking", Newbornmask
+
+                            internalTimeTaken = TruthTableToGatesCLI.timetostop(internalTimeTaken)
+
+                            if internalTimeTaken == True:
+                                return "End of the line buddy", None
+
+                            #i attempted to make it into a function
+                            #return TruthTableToGatesCLI.combotester(newbornmaskresults, Newbornmask, workingmasks, logicMask2, internalTimeTaken)
+
+            depth -= 1
+            return TruthTableToGatesCLI.generate_combinations(depth, gates, combinations, TruthTable, internalTimeTaken, workingmasks, logicMask, outputnum)
+        return "End of the line buddy", None
+
+    def timetostop(internalTimeTaken, whentostop:int=10):
+        #stop the code after a desegnated about of time
+        if time.time() - internalTimeTaken > whentostop:
+            contineTheSearch = utilsV1.get_int("\nNothing has happend in a while... want to continue searching? (1 = yes, 0 = no): ")
+            if contineTheSearch == 0:
+
+                return True
+        return time.time()
 
     #----------------------------------- function should try all combinations of the program and compare the ouput with the truth table
     def logicMaskValidator(logicMask:list="", TruthTable:list="", TestThisInput:int=0) -> bool:
@@ -301,6 +429,7 @@ class TruthTableToGatesCLI():
         [7, [7, ['X1', 'X2']], 'X3'] or [4, [[3, [[7, ['X1', 'X2']], 'X3']], [3, ['X2', 'X1']]]]
         """
         answer = "nothing"
+        #print(logicIn)
         opperation = logicIn[0]
 
         data = []
@@ -386,7 +515,7 @@ start_time = time.time()
 #Enter Program here
 
 
-"""#------------------
+#------------------
 inputmask = [[[0],[0]],[[0]]]
 inputgatemask = [3]
 TruthTable = [[[[0], [0]], [[1], [0]], [[0], [1]], [[1], [1]]], [[[0]], [[0]], [[0]], [[1]]]]
@@ -395,6 +524,7 @@ depth = [0,0]
 #------------------
 
 answer = NewGateMaker.logicMaskMaker(inputmask, inputgatemask, TruthTable, depth, name)
+print(answer)
 
 #------------------
 inputmask = [[[0],[0],[0]],[[0],[0]]]
@@ -404,17 +534,20 @@ name = "ADDER"
 depth = [0,2]
 #------------------
 
-answer = NewGateMaker.logicMaskMaker(inputmask, inputgatemask, TruthTable, depth, name)"""
+answer = NewGateMaker.logicMaskMaker(inputmask, inputgatemask, TruthTable, depth, name)
+print(answer)
 
 #------------------
 inputmask = [[[0],[0],[0],[0],[0]],[[0],[0],[0]]]
-inputgatemask = [0,6,7]
+inputgatemask = [0,1,3,4,5,6,7]
 TruthTable = [[[[0, 0], [0, 0], [0]], [[1, 0], [0, 0], [0]], [[0, 1], [0, 0], [0]], [[1, 1], [0, 0], [0]], [[0, 0], [1, 0], [0]], [[1, 0], [1, 0], [0]], [[0, 1], [1, 0], [0]], [[1, 1], [1, 0], [0]], [[0, 0], [0, 1], [0]], [[1, 0], [0, 1], [0]], [[0, 1], [0, 1], [0]], [[1, 1], [0, 1], [0]], [[0, 0], [1, 1], [0]], [[1, 0], [1, 1], [0]], [[0, 1], [1, 1], [0]], [[1, 1], [1, 1], [0]], [[0, 0], [0, 0], [1]], [[1, 0], [0, 0], [1]], [[0, 1], [0, 0], [1]], [[1, 1], [0, 0], [1]], [[0, 0], [1, 0], [1]], [[1, 0], [1, 0], [1]], [[0, 1], [1, 0], [1]], [[1, 1], [1, 0], [1]], [[0, 0], [0, 1], [1]], [[1, 0], [0, 1], [1]], [[0, 1], [0, 1], [1]], [[1, 1], [0, 1], [1]], [[0, 0], [1, 1], [1]], [[1, 0], [1, 1], [1]], [[0, 1], [1, 1], [1]], [[1, 1], [1, 1], [1]]], [[[[0, 0], 0]], [[[1, 0], 0]], [[[0, 1], 0]], [[[1, 1], 0]], [[[1, 0], 0]], [[[0, 0], 1]], [[[1, 1], 0]], [[[0, 1], 1]], [[[0, 1], 0]], [[[1, 1], 0]], [[[1, 0], 0]], [[[0, 0], 1]], [[[1, 1], 0]], [[[0, 1], 1]], [[[0, 0], 1]], [[[1, 0], 1]], [[[0, 1], 0]], [[[1, 1], 0]], [[[1, 0], 0]], [[[0, 0], 1]], [[[1, 1], 0]], [[[0, 1], 1]], [[[0, 0], 1]], [[[1, 0], 1]], [[[1, 0], 0]], [[[0, 0], 1]], [[[1, 1], 0]], [[[0, 1], 1]], [[[0, 0], 1]], [[[1, 0], 1]], [[[0, 1], 1]], [[[1, 1], 1]]]]
 name = "2ADDER"
 depth = [0,3]
+timeLimit = 99999999999999
 #------------------
 
-answer = NewGateMaker.logicMaskMaker(inputmask, inputgatemask, TruthTable, depth, name)
+answer = NewGateMaker.logicMaskMaker(inputmask, inputgatemask, TruthTable, depth, name, timeLimit)
+print(answer)
 
 print("--- %s seconds ---" % (time.time() - start_time))
 
