@@ -140,7 +140,7 @@ class TruthTableToGatesCLI():
 
                     elif maskResults == "End of the line buddy" and workingmask != None:
                         workingmasks.append(workingmask)
-                        logicMask[2][output][1] = [workingmask]
+                        logicMask[2][output][1] = workingmask[0]
                     
             else:
                 something = str(logicMask)
@@ -503,19 +503,21 @@ NewGateMaker = TruthTableToGatesCLI
 
 #----------------------------Program starts here
 
-"""TruthTable, inputmask = GatesToTruthTableCLI.main()
+TruthTable, inputmask = GatesToTruthTableCLI.main()
 
 inputgatemask = TruthTableToGatesCLI.GateTypeSelectorCLI()
 
 name = TruthTableToGatesCLI.GetGateNameCLI()
 
 depth = [0, utilsV1.get_int("Enter Depth for which the computer should search: ")]
-"""
+
+timeLimit = utilsV1.get_int("Enter the Time limit in secconds: +")
+
 start_time = time.time()
 #Enter Program here
 
 
-#------------------
+"""#------------------
 inputmask = [[[0],[0]],[[0]]]
 inputgatemask = [3]
 TruthTable = [[[[0], [0]], [[1], [0]], [[0], [1]], [[1], [1]]], [[[0]], [[0]], [[0]], [[1]]]]
@@ -545,7 +547,7 @@ name = "2ADDER"
 depth = [0,3]
 timeLimit = 99999999999999
 #------------------
-
+"""
 answer = NewGateMaker.logicMaskMaker(inputmask, inputgatemask, TruthTable, depth, name, timeLimit)
 print(answer)
 

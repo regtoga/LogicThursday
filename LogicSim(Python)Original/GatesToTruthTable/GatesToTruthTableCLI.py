@@ -264,7 +264,7 @@ def inputFinder(data:list, variables:list, opperation, inputnum:int):
 if __name__ == "__main__":
     userinput = 0
     while True:
-        userinput = utils.get_int("What type of input do you have? Mask(1) or RawTable(2): ")
+        userinput = utils.get_int("What type of input do you have? RawTable(1) or Mask(2): ")
 
         if userinput == 1:
             main(True)
