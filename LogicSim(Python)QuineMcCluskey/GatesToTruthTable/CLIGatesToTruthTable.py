@@ -1,0 +1,1 @@
+#This File should ONLY be the CLI the rest goes inside of the GatesToTruthTable object
