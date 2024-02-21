@@ -33,6 +33,8 @@ class TruthTableToGates():
         self.Maxterms = []
         self.DontCares = []
 
+        self.answer = ""
+
         """
         The init takes A TruthTable str and will convert it into all the nessesary information.
         
@@ -45,7 +47,7 @@ class TruthTableToGates():
             #---------------------------------------------------------------------------
             #calculate var ammount baised off of input ammount
 
-            #ValidInputChars = ('A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z')
+            #ValidInputChars = ('A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z')
             BeginCounting = 0
 
             #iterate though the truthTable and find the ammout of Input Vars
@@ -63,6 +65,8 @@ class TruthTableToGates():
             #Determine if we are solving for minterms or Maxterms
             
             #itterate though every value of TruthTable and find the portion where the minterm or maxterm is stored.
+                    
+            """Might? need an amendment for if the input vars go from A-M because it will start always solving for Max Terms if the bug isnt fixed"""
             for character in self.TruthTable:
                 if character == "'":
                     BeginCounting = 1
@@ -211,6 +215,51 @@ class TruthTableToGates():
             
             #---------------------------------------------------------------------------
 
+    def TruthTableDataIntoTruthTable(self) -> str:
+        """When this is ran it will return a new Truth Table value and set the inside 'self.TruthTable' var to it aswell aslong as its valid, 
+        will only return a value if all data that it needs is allready defined!"""
+
+        ValidInputChars = ('A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z')
+
+        #Make a string array of the input chars
+        currentinputs = ""
+        for i in range(self.NumInputVars):
+            if i == 0:
+                currentinputs += f"{ValidInputChars[i]}"
+            else:
+                currentinputs += f",{ValidInputChars[i]}"
+
+        #turn the list of min/max terms into a string list
+        currentminormax = ""
+        if self.MinorMax == "minterms":
+            for i in range(0, len(self.Minterms)):
+                if i == 0:
+                    currentminormax += f"{self.Minterms[i]}"
+                else:
+                    currentminormax += f",{self.Minterms[i]}"
+
+        elif self.MinorMax == "Maxterms":
+            for i in range(0, len(self.Maxterms)):
+                if i == 0:
+                    currentminormax += f"{self.Maxterms[i]}"
+                else:
+                    currentminormax += f",{self.Maxterms[i]}"
+
+        #find the list of dont cares
+        currentdontcare = ""
+        for i in range(0, len(self.DontCares)):
+            if i == 0:
+                currentdontcare += f"{self.DontCares[i]}"
+            else:
+                currentdontcare += f",{self.DontCares[i]}"
+
+        dontcare = ""
+        if currentdontcare != "":
+            dontcare = f"+Z'd({currentdontcare})"
+
+        self.TruthTable = f"F({currentinputs}) = Z'{self.MinorMax[0]}({currentminormax})" + dontcare
+
+        return self.TruthTable
 
     #define Getters and setters for the main attrubutes of the TruthTable
     def get_TruthTable(self):
@@ -239,6 +288,16 @@ class TruthTableToGates():
         """Returns a list of locations in the truthtable where the output value of the function doesnt end up mattering.
         Essentially think about it as a way of saying i DONT CARE what this output is. "When i designed the truthtable i didnt think this output case was even possible to trigger." """
         return self.DontCares
+    
+    def get_Answer(self) -> str:
+        """Returns the answer that the object has computed, 
+        this will just return an error message with the original truthtable if the answer hasnt been found yet
+
+        *As of writing this the TruthTable does not generate if one was not given as the program initialized."""
+        if self.answer == "":
+            self.answer = f"ERROR: The output has not yet been solved for: {self.TruthTable}"
+
+        return self.answer
     
     #Actual Algorithm goes here:
 
