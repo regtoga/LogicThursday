@@ -257,7 +257,7 @@ class TruthTableToGates():
         if currentdontcare != "":
             dontcare = f"+Z'd({currentdontcare})"
 
-        self.TruthTable = f"F({currentinputs}) = Z'{self.MinorMax[0]}({currentminormax})" + dontcare
+        self.TruthTable = f"F({currentinputs})=Z'{self.MinorMax[0]}({currentminormax})" + dontcare
 
         return self.TruthTable
 

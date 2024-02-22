@@ -22,7 +22,8 @@ def helpme():
     print("""
         Ok so you asked for help... I am not a very good teacher but i will try my best:
         
-        The Function: F(w)=Z'x(y)+Z'd(z)
+        The base Function: F(w)=Z'x(y)+Z'd(z)
+        A propperly submitted function: F(A,B,C)=Z'm(2,3,4,5)+Z'd(6,7)
 
         Lets disect what information you need to submit for successful opperation of the program.
         1. F(w), The first part of the function needs 'w' replaced with the input variables. These- 
