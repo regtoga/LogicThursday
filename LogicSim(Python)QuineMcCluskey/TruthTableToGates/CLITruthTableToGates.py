@@ -196,26 +196,33 @@ userinput = ""
 while True:
     print("At anytime if you need help type 'help'!")
     userinput = input("Enter a truthtable equasion in F()=Z'm()+Z'd() format: ")
+    databasenamefromuser = input("If you would like to save your results to a table enter a name for it here: ")
 
-    if (userinput).lower() == "exit":
+    if (userinput).lower() == "exit" or (databasenamefromuser).lower() == "exit":
         break
-    elif (userinput).lower() == "help":
+    elif (userinput).lower() == "help" or (databasenamefromuser).lower() == "help":
         #Help The user to the best of my ability
         userinput = helpme()
+        databasenamefromuser = input("If you would like to save your results to a table enter a name for it here: ")
         print("You Completed the help screen!\n")
+        
+
+    if databasenamefromuser != "" and (".db" not in databasenamefromuser):
+        databasenamefromuser += ".db"
     
     print("Answer: ")
     
     #make TtoG object
-    TtoG = Thinker.TruthTableToGates(userinput)
+    TtoG = Thinker.TruthTableToGates(userinput, databasenamefromuser)
     print(f"TruthTable      : {TtoG.get_TruthTable()}")
     print(f"Number of Inputs: {TtoG.get_NumInputVars()}")
     print(f"Min or Max      : {TtoG.get_MinorMax()}")
     print(f"minterms        : {TtoG.get_Minterms()}")
     print(f"Maxterms        : {TtoG.get_Maxterms()}")
     print(f"Dont Cares      : {TtoG.get_DontCares()}")
+    TtoG.calculateanswer()
+    print(TtoG.print_all_TABLES())
     print(f"{TtoG.get_Answer()}")
-    print(f"Reformatted TruthTable String: {TtoG.TruthTableDataIntoTruthTable()}")
     print("")
 
 print("thanks for using my program, it means a lot to me!")
