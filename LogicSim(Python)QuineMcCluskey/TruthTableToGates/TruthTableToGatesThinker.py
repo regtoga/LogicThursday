@@ -203,7 +203,7 @@ class TruthTableToGates():
             b = 0
             while b < largestnumberfound:
                 i += 1
-                b = 2**i
+                b = (2**i) - 1
             #print(f"The largest number that fit under {largestnumberfound} was {i} because 2**{i} = {2**i}")
 
             if self.NumInputVars < i:
