@@ -338,3 +338,39 @@ def calculateFunctionOutput(function:str, inputs:list) -> bool:
             return True
 
     return False
+
+
+def main():
+    import time
+
+    start_time = time.time()
+
+    print("Test 1:")
+    #input = Z'm(2,3,4)
+    GtoT1 = TruthTableToGates("F = A'B + AB'C'")
+    #print(GtoT1.get_TruthTable())
+    #print(GtoT1.get_AnswerFunction())
+
+    print("\nTest 2:")
+    #input = Z'm(1,2,3,4,7,9,12)
+    GtoT2 = TruthTableToGates("F = A'B'C + BC'D' + A'CD + B'C'D")
+    #print(GtoT2.get_TruthTable())
+    #print(GtoT2.get_AnswerFunction())
+
+    print("\nTest 3:")
+    #input = Z'm(77,2,1)
+    GtoT3 = TruthTableToGates("F = AB'C'DEF'G + A'B'C'D'E'FG' + A'B'C'D'E'F'G")
+    #print(GtoT3.get_TruthTable())
+    #print(GtoT3.get_AnswerFunction())
+
+    print("\nTest 4:")
+    #input = Z'm(1000,10001)
+    GtoT4 = TruthTableToGates("F = A'B'C'D'E'F'X")
+    #print(GtoT4.get_TruthTable())
+    #print(GtoT4.get_AnswerFunction())
+
+    end_time = time.time()
+
+    print(f"The function took {end_time - start_time} seconds to run.")
+
+main()
