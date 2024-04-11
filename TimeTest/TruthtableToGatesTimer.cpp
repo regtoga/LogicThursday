@@ -6,6 +6,8 @@
 //If this file includes iostream when im done i am quitting my job
 #include <iostream>
 
+std::vector<char> ValidInputChars = {'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'};
+
 class BooleanList{
     public:
         //Adds a boolean value to the list.
@@ -62,7 +64,6 @@ class TruthTableToGates{
 
         int largestvarnum = 0;
         //Im deprecating just function in english
-        const char ValidInputChars[52] = {'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'};
 
     public:
 
@@ -244,7 +245,6 @@ int indexCPP(std::vector<char> list, char input){
 //I also dont quite know how to do this function because its seccond input is a list aswell
 bool calculateFunctionOutput(std::string function, std::vector<bool> inputs){
     //"""This function takes a function input such as A'BCD+AB'C' and an input and outputs the result """
-    std::vector<char> ValidInputChars = {'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'};
     int answer = 0;
     bool num;
     std::vector<bool> oldanswers;
@@ -263,9 +263,7 @@ bool calculateFunctionOutput(std::string function, std::vector<bool> inputs){
                 }
             }
         }else{
-            char something1 = function[index];
-            int something = indexCPP(ValidInputChars, something1);
-            num = inputs[something];
+            num = inputs[indexCPP(ValidInputChars, function[index])];
 
             //NOT opperation leading into an AND opperation of function[index1]
             if ((index+1 < function.length())&&(function[index+1] == '\'')){

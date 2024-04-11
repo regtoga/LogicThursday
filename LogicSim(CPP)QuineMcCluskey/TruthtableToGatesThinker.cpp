@@ -262,9 +262,7 @@ bool calculateFunctionOutput(std::string function, std::vector<bool> inputs){
                 }
             }
         }else{
-            char something1 = function[index];
-            int something = indexCPP(ValidInputChars, something1);
-            num = inputs[something];
+            num = inputs[indexCPP(ValidInputChars, function[index])];
 
             //NOT opperation leading into an AND opperation of function[index1]
             if ((index+1 < function.length())&&(function[index+1] == '\'')){

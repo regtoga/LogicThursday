@@ -1,1 +1,0 @@
-#This File should ONLY be the GUI the rest goes inside of the GatesToTruthTable object

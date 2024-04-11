@@ -1,1 +1,0 @@
-#This program should JUST be the GUI for the TruthTableToGatesThinker program.

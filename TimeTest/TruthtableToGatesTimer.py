@@ -113,7 +113,7 @@ class TruthTableToGates():
             
             #Do calculation!
             
-            functionoutput = calculateFunctionOutput(self.justfunction, inputslist)
+            functionoutput = calculateFunctionOutput(self.justfunction, inputslist, self.ValidInputChars)
             #formats a way for the programmer to understand both the function inputs and outputs
             #print(f"{inputslist} = {functionoutput}")
 
@@ -283,9 +283,10 @@ def binaryCountingWithList(list:list) -> list:
 
     return list
 
-def calculateFunctionOutput(function:str, inputs:list) -> bool:
+def calculateFunctionOutput(function:str, inputs:list, ValidInputChars:list=[]) -> bool:
     """This function takes a function input such as A'BCD+AB'C' and an input and outputs the result """
-    ValidInputChars = ('A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z')
+    if ValidInputChars == []:
+        ValidInputChars = ('A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z')
     answer = 0
     oldanswers = []
     
