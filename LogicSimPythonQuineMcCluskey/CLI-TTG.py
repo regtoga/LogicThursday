@@ -1,6 +1,6 @@
 #This File should ONLY be the CLI the rest goes inside of the TruthTableToGates object
 
-import TruthTableToGatesThinker as Thinker
+import Thinkers.TruthTableToGatesThinker as Thinker
 
 """
     1. Ask if user has a preformatted TruthTable if so let them enter it in one line, else continue though steps 2-4

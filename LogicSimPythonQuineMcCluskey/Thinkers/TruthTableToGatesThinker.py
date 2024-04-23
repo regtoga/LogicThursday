@@ -654,7 +654,7 @@ class TruthTableToGates():
         4. self.primeimplicantstable() -- find prime implicants using matched pairs tables
         """
         #make shure all input functions are in the correrct format
-        print(f"Function taken as input: {self.TruthTableDataIntoTruthTable()}")
+        #print(f"Function taken as input: {self.TruthTableDataIntoTruthTable()}")
 
         #Solve the problem
         self.groupbynumones()

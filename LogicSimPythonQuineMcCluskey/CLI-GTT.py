@@ -1,6 +1,6 @@
 import time
 #This File should ONLY be the CLI the rest goes inside of the GatesToTruthTable object
-import GatesToTableThinker as Thinker
+import Thinkers.GatesToTableThinker as Thinker
 
 start_time = time.time()
 
