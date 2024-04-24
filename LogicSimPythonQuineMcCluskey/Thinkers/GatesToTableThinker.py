@@ -245,7 +245,7 @@ class TruthTableToGates():
         with open(self.databasename.replace(".db",".txt"), 'w') as file:
             file.write(output)
 
-        if len(output) > 10000:
+        if len(output) > 250:
             output = "The output was to long to output RAW, so you will need to obtain the data someother way"
 
 

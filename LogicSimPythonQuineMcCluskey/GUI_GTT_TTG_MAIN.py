@@ -2,7 +2,6 @@
 import sys
 
 import tkinter as tk
-import tkinter.ttk as ttk
 
 import GUIsForMainGUI.TTG_gui as TTG_gui
 import GUIsForMainGUI.GTT_gui as GTT_gui

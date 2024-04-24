@@ -1,4 +1,5 @@
 import sys
+import threading
 
 import tkinter as tk
 import tkinter.ttk as ttk
@@ -147,13 +148,17 @@ class TTG_gui(tk.Toplevel):
 
         #print(userfunction)
 
-        try:
-            ttg_Thinker = TTG_Thinker.TruthTableToGates(userfunction)
-            ttg_Thinker.calculateanswer()
-            
-            self.lbloutputbox.config(text=f"{ttg_Thinker.get_Answer()}")
-        except:
-            self.lbloutputbox.config(text=f"An error has occured, try fixing your input")
+        def calc():
+            try:
+                ttg_Thinker = TTG_Thinker.TruthTableToGates(userfunction)
+                self.lbloutputbox.config(text=f"Calculating!")
+                ttg_Thinker.calculateanswer()
+                
+                self.lbloutputbox.config(text=f"{ttg_Thinker.get_Answer()}")
+            except:
+                self.lbloutputbox.config(text=f"An error has occured, try fixing your input")
+
+        threading.Thread(target=calc).start()
         
 
     def back_to_main_menu(self):

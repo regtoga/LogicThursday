@@ -1,4 +1,5 @@
 import sys
+import threading
 
 import tkinter as tk
 import tkinter.ttk as ttk
@@ -107,13 +108,17 @@ class GTT_gui(tk.Toplevel):
 
     def calculate_answer(self):
         userfunction = self.functionInputBox.get()
+        
+        def calc():
+            try:
+                self.lbloutputbox.config(text="Calculating!")
+                gtt_Thinker = GTT_Thinker.TruthTableToGates(userfunction)
 
-        try:
-            gtt_Thinker = GTT_Thinker.TruthTableToGates(userfunction)
-            
-            self.lbloutputbox.config(text=f"{gtt_Thinker.get_AnswerFunction()}")
-        except:
-            self.lbloutputbox.config(text=f"An error has occured, try fixing your input")
+                self.lbloutputbox.config(text=f"{gtt_Thinker.get_AnswerFunction()}")
+            except:
+                self.lbloutputbox.config(text=f"An error has occured, try fixing your input")
+        
+        threading.Thread(target=calc).start()
 
     def back_to_main_menu(self):
         self.master.deiconify()  # Show main menu again
