@@ -14,10 +14,12 @@ from tkinter.ttk import *
 import sv_ttk
 
 class MainMenu(tk.Tk):
-    def __init__(self):
+    def __init__(self, position="+100+100"):
         super().__init__()
         self.title("Main Menu")
-        self.geometry("300x200")
+        self.geometry(position)
+        self.geometry("1200x600")
+        self.resizable(False, False)
 
         self.btn_TTG_gui = Button(self, text="TruthTable to Gates", command=self.open_TTG_gui)
         self.btn_TTG_gui.pack(pady=10)
@@ -36,19 +38,19 @@ class MainMenu(tk.Tk):
 
     def open_TTG_gui(self):
         self.withdraw()  # Hide the main menu
-        TTG_GUi = TTG_gui.TTG_gui(self)  # Pass reference to the main menu
+        TTG_GUi = TTG_gui.TTG_gui(self, f"+{self.winfo_rootx()-9}+{self.winfo_rooty()-32}")  # Pass reference to the main menu
         TTG_GUi.mainloop()
         self.deiconify()  # Show the main menu again when TTG_gui closes
 
     def open_GTT_gui(self):
         self.withdraw()  # Hide the main menu
-        GTT_GUi = GTT_gui.GTT_gui(self)  # Pass reference to the main menu
+        GTT_GUi = GTT_gui.GTT_gui(self, f"+{self.winfo_rootx()-9}+{self.winfo_rooty()-32}")  # Pass reference to the main menu
         GTT_GUi.mainloop()
         self.deiconify()  # Show the main menu again when GTT_gui closes
 
     def open_Info_gui(self):
         self.withdraw()  # Hide the main menu
-        INfo_GUi = Info_gui.Info_gui(self)  # Pass reference to the main menu
+        INfo_GUi = Info_gui.Info_gui(self, f"+{self.winfo_rootx()-9}+{self.winfo_rooty()-32}")  # Pass reference to the main menu
         INfo_GUi.mainloop()
         self.deiconify()  # Show the main menu again when Info_gui closes"""
 

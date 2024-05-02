@@ -12,17 +12,19 @@ except:
 
 #START OF Gates to TruthTable GUI class!-------------------------------------------------------------------------------------------
 class GTT_gui(tk.Toplevel):
-    def __init__(self, main_menu_ref):
+    def __init__(self, main_menu_ref, position="+100+100"):
         super().__init__(main_menu_ref)
 
         """Initialize program GUI"""
 
-        # set window location on screen 400 pixels right 300 pixels down
+        # set window location on screen 100 pixels right 100 pixels down
         # the window size will change based on the controls
-        self.geometry("+400+300")
+        self.geometry(position)
+        self.geometry("1200x600")
+        self.resizable(False, False)
+
         """self.iconbitmap("icon.ico")"""
         self.title("GTT")
-        self.resizable(False, False)
         # create and grid all widgets
         self.create_frames()
         self.create_widgets()
