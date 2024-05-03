@@ -18,7 +18,7 @@ class MainMenu(tk.Tk):
         super().__init__()
         self.title("Main Menu")
         self.geometry(position)
-        self.geometry("1100x600")
+        self.geometry("1050x600")
         self.resizable(False, False)
 
         self.btn_TTG_gui = Button(self, text="TruthTable to Gates", command=self.open_TTG_gui)

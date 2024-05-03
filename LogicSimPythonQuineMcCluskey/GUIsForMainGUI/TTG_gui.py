@@ -17,7 +17,7 @@ class TTG_gui(tk.Toplevel):
         super().__init__(main_menu_ref)
 
         self.geometry(position)
-        self.geometry("1100x600")
+        self.geometry("1050x600")
         self.resizable(False, False)
 
         self.title("TTG")
@@ -305,7 +305,7 @@ class TruthTableApp:
 
                 self.tablenuminputs = num_inputs
 
-                if num_inputs >= 10:
+                if num_inputs >= 13:
                     return
 
             except ValueError:
