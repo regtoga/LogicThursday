@@ -139,7 +139,7 @@ class TTG_gui(tk.Toplevel):
             width=40
         )
 
-        
+        self.outputtextbox.config(state=tk.DISABLED)
         self.outputtextbox.grid(row=1, columnspan=2, sticky="EW")
 
 
@@ -179,11 +179,14 @@ class TTG_gui(tk.Toplevel):
             try:
                 userfunction = self.functionInputBox.get()
 
+                #this is hear because there is a bug in the ttg_thinker that breaks if the input has spaces for some reason.
+                userfunction = userfunction.replace(" ",'')
+
                 ttg_Thinker = TTG_Thinker.TruthTableToGates(userfunction)
                 self.Write_output_TB("Calculating!")
                 ttg_Thinker.calculateanswer()
 
-                self.Write_output_TB(f"Answer ='s : {ttg_Thinker.get_Answer()}")
+                self.Write_output_TB(f"Answer ='s :\n{ttg_Thinker.get_Answer()}")
             except:
                 self.Write_output_TB("An error has occurred, try fixing your input")
 
@@ -215,11 +218,11 @@ class TTG_gui(tk.Toplevel):
                     ttg_Thinker = TTG_Thinker.TruthTableToGates(function, f"{''.join(map(str, minterm[:7]))}pt{out+1}")
                     self.Write_output_TB("Calculating!")
                     ttg_Thinker.calculateanswer()
-                    answer += f"{ttg_Thinker.get_Answer()}, "
+                    answer += f"{ttg_Thinker.get_Answer()}\n"
 
-                answer = answer[:-2]
+                answer = answer[:-1]
                     
-                self.Write_output_TB(f"Answer ='s : {answer}")
+                self.Write_output_TB(f"Answer ='s : \n{answer}")
             except:
                 self.Write_output_TB("An error has occurred, try fixing your input")
 
@@ -228,16 +231,33 @@ class TTG_gui(tk.Toplevel):
     def TT_maxterms(self):
         def calc():
             try:
-                maxterms = self.truth_table_frame.get_minterms()
-                function = f"Z'M({','.join(map(str, maxterms))})"
-                self.functionInputBox.delete(0, tk.END)
-                self.functionInputBox.insert(tk.END, function)
+                maxterms = self.truth_table_frame.get_maxterms()
 
-                ttg_Thinker = TTG_Thinker.TruthTableToGates(function)
-                self.Write_output_TB("Calculating!")
-                ttg_Thinker.calculateanswer()
+                num_inputs = self.truth_table_frame.get_tablenuminputs()
 
-                self.Write_output_TB(f"Answer ='s : {ttg_Thinker.get_Answer()}")
+                answer = ""
+                
+                for out in range(0, len(maxterms)):
+                    minterm = maxterms[out]
+                    function = "F("
+
+                    for i in range(0, num_inputs):
+                        function += f"{chr(65 + i)},"
+
+                    function = function[:-1]
+
+                    function += f") = Z'M({','.join(map(str, minterm))})"
+                    self.functionInputBox.delete(0, tk.END)
+                    self.functionInputBox.insert(tk.END, function)
+
+                    ttg_Thinker = TTG_Thinker.TruthTableToGates(function, f"{''.join(map(str, minterm[:7]))}pt{out+1}")
+                    self.Write_output_TB("Calculating!")
+                    ttg_Thinker.calculateanswer()
+                    answer += f"{ttg_Thinker.get_Answer()}\n"
+
+                answer = answer[:-1]
+                    
+                self.Write_output_TB(f"Answer ='s : \n{answer}")
             except:
                 self.Write_output_TB("An error has occurred, try fixing your input")
 
@@ -394,11 +414,18 @@ class TruthTableApp:
         #print(self.minterms)
         return minterms
 
-    def get_Maxterms(self):
-        rows_with_output_0 = [i for i, output in enumerate(self.outputs) if int(output.cget("text")) == 0]
-        self.maxterms = rows_with_output_0
-        return rows_with_output_0
-        #messagebox.showinfo("Maxterms", rows_with_output_0)
+    def get_maxterms(self) -> list:
+        maxterms = []
+        for col, outputs in enumerate(self.output_values):
+            maxterms_for_output = []
+            for row, output in enumerate(outputs):
+                if int(output.cget("text")) == 0:
+                    maxterms_for_output.append(row)
+            maxterms.append(maxterms_for_output)
+
+        self.maxterms = maxterms
+        #print(self.maxterms)
+        return maxterms
 
     def get_tablenuminputs(self):
         return self.tablenuminputs

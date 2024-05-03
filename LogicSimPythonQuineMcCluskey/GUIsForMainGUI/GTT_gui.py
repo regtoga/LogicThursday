@@ -71,27 +71,20 @@ class GTT_gui(tk.Toplevel):
             self.entry_frame
         )
 
-        #label for output box
-        self.outputboxLabel = ttk.Label(
+        self.outputtextbox = tk.Text(
             self.entry_frame,
-            text="Answer ='s "
-        )
-
-        self.lbloutputbox = ttk.Label(
-            self.entry_frame,
-            borderwidth=2,
-            relief="solid",
-            text="                 ",
+            height=30,
+            width=40
         )
 
         # ------------------------- GRID WIDGETS ---------------------#
         
+        self.outputtextbox.config(state=tk.DISABLED)
+
         #entry frame widgets
         self.functionInputBoxLabel.grid(row=0, column=0, sticky="EW")
         self.functionInputBox.grid(row=0, column=1, sticky="EW")
-
-        self.outputboxLabel.grid(row=1, column=0, sticky="EW")
-        self.lbloutputbox.grid(row=1, column=1, sticky="EW")
+        self.outputtextbox.grid(row=1, columnspan=2, sticky="EW")
 
         #operations frame widgets
         self.btn_calculate.grid(row=0, column=0, sticky="EW")
@@ -113,18 +106,24 @@ class GTT_gui(tk.Toplevel):
         
         def calc():
             try:
-                self.lbloutputbox.config(text="Calculating!")
+                self.Write_output_TB("Calculating!")
                 gtt_Thinker = GTT_Thinker.TruthTableToGates(userfunction)
 
-                self.lbloutputbox.config(text=f"{gtt_Thinker.get_AnswerFunction()}")
+                self.Write_output_TB(f"{gtt_Thinker.get_AnswerFunction()}")
             except:
-                self.lbloutputbox.config(text=f"An error has occured, try fixing your input")
+                self.Write_output_TB("An error has occured, try fixing your input")
         
         threading.Thread(target=calc).start()
 
     def back_to_main_menu(self):
         self.master.deiconify()  # Show main menu again
         self.destroy()  # Destroy current GUI
+
+    def Write_output_TB(self, string:str):
+        self.outputtextbox.config(state=tk.NORMAL)
+        self.outputtextbox.delete('1.0', tk.END)
+        self.outputtextbox.insert(tk.END, string)
+        self.outputtextbox.config(state=tk.DISABLED)
 
 
 #Run the GTT Menu!-------------------------------------------------------------------------------------------
