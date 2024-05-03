@@ -85,6 +85,17 @@ class TTG_gui(tk.Toplevel):
             textvariable=self.truth_table_frame.num_inputs_var
         )
 
+        self.TT_num_output_Label = ttk.Label(
+            self.operations_frame,
+            text="# outputs:"
+        )
+
+        self.num_outputs_entry = ttk.Entry(
+            self.operations_frame,
+            width=2, 
+            textvariable=self.truth_table_frame.num_outputs_var
+        )
+
         self.TT_seperation_lbl = ttk.Label(
             self.operations_frame,
             text="                  ------           "
@@ -140,13 +151,15 @@ class TTG_gui(tk.Toplevel):
         self.function2InputBoxLabel.grid(row=2, columnspan=2, sticky="EW")
         self.TT_num_input_Label.grid(row=3, columnspan=2, sticky="EW")
         self.num_inputs_entry.grid(row=3, column=1, sticky="EW")
-        self.generate_table_btn.grid(row=4, columnspan=2, sticky="EW")
-        self.TT_seperation_lbl.grid(row=5, columnspan=2, sticky="EW")
-        self.btn_Minterms_calculate.grid(row=6, columnspan=2, sticky="EW")
-        self.btn_Maxterms_calculate.grid(row=7, columnspan=2, sticky="EW")
+        self.TT_num_output_Label.grid(row=4, columnspan=2, sticky="EW")
+        self.num_outputs_entry.grid(row=4, column=1, sticky="EW")
+        self.generate_table_btn.grid(row=5, columnspan=2, sticky="EW")
+        self.TT_seperation_lbl.grid(row=6, columnspan=2, sticky="EW")
+        self.btn_Minterms_calculate.grid(row=7, columnspan=2, sticky="EW")
+        self.btn_Maxterms_calculate.grid(row=8, columnspan=2, sticky="EW")
 
-        self.exit_Label.grid(row=8, columnspan=2, sticky="EW")
-        self.btn_back.grid(row=9, columnspan=2, sticky="EW")
+        self.exit_Label.grid(row=9, columnspan=2, sticky="EW")
+        self.btn_back.grid(row=10, columnspan=2, sticky="EW")
 
 
         self.entry_frame.grid_configure(padx=20, pady=(20))
@@ -184,22 +197,29 @@ class TTG_gui(tk.Toplevel):
 
                 num_inputs = self.truth_table_frame.get_tablenuminputs()
 
-                function = "F("
+                answer = ""
+                
+                for out in range(0, len(minterms)):
+                    minterm = minterms[out]
+                    function = "F("
 
-                for i in range(0, num_inputs):
-                    function += f"{chr(65 + i)},"
+                    for i in range(0, num_inputs):
+                        function += f"{chr(65 + i)},"
 
-                function = function[:-1]
+                    function = function[:-1]
 
-                function += f") = Z'm({','.join(map(str, minterms))})"
-                self.functionInputBox.delete(0, tk.END)
-                self.functionInputBox.insert(tk.END, function)
+                    function += f") = Z'm({','.join(map(str, minterm))})"
+                    self.functionInputBox.delete(0, tk.END)
+                    self.functionInputBox.insert(tk.END, function)
 
-                ttg_Thinker = TTG_Thinker.TruthTableToGates(function)
-                self.Write_output_TB("Calculating!")
-                ttg_Thinker.calculateanswer()
+                    ttg_Thinker = TTG_Thinker.TruthTableToGates(function, f"{''.join(map(str, minterm[:7]))}pt{out+1}")
+                    self.Write_output_TB("Calculating!")
+                    ttg_Thinker.calculateanswer()
+                    answer += f"{ttg_Thinker.get_Answer()}, "
 
-                self.Write_output_TB(f"Answer ='s : {ttg_Thinker.get_Answer()}")
+                answer = answer[:-2]
+                    
+                self.Write_output_TB(f"Answer ='s : {answer}")
             except:
                 self.Write_output_TB("An error has occurred, try fixing your input")
 
@@ -246,6 +266,7 @@ class TruthTableApp:
         self.TruthTableCreator.pack(padx=10, pady=10)
 
         self.num_inputs_var = tk.StringVar()
+        self.num_outputs_var = tk.StringVar()
 
         self.inputs = []
         self.outputs = []
@@ -273,7 +294,8 @@ class TruthTableApp:
 
 
         self.tablenuminputs = 3
-        self.generate_table(self.tablenuminputs)
+        self.tablenumoutputs = 1
+        self.generate_table(self.tablenuminputs, self.tablenumoutputs)
 
     def on_table_configure(self, event):
         self.table_canvas.configure(scrollregion=self.table_canvas.bbox("all"))
@@ -295,76 +317,82 @@ class TruthTableApp:
 
         return list
 
-    def generate_table(self, inputs=0):
+    def generate_table(self, inputs=0, outputs=0):
         def generate():
             try:
-                if inputs != 0:
+                if (inputs != 0 and outputs != 0):
                     num_inputs = inputs
-                else:   
+                    num_outputs = outputs
+                else:
                     num_inputs = int(self.num_inputs_var.get())
+                    num_outputs = int(self.num_outputs_var.get())
 
-                self.tablenuminputs = num_inputs
-
-                if num_inputs >= 13:
+                if num_inputs >= 13 or num_outputs >= 13:
                     return
 
+                self.tablenuminputs = num_inputs
+                self.tablenumoutputs = num_outputs
             except ValueError:
-                messagebox.showerror("Error", "Please enter a valid number.")
+                messagebox.showerror("Error", "Please enter valid numbers for inputs and outputs.")
                 return
 
             self.clear_table()
 
             num_rows = 2 ** num_inputs
 
+            self.output_values = [[] for _ in range(num_outputs)]  # List of lists to store output values
+
             for i in range(num_inputs):
                 label = tk.Label(self.table, text=chr(65 + i))
                 label.grid(row=0, column=i + 1)
                 self.inputs.append(0)
 
-            label = tk.Label(self.table, text="Output")
-            label.grid(row=0, column=num_inputs + 1)
+            for j in range(num_outputs):
+                label = tk.Label(self.table, text=f"Output {j+1}")
+                label.grid(row=0, column=num_inputs + j + 1)
 
             label = tk.Label(self.table, text="Num")
-            label.grid(row=0, column=num_inputs + 2)
-
-            rows = [False for thing in range(num_inputs)]
+            label.grid(row=0, column=num_inputs + num_outputs + 1)
 
             for i in range(num_rows):
                 row_num = i
+                rows = [int(bit) for bit in bin(i)[2:].zfill(num_inputs)]
 
                 for j in range(num_inputs):
-
-                    if rows[j] == True:
-                        val = 1
-                    else:
-                        val = 0
-
-                    label = tk.Label(self.table, text=str(val))
+                    label = tk.Label(self.table, text=str(rows[j]))
                     label.grid(row=i + 1, column=j + 1)
-                    self.inputs[j] = val
+                    self.inputs[j] = rows[j]
 
-                output = tk.Label(self.table, text="0", bg="black", relief=tk.SOLID, borderwidth=1, width=5)
-                output.grid(row=i + 1, column=num_inputs + 1)
-                output.bind("<Button-1>", lambda event, row=i: self.toggle_output(row))
-                self.outputs.append(output)
-                
+                for k in range(num_outputs):
+                    output = tk.Label(self.table, text="0", bg="black", relief=tk.SOLID, borderwidth=1, width=5)
+                    output.grid(row=i + 1, column=num_inputs + k + 1)
+                    output.bind("<Button-1>", lambda event, row=i, col=k: self.toggle_output(row, col))
+                    self.output_values[k].append(output)  # Store output value in the corresponding list
+
                 row_num_lbl = tk.Label(self.table, text=str(row_num))
-                row_num_lbl.grid(row=i + 1, column=num_inputs + 2)
-
-                rows = self.binaryCountingWithList(rows)
+                row_num_lbl.grid(row=i + 1, column=num_inputs + num_outputs + 1)
 
         threading.Thread(target=generate).start()
 
-    def toggle_output(self, row):
-        current_val = int(self.outputs[row].cget("text"))
-        new_val = 1 - current_val
-        self.outputs[row].configure(text=str(new_val))
 
-    def get_minterms(self):
-        rows_with_output_1 = [i for i, output in enumerate(self.outputs) if int(output.cget("text")) == 1]
-        self.minterms = rows_with_output_1
-        return rows_with_output_1
-        #messagebox.showinfo("Minterms", rows_with_output_1)
+    def toggle_output(self, row, col):
+        current_val = int(self.output_values[col][row].cget("text"))
+        new_val = 1 - current_val
+        self.output_values[col][row].configure(text=str(new_val))
+
+
+    def get_minterms(self) -> list:
+        minterms = []
+        for col, outputs in enumerate(self.output_values):
+            minterms_for_output = []
+            for row, output in enumerate(outputs):
+                if int(output.cget("text")) == 1:
+                    minterms_for_output.append(row)
+            minterms.append(minterms_for_output)
+
+        self.minterms = minterms
+        #print(self.minterms)
+        return minterms
 
     def get_Maxterms(self):
         rows_with_output_0 = [i for i, output in enumerate(self.outputs) if int(output.cget("text")) == 0]

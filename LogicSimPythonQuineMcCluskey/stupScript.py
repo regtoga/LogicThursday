@@ -11,8 +11,8 @@ build_exe_options = {
 }
 
 setup(
-    name = "LogicThursdayV1.5.1",
-    version = "1.5.1",
+    name = "LogicThursdayV1.6",
+    version = "1.6",
     description = "AidanNewberry's Basic Logic Simulation Platform",
     options={"build_exe": build_exe_options},
     executables = [Executable("GUI_GTT_TTG_MAIN.py", base=base)]
