@@ -17,7 +17,7 @@ class TTG_gui(tk.Toplevel):
         super().__init__(main_menu_ref)
 
         self.geometry(position)
-        self.geometry("1200x600")
+        self.geometry("1100x600")
         self.resizable(False, False)
 
         self.title("TTG")
@@ -181,7 +181,17 @@ class TTG_gui(tk.Toplevel):
         def calc():
             try:
                 minterms = self.truth_table_frame.get_minterms()
-                function = f"Z'm({','.join(map(str, minterms))})"
+
+                num_inputs = self.truth_table_frame.get_tablenuminputs()
+
+                function = "F("
+
+                for i in range(0, num_inputs):
+                    function += f"{chr(65 + i)},"
+
+                function = function[:-1]
+
+                function += f") = Z'm({','.join(map(str, minterms))})"
                 self.functionInputBox.delete(0, tk.END)
                 self.functionInputBox.insert(tk.END, function)
 
@@ -261,7 +271,9 @@ class TruthTableApp:
 
         self.table.bind("<Configure>", self.on_table_configure)
 
-        self.generate_table(3)
+
+        self.tablenuminputs = 3
+        self.generate_table(self.tablenuminputs)
 
     def on_table_configure(self, event):
         self.table_canvas.configure(scrollregion=self.table_canvas.bbox("all"))
@@ -290,6 +302,8 @@ class TruthTableApp:
                     num_inputs = inputs
                 else:   
                     num_inputs = int(self.num_inputs_var.get())
+
+                self.tablenuminputs = num_inputs
 
                 if num_inputs >= 10:
                     return
@@ -357,6 +371,9 @@ class TruthTableApp:
         self.maxterms = rows_with_output_0
         return rows_with_output_0
         #messagebox.showinfo("Maxterms", rows_with_output_0)
+
+    def get_tablenuminputs(self):
+        return self.tablenuminputs
 
     def clear_table(self):
         for widget in self.table.winfo_children():

@@ -13,7 +13,7 @@ class Info_gui(tk.Toplevel):
         # set window location on screen 100 pixels right 100 pixels down
         # the window size will change based on the controls
         self.geometry(position)
-        self.geometry("1200x600")
+        self.geometry("1100x600")
         self.resizable(False, False)
 
         """self.iconbitmap("icon.ico")"""
