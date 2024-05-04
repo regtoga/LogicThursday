@@ -283,7 +283,7 @@ class TruthTableApp:
             text="TruthTable: ",
             relief="groove"
         )
-        self.TruthTableCreator.pack(padx=10, pady=10)
+        self.TruthTableCreator.grid(row=0, column=0, padx=10, pady=10)
 
         self.num_inputs_var = tk.StringVar()
         self.num_outputs_var = tk.StringVar()
@@ -295,23 +295,26 @@ class TruthTableApp:
             self.TruthTableCreator,
             text="Enter number of inputs: "
         )
+        self.outputboxLabel.grid(row=0, column=0)
 
         self.table_frame = tk.Frame(self.TruthTableCreator)
-        self.table_frame.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
+        self.table_frame.grid(row=1, column=0, sticky="nsew")
 
         self.table_canvas = tk.Canvas(self.table_frame)
-        self.table_canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        self.table_canvas.grid(row=0, column=0, sticky="nsew")
 
-        self.table_scrollbar = tk.Scrollbar(self.table_frame, orient=tk.VERTICAL, command=self.table_canvas.yview)
-        self.table_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        self.table_scrollbar_y = tk.Scrollbar(self.table_frame, orient=tk.VERTICAL, command=self.table_canvas.yview)
+        self.table_scrollbar_y.grid(row=0, column=1, sticky="ns")
+        self.table_canvas.configure(yscrollcommand=self.table_scrollbar_y.set)
 
-        self.table_canvas.configure(yscrollcommand=self.table_scrollbar.set)
+        self.table_scrollbar_x = tk.Scrollbar(self.table_frame, orient=tk.HORIZONTAL, command=self.table_canvas.xview)
+        self.table_scrollbar_x.grid(row=1, column=0, sticky="ew")
+        self.table_canvas.configure(xscrollcommand=self.table_scrollbar_x.set)
 
         self.table = tk.Frame(self.table_canvas)
         self.table_id = self.table_canvas.create_window((0, 0), window=self.table, anchor=tk.NW)
 
         self.table.bind("<Configure>", self.on_table_configure)
-
 
         self.tablenuminputs = 3
         self.tablenumoutputs = 1
@@ -320,20 +323,20 @@ class TruthTableApp:
     def on_table_configure(self, event):
         self.table_canvas.configure(scrollregion=self.table_canvas.bbox("all"))
 
-    def binaryCountingWithList(self, list:list) -> list:
+    def binaryCountingWithList(self, list: list) -> list:
         "function that will do binary counting on a list of boolean values"
         listlen = len(list)
-        index = listlen-1
+        index = listlen - 1
 
-        #all that this does is if the end of the list is already true when NOT'ing it it will make the next digit the new end and repeat the process
+        # all that this does is if the end of the list is already true when NOT'ing it it will make the next digit the new end and repeat the process
         while index >= 0:
             currentlistvalue = list[index]
             if currentlistvalue != True:
-                list[index] = not(list[index])
+                list[index] = not (list[index])
                 break
-            list[index] = not(list[index])
+            list[index] = not (list[index])
 
-            index -=1
+            index -= 1
 
         return list
 
@@ -368,7 +371,7 @@ class TruthTableApp:
                 self.inputs.append(0)
 
             for j in range(num_outputs):
-                label = tk.Label(self.table, text=f"Output {j+1}")
+                label = tk.Label(self.table, text=f"Output {j + 1}")
                 label.grid(row=0, column=num_inputs + j + 1)
 
             label = tk.Label(self.table, text="Num")
@@ -394,12 +397,10 @@ class TruthTableApp:
 
         threading.Thread(target=generate).start()
 
-
     def toggle_output(self, row, col):
         current_val = int(self.output_values[col][row].cget("text"))
         new_val = 1 - current_val
         self.output_values[col][row].configure(text=str(new_val))
-
 
     def get_minterms(self) -> list:
         minterms = []
@@ -411,7 +412,7 @@ class TruthTableApp:
             minterms.append(minterms_for_output)
 
         self.minterms = minterms
-        #print(self.minterms)
+        # print(self.minterms)
         return minterms
 
     def get_maxterms(self) -> list:
@@ -424,7 +425,7 @@ class TruthTableApp:
             maxterms.append(maxterms_for_output)
 
         self.maxterms = maxterms
-        #print(self.maxterms)
+        # print(self.maxterms)
         return maxterms
 
     def get_tablenuminputs(self):
@@ -435,6 +436,7 @@ class TruthTableApp:
             widget.destroy()
         self.inputs.clear()
         self.outputs.clear()
+
 
 
 # Run the TTG Menu!
