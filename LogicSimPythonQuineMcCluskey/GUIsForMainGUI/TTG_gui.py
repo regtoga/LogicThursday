@@ -45,7 +45,8 @@ class TTG_gui(tk.Toplevel):
         self.TruthTableCreator = ttk.LabelFrame(
             self,
             text="TruthTableCreator",
-            relief="groove"
+            relief="groove",
+            height=700  # Adjust the height here (700 pixels)
         )
 
         self.entry_frame.grid(row=0, column=0, sticky="NW")
@@ -300,7 +301,7 @@ class TruthTableApp:
         self.table_frame = tk.Frame(self.TruthTableCreator)
         self.table_frame.grid(row=1, column=0, sticky="nsew")
 
-        self.table_canvas = tk.Canvas(self.table_frame)
+        self.table_canvas = tk.Canvas(self.table_frame, height=490)  # Adjust the height here
         self.table_canvas.grid(row=0, column=0, sticky="nsew")
 
         self.table_scrollbar_y = tk.Scrollbar(self.table_frame, orient=tk.VERTICAL, command=self.table_canvas.yview)
@@ -316,7 +317,7 @@ class TruthTableApp:
 
         self.table.bind("<Configure>", self.on_table_configure)
 
-        self.tablenuminputs = 3
+        self.tablenuminputs = 4
         self.tablenumoutputs = 1
         self.generate_table(self.tablenuminputs, self.tablenumoutputs)
 
