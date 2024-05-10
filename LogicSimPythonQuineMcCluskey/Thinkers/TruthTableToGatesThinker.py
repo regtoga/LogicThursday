@@ -632,6 +632,7 @@ class TruthTableToGates():
         
         #check every column of of the implicants table to find the columns where there is only one 1 then append them to the list
         onlyone = []
+        onlyonetermsinvolved = []
         for minterm in self.Minterms:
             SQL = f"""SELECT * FROM stl_primeimplicanttable WHERE m{minterm} = 1"""
             self.cursor.execute(SQL)
@@ -639,6 +640,107 @@ class TruthTableToGates():
             if len(result) == 1:
                 if result[0][1] not in onlyone:
                     onlyone.append(result[0][1])
+                    onlyonetermsinvolved.append(result[0][2])
+
+
+        #Take the lists of onlyones and search it to see if there are any minterms missing from all the functions
+        #if there is then we need to make that happen mimimally.
+        #print(onlyonetermsinvolved)
+
+        #all numbers involved just numbers
+        justnumbersinvolved = []
+        
+        #iterate though every term in the terms involved.
+        for terminvolved in onlyonetermsinvolved:
+            #Get rid of the decorative m's
+            terminvolved = terminvolved.replace("m","")
+            terminvolved = terminvolved.replace("M","")
+            #Get len of terminvolved
+            lenterminvolved = len(terminvolved)
+            #Create a variable to store the current number in the terms involved
+            numberstr = ""
+            #keep track of all numbers 
+            numbers = []
+            #iterate through every value of the term involved
+            for index in range(0,lenterminvolved):
+                if terminvolved[index] == "-":
+                    #Convert numberstr into a int
+                    number = int(numberstr)
+                    numbers.append(number)
+
+                    #reset the numberstr to get ready for the next number     
+                    numberstr = ""
+                else:
+                    #add the current char to the string to be converted into a number
+                    numberstr += terminvolved[index]
+
+                    if lenterminvolved == index+1:
+                        #Convert numberstr into a int
+                        number = int(numberstr)
+                        numbers.append(number)
+
+            justnumbersinvolved.append(numbers)
+
+        #compare if the list of rangeonlyonetermsinvolved includes atleast one of each minterm in the input function to make shure we dont have any not covered
+        #self.Minterms
+        
+        #list to store the minterms missing
+        termsnotyetintegrated = []
+
+        for term in self.Minterms:
+            inside = False
+            for numberss in justnumbersinvolved:
+                if term in numberss:
+                    #if this passes even once somewhere is that minterm in the list
+                    inside = True
+            #after all the current numbersinvolved have been compared against the minterms given at the start we can
+            #decide what was some how left out, i dont know why this is...
+            if inside == False:
+                if term not in termsnotyetintegrated:
+                    termsnotyetintegrated.append(term)
+                
+        #print(termsnotyetintegrated)
+
+
+        #list of all possibly needed to add additional matched pairs.
+        #there are two of them because if i get less matches running from a different side then that side is more minimal!
+        additionalmatchedpairsleft = []
+        additionalmatchedpairsright = []
+
+        #1
+        #check every column of of the implicants AGAIN table to add the ones that were missed then append them to the list
+        for minterm in termsnotyetintegrated:
+            SQL = f"""SELECT * FROM stl_primeimplicanttable WHERE m{minterm} = 1"""
+            self.cursor.execute(SQL)
+            result = self.cursor.fetchall()
+
+            if result[0][1] not in additionalmatchedpairsleft:
+                additionalmatchedpairsleft.append(result[0][1])  
+
+        #2
+        #check every column of of the implicants AGAIN table to add the ones that were missed then append them to the list
+        for minterm in reversed(termsnotyetintegrated):
+            SQL = f"""SELECT * FROM stl_primeimplicanttable WHERE m{minterm} = 1"""
+            self.cursor.execute(SQL)
+            result = self.cursor.fetchall()
+
+            if result[0][1] not in additionalmatchedpairsright:
+                additionalmatchedpairsright.append(result[0][1])  
+
+        lenadditionalleft = len(additionalmatchedpairsleft)
+        lenadditionalright = len(additionalmatchedpairsright)
+
+        #print(additionalmatchedpairsleft, lenadditionalleft)
+
+        #print(additionalmatchedpairsright, lenadditionalright)
+        
+        #check which way has less terms then output that one
+        if lenadditionalleft <= lenadditionalright:
+            for term in additionalmatchedpairsleft:
+                onlyone.append(term)
+        else:
+            for term in additionalmatchedpairsright:
+                onlyone.append(term)
 
         #Take the list of answers and put them in the correct format
         self.answer = "F = "
@@ -649,10 +751,12 @@ class TruthTableToGates():
                 self.answer += " + "
             howmanyones -= 1
 
+        #Make shure the program actually writes to the disk
+        self.connection.commit()
+
         #If you where to print the answer you would be done!
         return 0
 
-    
     def calculateanswer(self) -> bool:
         """Essentially runs all the step functions to calculate the final answer, It is possible to calculate the answer step by step by putting in the functions one by one:
         1. self.TruthTableDataIntoTruthTable() -- Make shure input is in correct format
