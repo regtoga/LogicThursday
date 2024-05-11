@@ -216,7 +216,7 @@ class TTG_gui(tk.Toplevel):
                     self.functionInputBox.delete(0, tk.END)
                     self.functionInputBox.insert(tk.END, function)
 
-                    ttg_Thinker = TTG_Thinker.TruthTableToGates(function, f"{''.join(map(str, minterm[:7]))}pt{out+1}")
+                    ttg_Thinker = TTG_Thinker.TruthTableToGates(function, f"{''.join(map(str, minterm[:7]))}pt{out+1}.db")
                     self.Write_output_TB("Calculating!")
                     ttg_Thinker.calculateanswer()
                     answer += f"{ttg_Thinker.get_Answer()}\n"
