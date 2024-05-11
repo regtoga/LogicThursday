@@ -575,6 +575,8 @@ class TruthTableToGates():
             After all matched pairs/Prime implicants are found we need to make a new table called the Prime Implicant Table:
             This table has one purpose, make it obious which minterms used in a prime implicant show up only once. If If there is a pair of two-
             that only show up once we write down the Prime Implicants in the ouput function and go find if there are any more. If there arnt we have our answer.
+
+            I want it to be said that you can use SQL to check if a column has a number for example query the matched_pairs_involved table with "m52" and you will get one of the results with that in it!
         """
 
         chosenPrimeImplicants = []
