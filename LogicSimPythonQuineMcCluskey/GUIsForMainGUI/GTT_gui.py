@@ -79,7 +79,12 @@ class GTT_gui(tk.Toplevel):
 
         # ------------------------- GRID WIDGETS ---------------------#
         
-        self.outputtextbox.config(state=tk.DISABLED)
+        # Create a vertical scrollbar
+        scrollbar = tk.Scrollbar(self.entry_frame, orient=tk.VERTICAL, command=self.outputtextbox.yview)
+        scrollbar.grid(row=1, column=2, sticky="NS")
+
+        self.outputtextbox.config(yscrollcommand=scrollbar.set, state=tk.DISABLED)
+        self.outputtextbox.grid(row=1, columnspan=2, sticky="EW")
 
         #entry frame widgets
         self.functionInputBoxLabel.grid(row=0, column=0, sticky="EW")

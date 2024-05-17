@@ -1,4 +1,5 @@
 import sys
+import os
 
 import tkinter as tk
 import tkinter.ttk as ttk
@@ -49,11 +50,20 @@ class Info_gui(tk.Toplevel):
             command=self.back_to_main_menu
         )
 
+        # Create a scrollbar
+        self.scrollbar = tk.Scrollbar(self.entry_frame)
+        self.scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+        # Create the Text widget
         self.textbox = tk.Text(
             self.entry_frame,
             height=20,
-            width=100
+            width=100,
+            yscrollcommand=self.scrollbar.set
         )
+
+        # Configure the scrollbar to work with the Text widget
+        self.scrollbar.config(command=self.textbox.yview)
 
         # ------------------------- GRID WIDGETS ---------------------#
         self.btn_back.grid(row=0, column=0, sticky="EW")
@@ -66,29 +76,22 @@ class Info_gui(tk.Toplevel):
         for widget in self.operations_frame.winfo_children():
             widget.grid_configure(padx=7, pady=7)
 
-        self.textbox.pack()
+        self.textbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-        #set the textbox to have text
-        self.textbox.insert(tk.END, 
-"""This is the info page: 
-This program in its very crude state while fully* functional should get better in the future.
-There are so many things i want to add i could literally spend a full year developing this thing,
-but I digress.
+        # Load the content of info.txt into the Text widget
+        try:
+            # Get the directory where the script is located
+            script_dir = os.path.dirname(__file__)
+            # Construct the full path to the info.txt file
+            file_path = os.path.join(script_dir, 'info.txt')
 
-it is here that I will explain the GTT program at a simple level: 
-the GTT (Gates to TruthTable) program takes gates in this form 
-F = AB'C'DEF'G + A'B'C'D'E'FG' + A'B'C'D'E'F'G
-and returns a function that describes a truth table, meaning you can construct every possible input and output from the function.
+            with open(file_path, 'r') as file:
+                content = file.read()
+                self.textbox.insert(tk.END, content)
+        except FileNotFoundError:
+            self.textbox.insert(tk.END, "info.txt file not found.")
 
-The TTG (Truth Table to Gates) program on the other hand does the opposite with a truth table,
-we can minimize the ammount of logic gates needed to fufill the table.
-This process is called circut minimization. These functions look like this:
-F(A,B,C) = Z'm(2,3,4,5)+Z'd(6,7)
-
-Now hopefully enough of that made sense that you can try it out for your self...
-I am very thankful for anyone who has read this far and thank you for taking a look at my program!""")
-        
-        #make the textbox uneditable
+        # Make the textbox uneditable
         self.textbox.config(state=tk.DISABLED)
 
     def back_to_main_menu(self):
