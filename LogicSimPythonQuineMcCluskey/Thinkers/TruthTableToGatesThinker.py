@@ -82,7 +82,6 @@ class TruthTableToGates():
             
             #itterate though every value of TruthTable and find the portion where the minterm or maxterm is stored.
                     
-            """Might? need an amendment for if the input vars go from A-M because it will start always solving for Max Terms if the bug isnt fixed"""
             for character in self.TruthTable:
                 if character == "'":
                     BeginCounting = 1
@@ -453,9 +452,18 @@ class TruthTableToGates():
 
         unsortedBinaryTerms = []
 
-        #------------------------------------------------------------------------------------
-        #convert decimal to binary and sort them in their binary format
-        for term in self.Minterms:
+        if self.MinorMax == "minterms":
+            # Combine minterms and dont cares into one list
+            all_terms = self.Minterms + self.DontCares
+        elif self.MinorMax == "Maxterms":
+            # Combine minterms and dont cares into one list
+            all_terms = self.Maxterms + self.DontCares
+
+        # Sort the combined list
+        sorted_terms = sorted(all_terms)
+
+        # Convert sorted terms to binary and append to unsortedBinaryTerms
+        for term in sorted_terms:
             decimal = convertdecimaltobinarywithzeros(term, NumInputVars)
             unsortedBinaryTerms.append(decimal)
 
@@ -467,7 +475,12 @@ class TruthTableToGates():
 
         for term in sortedBinaryTerms:
             DecimalTerm = convertbinarytodecimal(term)
-            sortedDecimalTerms.append(f"m{DecimalTerm}")
+            if DecimalTerm in self.Minterms:
+                sortedDecimalTerms.append(f"m{DecimalTerm}")
+            elif DecimalTerm in self.Maxterms:
+                sortedDecimalTerms.append(f"M{DecimalTerm}")
+            elif DecimalTerm in self.DontCares:
+                sortedDecimalTerms.append(f"d{DecimalTerm}")
 
         #------------------------------------------------------------------------------------
         #as we append the data to the table we need to find out the groups to know which binary numbers to compare
@@ -485,7 +498,7 @@ class TruthTableToGates():
 
         return 0
     
-    def findMatchedpairs(self, matchedpairstable:int="1") -> bool:
+    def findMatchedpairs(self, matchedpairstable:str="1") -> bool:
         """
         Step 2:
             Find Match Pairs by comparing EVERY minterm in a group with every other minterm in group +1 of that minterm.
@@ -545,9 +558,9 @@ class TruthTableToGates():
                     A pairing of (1,9,3,11) would break this rule: 1 < 9 !< 3 < 11"""
 
                     #should get the last bit involved in the first minterm
-                    firstgrouplastbit = int(((grouppp[2]).replace('-',' ').replace('m','').replace('M','').split())[-1])
+                    firstgrouplastbit = int(((grouppp[2]).replace('-',' ').replace('m','').replace('M','').replace('d','').split())[-1])
                     #should get the first bit involved in the first minterm
-                    secondgroupfristbit = int(((groupppp[2]).replace('-',' ').replace('m','').replace('M','').split())[0])
+                    secondgroupfristbit = int(((groupppp[2]).replace('-',' ').replace('m','').replace('M','').replace('d','').split())[0])
 
                     if differentbits != "NA":
                         #---
@@ -606,7 +619,7 @@ class TruthTableToGates():
         primeImplicants = []
         mintermsinvolved = []
 
-        for counter in range(5):
+        for counter in range(6):
             #Fetch all records from the first matched pairs table
             self.cursor.execute(f"Select * FROM stl_matchedpairs{counter+1} WHERE checked = 0")
             Matchedpairdata = self.cursor.fetchall()
@@ -633,29 +646,63 @@ class TruthTableToGates():
 
         #This Piece of shit (lol) literaly just takes a string "m1-m3-m5-m3" and converts it into a list [[m1,m3,m5,m3]]
         for index in range(0, len(mintermsinvolved)):
-
+            #setup variables
             mintermsql = ", "
             mintermsqldata = [1]
             mintermsqlquestions = "?"
+            dontcare = False
+            lastchar = ''
 
+            #for each char in a string ex: "m1-m3-m5-m3"
             for character in mintermsinvolved[index]:
+                #if the char is a dont care dont append anything untill the char we are working with is not a dont care
+                if character == 'd':
+                    dontcare = True
+                    if lastchar == '-':
+                        #if the last char was a '-' then we have to take of some bad data that should have been here in the first place
+                        mintermsqldata.remove(1)
+                        mintermsql = mintermsql[:-2]
+                        mintermsqlquestions = mintermsqlquestions[:-3]
+                    elif lastchar == '':
+                        mintermsqldata.remove(1)
+                        mintermsql = mintermsql[:-2]
+                        mintermsqlquestions = mintermsqlquestions[:-1]
 
-                if character == '-':
+                elif character == '-':
+                    #if the char is a '-' append that data needed to seperate this term from the last one
                     mintermsql += ", "
                     mintermsqldata.append(1)
-                    mintermsqlquestions += ", ?"
-                else:
-                    mintermsql += character
-            
-            SQL = f"""INSERT INTO stl_primeimplicanttable (prime_implicants,matched_pairs_involved{mintermsql}) VALUES ("{primeImplicants[index]}","{mintermsinvolved[index]}", {mintermsqlquestions})"""
+                    if mintermsqlquestions == '':
+                        mintermsqlquestions += "?"
+                    else:
+                        mintermsqlquestions += ", ?"
+                    
 
-            """print(f"{SQL} << {datatoinsert}")
-            print("\n")"""
-            self.cursor.executemany(SQL, [mintermsqldata])
+                elif ((character == 'm' or character == 'M') and (dontcare == True)):
+                    #cherck if current answer is a dont care and if it is not dont care is true
+                    dontcare = False
+                    mintermsql += character
+
+                else:
+                    #if none of that stuff is true append the char to the working data
+                    if dontcare == False:
+                        mintermsql += character
+
+                lastchar = character
+            
+            if mintermsqldata != []:
+
+                SQL = f"""INSERT INTO stl_primeimplicanttable (prime_implicants,matched_pairs_involved{mintermsql}) VALUES ("{primeImplicants[index]}","{mintermsinvolved[index]}", {mintermsqlquestions})"""
+
+                """print(f"{SQL}")
+                print("\n")"""
+                self.cursor.executemany(SQL, [mintermsqldata])
         #---
         
-        
+        self.connection.commit()
+
         #check every column of of the implicants table to find the columns where there is only one 1 then append them to the list
+        #if we are solving for max terms is this still correct?----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
         onlyone = []
         onlyonetermsinvolved = []
         for minterm in self.Minterms:
@@ -680,6 +727,35 @@ class TruthTableToGates():
             #Get rid of the decorative m's
             terminvolved = terminvolved.replace("m","")
             terminvolved = terminvolved.replace("M","")
+
+            #remove all the terms that begin with d until the - or end
+            terminvolved += "-"
+            def delete_between(string, start, end):
+                """Deletes everything between the start and end characters in a string."""
+                newstring = ""
+                doappend = True
+
+                #go though each char in the string and if it is the starting char stop appending the string to the output, if it is the ending char start appending to the output
+                for i in range(0,len(string)):
+                    if string[i] == start:
+                        doappend = False
+                    if doappend == True:
+                        newstring += string[i]
+                    if string[i] == end:
+                        doappend = True
+
+                #if at the end there is still a thing you want gon from the end remove it
+                if newstring[-1] == end:
+                    newstring = newstring[:-1]
+
+                return newstring
+            
+            #print("1",terminvolved)
+            terminvolved = delete_between(terminvolved,"d","-")
+            #print("2",terminvolved)
+            #print("\n")
+
+
             #Get len of terminvolved
             lenterminvolved = len(terminvolved)
             #Create a variable to store the current number in the terms involved

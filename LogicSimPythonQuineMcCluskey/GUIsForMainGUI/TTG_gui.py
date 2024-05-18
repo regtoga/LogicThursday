@@ -28,10 +28,6 @@ class TTG_gui(tk.Toplevel):
         #set the title to TTG
         self.title("TTG")
 
-        #these variables are initialized to store the minterms and maxterms
-        self.minterms = []
-        self.maxterms = []
-
         #these are the setup functions that create the frames that the widgets go inside later
         self.CreateFrames()
         #this one creates the truthtablecreator section because its implemented very differently than the other widgets
@@ -260,7 +256,7 @@ class TTG_gui(tk.Toplevel):
             """Function for the worker thread to call so that the main program doesnt halt"""
             try:
                 #set up variables
-                minterms = self.TruthTableFrame.GetMinterms()
+                minterms, Maxterms, dontcares = self.TruthTableFrame.GetTerms()
                 numInputs = self.TruthTableFrame.GetTableNumInputs()
                 inputs = ""
                 outputs = ""
@@ -269,6 +265,7 @@ class TTG_gui(tk.Toplevel):
                 #calculate the numerous outputs
                 for out in range(0, len(minterms)):
                     minterm = minterms[out]
+                    dontcare = dontcares[out]
                     function = "F("
                     #this chr(65 + i) stuff essentially starts a loop at Capital A and then counts B, C, D, E...
                     #Makes the first part of the function F(A,B...
@@ -280,6 +277,11 @@ class TTG_gui(tk.Toplevel):
                     #add the rest of the function to the str version of the function
                     #The join function adds a comma between each minterm
                     function += f") = Z'm({','.join(map(str, minterm))})"
+
+                    #+Z'd(6,7)
+                    #add the dont cares to the end
+                    if dontcares != [[]]:
+                        function += f"+Z'd({','.join(map(str, dontcare))})"
 
                     #Each time something is being computed place the function inside the input space so that it makes since what the program is calculating at any moment
                     self.functionInputBox.delete(0, tk.END)
@@ -326,7 +328,7 @@ class TTG_gui(tk.Toplevel):
             """Function for the worker thread to call so that the main program doesnt halt"""
             try:
                 #set up variables
-                Maxterms = self.TruthTableFrame.GetMaxterms()
+                minterms, Maxterms, dontcares = self.TruthTableFrame.GetTerms()
                 numInputs = self.TruthTableFrame.GetTableNumInputs()
                 inputs = ""
                 outputs = ""
@@ -335,6 +337,7 @@ class TTG_gui(tk.Toplevel):
                 #calculate the numerous outputs
                 for out in range(0, len(Maxterms)):
                     maxterm = Maxterms[out]
+                    dontcare = dontcares[out]
                     function = "F("
                     #this chr(65 + i) stuff essentially starts a loop at Capital A and then counts B, C, D, E...
                     #Makes the first part of the function F(A,B...
@@ -346,6 +349,11 @@ class TTG_gui(tk.Toplevel):
                     #add the rest of the function to the str version of the function
                     #The join function adds a comma between each maxterm
                     function += f") = Z'M({','.join(map(str, maxterm))})"
+
+                    #+Z'd(6,7)
+                    #add the dont cares to the end
+                    if dontcares != [[]]:
+                        function += f"+Z'd({','.join(map(str, dontcare))})"
 
                     #Each time something is being computed place the function inside the input space so that it makes since what the program is calculating at any moment
                     self.functionInputBox.delete(0, tk.END)
@@ -472,6 +480,11 @@ class TruthTableApp:
         #Initalize inputs and outputs variables
         self.inputs = []
         self.outputs = []
+
+        #these variables are initialized to store the minterms and maxterms
+        self.minterms = []
+        self.maxterms = []
+        self.dontcares = []
         
         #Create a label with some directions
         self.LblDirections = tk.Label(
@@ -607,37 +620,36 @@ class TruthTableApp:
 
     def ToggleValueOutput(self, row, col):
         """Funtion toggles the value of a output button"""
-        CurrentVal = int(self.OutputValues[col][row].cget("text"))
-        NewVal = 1 - CurrentVal
+        CurrentVal = self.OutputValues[col][row].cget("text")
+        if CurrentVal == "0":
+            NewVal = 1
+        elif CurrentVal == "1":
+            NewVal = "X"
+        elif CurrentVal == "X":
+            NewVal = 0
+        #NewVal = 1 - CurrentVal
         self.OutputValues[col][row].configure(text=str(NewVal))
 
-    def GetMinterms(self) -> list:
-        """Gets the minterms anything that has output value of 1"""
-        minterms = []
+    def GetTerms(self) -> list:
+        """returns three things: minterms, Maxterms, dontcares"""
+        self.minterms = []
+        self.maxterms = []
+        self.dontcares = []
         for col, outputs in enumerate(self.OutputValues):
-            MintermsForOutput = []
+            mintermsForOutput = []
+            maxtermsForOutput = []
+            dontcaresForOutput = []
             for row, output in enumerate(outputs):
-                if int(output.cget("text")) == 1:
-                    MintermsForOutput.append(row)
-            minterms.append(MintermsForOutput)
-
-        self.minterms = minterms
-        # print(self.minterms)
-        return minterms
-
-    def GetMaxterms(self) -> list:
-        """Gets the minterms anything that has output value of 0"""
-        maxterms = []
-        for col, outputs in enumerate(self.OutputValues):
-            MaxtermsForOutput = []
-            for row, output in enumerate(outputs):
-                if int(output.cget("text")) == 0:
-                    MaxtermsForOutput.append(row)
-            maxterms.append(MaxtermsForOutput)
-
-        self.maxterms = maxterms
-        # print(self.maxterms)
-        return maxterms
+                if output.cget("text") == "1":
+                    mintermsForOutput.append(row)
+                elif output.cget("text") == "0":
+                    maxtermsForOutput.append(row)
+                elif output.cget("text") == "X":
+                    dontcaresForOutput.append(row)
+            self.minterms.append(mintermsForOutput)
+            self.maxterms.append(maxtermsForOutput)
+            self.dontcares.append(dontcaresForOutput)
+        return self.minterms, self.maxterms, self.dontcares
 
     def GetTableNumInputs(self):
         """Returns the number of Table Inputs"""
