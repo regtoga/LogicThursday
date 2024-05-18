@@ -35,6 +35,9 @@ class TruthTableToGates():
         self.Maxterms = []
         self.DontCares = []
 
+        #define variable that is used to keep track of how many matched pairs tables
+        self.numbermatchedpairstables = 0
+
         #vars for defining the num of min and max terms.
         self.numMax = 0
         self.nummin = 0
@@ -528,6 +531,24 @@ class TruthTableToGates():
 
                     #print(f"{grouppp[3]} checked via: {groupppp[3]} = {differentbits} different bits")
 
+                    #store the first and last numbers in a given set of minterms to make shure that we dont break the rule of:
+                    """So, if you notice throughout all of the pairings, the right hand value is consistently at least larger than the left hand value
+
+                    for example, (1,3), 3 is greater than 1, (3,7), 7 is greater than 3, (9,13), 13 is greater than 9
+
+                    This same concept is carried over to pairs with two dashes or differing bits:
+
+                    (1,3,9,11): 1 < 3 < 9 < 11
+                    (2,3,10,11): 2 < 3 < 10 < 11
+                    (3,7,11,15): 3 < 7 < 11 < 15
+
+                    A pairing of (1,9,3,11) would break this rule: 1 < 9 !< 3 < 11"""
+
+                    #should get the last bit involved in the first minterm
+                    firstgrouplastbit = int(((grouppp[2]).replace('-',' ').replace('m','').replace('M','').split())[-1])
+                    #should get the first bit involved in the first minterm
+                    secondgroupfristbit = int(((groupppp[2]).replace('-',' ').replace('m','').replace('M','').split())[0])
+
                     if differentbits != "NA":
                         #---
                         #Append the data to the table
@@ -537,8 +558,10 @@ class TruthTableToGates():
                         #data to insert
                         datatoinsert = [(differentbits.count('1'),f"{grouppp[2]}-{groupppp[2]}",f"{differentbits}",0)]
 
-                        #inserting data into the 'stl_matchedpairs1' table using placeholders
-                        self.cursor.executemany(SQL, datatoinsert)
+                        #i think that if i make an if statement that only appends stuff if the bit is bigger then we stay winning, but we have to check them off still? i think
+                        if firstgrouplastbit < secondgroupfristbit:
+                            #inserting data into the 'stl_matchedpairs1' table using placeholders
+                            self.cursor.executemany(SQL, datatoinsert)
 
                         #--
 
