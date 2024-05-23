@@ -13,7 +13,7 @@ try:
     import Thinkers.TruthTableToGatesThinker as TTG_Thinker
 except ImportError:
     # for local use, if it worked
-    import Thinkers.TruthTableToGatesThinker as TTG_Thinker
+    import Thinkers as TTG_Thinker
 
 
 class TTG_gui(tk.Toplevel):

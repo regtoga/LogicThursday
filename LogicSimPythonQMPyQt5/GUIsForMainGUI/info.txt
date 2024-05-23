@@ -1,0 +1,17 @@
+This is the info page: 
+This program in its very crude state while fully* functional should get better in the future.
+There are so many things i want to add i could literally spend a full year developing this thing,
+but I digress.
+
+it is here that I will explain the GTT program at a simple level: 
+the GTT (Gates to TruthTable) program takes gates in this form 
+F = AB'C'DEF'G + A'B'C'D'E'FG' + A'B'C'D'E'F'G
+and returns a function that describes a truth table, meaning you can construct every possible input and output from the function.
+
+The TTG (Truth Table to Gates) program on the other hand does the opposite with a truth table,
+we can minimize the ammount of logic gates needed to fufill the table.
+This process is called circut minimization. These functions look like this:
+F(A,B,C) = Z'm(2,3,4,5)+Z'd(6,7)
+
+Now hopefully enough of that made sense that you can try it out for your self...
+I am very thankful for anyone who has read this far and thank you for taking a look at my program!
