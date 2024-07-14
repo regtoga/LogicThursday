@@ -22,7 +22,7 @@ class TTG_gui(tk.Toplevel):
 
         #these variables set the posion and height/width of the TTG window, it is not resisable
         self.geometry(position)
-        self.geometry("1050x600")
+        self.geometry("1500x700")
         self.resizable(False, False)
 
         #set the title to TTG
@@ -462,173 +462,241 @@ class TTG_gui(tk.Toplevel):
         self.master.deiconify()  # Show main menu again
         self.destroy()  # Destroy current GUI
 
-
 class TruthTableApp:
     def __init__(self, root):
-        #Ground this window inside one referenced
+        # Ground this window inside one referenced
         self.root = root
 
-        #Create the Frame where the magic will happen
+        # Create the Frame where the magic will happen
         self.TruthTableCreatorFrame = ttk.LabelFrame(
             root,
             text="TruthTable: ",
             relief="groove"
         )
-        #Pad the frame inside
         self.TruthTableCreatorFrame.grid(row=0, column=0, padx=10, pady=10)
 
-        #Initalize inputs and outputs variables
+        # Initialize inputs and outputs variables
         self.inputs = []
         self.outputs = []
 
-        #these variables are initialized to store the minterms and maxterms
+        # these variables are initialized to store the minterms and maxterms
         self.minterms = []
         self.maxterms = []
         self.dontcares = []
-        
-        #Create a label with some directions
+
+        # Create a label with some directions
         self.LblDirections = tk.Label(
             self.TruthTableCreatorFrame,
             text="Click on output values to change them: "
         )
         self.LblDirections.grid(row=0, column=0)
 
-        #Create a frame for the table to be attatched to
-        self.TableFrame = tk.Frame(self.TruthTableCreatorFrame)
+        # Create a frame for the table to be attached to
+        self.TableFrame = ttk.Frame(self.TruthTableCreatorFrame)
         self.TableFrame.grid(row=1, column=0, sticky="nsew")
 
-        #Create a canvas for the parts of the TruthTable to sprall
-        self.TableCanvas = tk.Canvas(self.TableFrame, height=490)  # Adjust the height here
-        self.TableCanvas.grid(row=0, column=0, sticky="nsew")
+        # Initialize pagination variables
+        self.current_page = 0
+        self.rows_per_page = 16  # Default number of rows per page now set to 16
 
-        #makes a Up and Down Scrollbar
-        self.TableScrollbaryY = tk.Scrollbar(self.TableFrame, orient=tk.VERTICAL, command=self.TableCanvas.yview)
+        # Initialize input/output variable holders
+        self.NumInputsVar = tk.StringVar()
+        self.NumOutputsVar = tk.StringVar()
+        self.NumInputsVar.set("4")  # default value
+        self.NumOutputsVar.set("1")  # default value
+
+        # Set default number of inputs/outputs
+        self.TableNumInputs = int(self.NumInputsVar.get())
+        self.TableNumOutputs = int(self.NumOutputsVar.get())
+
+        # Create pagination controls
+        self.CreatePaginationControls()
+
+        # Create actual table container inside scrollable canvas
+        self.TableCanvas = tk.Canvas(self.TableFrame)
+        self.TableCanvas.grid(row=0, column=0, sticky="nsew")
+        self.Table = ttk.Frame(self.TableCanvas)
+        self.TableId = self.TableCanvas.create_window((0, 0), window=self.Table, anchor=tk.NW)
+        self.Table.bind("<Configure>", self.OnTableConfigure)
+
+        # Scrollbars
+        self.TableScrollbaryY = ttk.Scrollbar(self.TableFrame, orient=tk.VERTICAL, command=self.TableCanvas.yview)
         self.TableScrollbaryY.grid(row=0, column=1, sticky="ns")
         self.TableCanvas.configure(yscrollcommand=self.TableScrollbaryY.set)
 
-        #Makes a left and right Scrollbar
-        self.TableScrollbarX = tk.Scrollbar(self.TableFrame, orient=tk.HORIZONTAL, command=self.TableCanvas.xview)
+        self.TableScrollbarX = ttk.Scrollbar(self.TableFrame, orient=tk.HORIZONTAL, command=self.TableCanvas.xview)
         self.TableScrollbarX.grid(row=1, column=0, sticky="ew")
         self.TableCanvas.configure(xscrollcommand=self.TableScrollbarX.set)
 
-        #Make a Table Frame
-        self.Table = tk.Frame(self.TableCanvas)
-        self.TableId = self.TableCanvas.create_window((0, 0), window=self.Table, anchor=tk.NW)
-
-        #i dont actually understand what this does but i think it has to do with the scrollbars
-        self.Table.bind("<Configure>", self.OnTableConfigure)
-
-        #Generate initial table
-        TABLENUMINPUTS = 4
-        TABLENUMOUTPUTS = 1
-        self.GenerateTable(TABLENUMINPUTS, TABLENUMOUTPUTS)
+        # Generate initial table
+        self.GenerateTable()
 
     def OnTableConfigure(self, event):
-        #I dont get it
         self.TableCanvas.configure(scrollregion=self.TableCanvas.bbox("all"))
 
-    def BinaryCountingWithList(self, list: list) -> list:
-        "Function that will do binary counting on a list of boolean values"
-        ListLen = len(list)
-        index = ListLen - 1
+    def CreatePaginationControls(self):
+        """Create pagination controls"""
+        nav_frame = ttk.Frame(self.TruthTableCreatorFrame)
+        nav_frame.grid(row=2, column=0, pady=10)
 
-        # all that this does is if the end of the list is already true when NOT'ing it it will make the next digit the new end and repeat the process
-        while index >= 0:
-            CurrentListValue = list[index]
-            if CurrentListValue != True:
-                list[index] = not (list[index])
-                break
-            list[index] = not (list[index])
+        self.rows_per_page_var = tk.StringVar(value=self.rows_per_page)
+        rows_per_page_label = ttk.Label(nav_frame, text="Rows per page:")
+        rows_per_page_label.grid(row=0, column=0, padx=5)
+        rows_per_page_entry = ttk.Entry(nav_frame, textvariable=self.rows_per_page_var, width=5)
+        rows_per_page_entry.grid(row=0, column=1, padx=5)
 
-            index -= 1
+        update_rows_btn = ttk.Button(nav_frame, text="Update Rows per Page", command=self.UpdateRowsPerPage)
+        update_rows_btn.grid(row=0, column=2, padx=5)
 
-        return list
+        prev_btn = ttk.Button(nav_frame, text="<< Previous", command=self.PrevPage)
+        prev_btn.grid(row=1, column=0, padx=5)
+
+        self.page_label = ttk.Label(nav_frame, text="Page 1")
+        self.page_label.grid(row=1, column=1, padx=5)
+
+        next_btn = ttk.Button(nav_frame, text="Next >>", command=self.NextPage)
+        next_btn.grid(row=1, column=2, padx=5)
+
+        go_to_page_label = ttk.Label(nav_frame, text="Go to Page")
+        go_to_page_label.grid(row=2, column=0, padx=5)
+        self.go_to_page_var = tk.StringVar(value="1")
+        go_to_page_entry = ttk.Entry(nav_frame, textvariable=self.go_to_page_var, width=5)
+        go_to_page_entry.grid(row=2, column=1, padx=5)
+        go_to_page_btn = ttk.Button(nav_frame, text="Go", command=self.GoToPage)
+        go_to_page_btn.grid(row=2, column=2, padx=5)
+
+    def UpdateRowsPerPage(self):
+        try:
+            self.rows_per_page = int(self.rows_per_page_var.get())
+            self.current_page = 0
+            self.GenerateTable()
+        except ValueError:
+            pass
+            messagebox.showerror("Error", "Please enter a valid number for rows per page.")
+
+    def UpdatePageLabel(self):
+        total_rows = 2 ** self.TableNumInputs
+        total_pages = (total_rows + self.rows_per_page - 1) // self.rows_per_page
+        self.page_label.config(text=f"Page {self.current_page + 1} of {total_pages}")
+
+    def PrevPage(self):
+        if self.current_page > 0:
+            self.current_page -= 1
+            self.GenerateTable()
+
+    def NextPage(self):
+        total_rows = 2 ** self.TableNumInputs
+        total_pages = (total_rows + self.rows_per_page - 1) // self.rows_per_page
+        if self.current_page < total_pages - 1:
+            self.current_page += 1
+            self.GenerateTable()
+
+    def GoToPage(self):
+        try:
+            page = int(self.go_to_page_var.get()) - 1
+            total_rows = 2 ** self.TableNumInputs
+            total_pages = (total_rows + self.rows_per_page - 1) // self.rows_per_page
+            if 0 <= page < total_pages:
+                self.current_page = page
+                self.GenerateTable()
+        except ValueError:
+            messagebox.showerror("Error", "Please enter a valid page number.")
 
     def GenerateTable(self, inputs=0, outputs=0):
-        """Generates Table in the Table Frame on the Table Canvos"""
-        def generate():
+        """Generates Table in the Table Frame on the Table Canvas"""
+        try:
+            # If the inputs aren't default use the inputs
+            if inputs != 0 and outputs != 0:
+                numInputs = inputs
+                numOutputs = outputs
+            else:  # if the inputs are default get the values of the user input boxes
+                numInputs = int(self.NumInputsVar.get())
+                numOutputs = int(self.NumOutputsVar.get())
+
+            # Get rows per page from input
             try:
-                #If the inputs arenot default use the inputs
-                if (inputs != 0 and outputs != 0):
-                    numInputs = inputs
-                    numOutputs = outputs
-                #if theinputs are default get the values of the user input boxes
-                else:
-                    numInputs = int(self.NumInputsVar.get())
-                    numOutputs = int(self.NumOutputsVar.get())
-
-                #This section limits the ammount of outputs or inputs someone can generate
-                MAXINPUTSANDOUTPUTS = 30
-                if (numInputs + numOutputs) > MAXINPUTSANDOUTPUTS:
-                    messagebox.showerror("Error", f"Inputs ({numInputs}) + Outputs({numOutputs}) = {numInputs + numOutputs} <- NEEDS to be less than {MAXINPUTSANDOUTPUTS}")
-                    return
-                
-                #set these values for the getters
-                self.TableNumInputs = numInputs
-                self.TableNumOutputs = numOutputs
+                rows_per_page = int(self.rows_per_page_var.get())
             except ValueError:
-                #Throw Error if the user didnt input correct things
-                messagebox.showerror("Error", "Please enter valid numbers for inputs and outputs.")
-                return
+                rows_per_page = self.rows_per_page
 
-            #Clears the canvus for new widgets
-            self.ClearTable()
+            self.rows_per_page = rows_per_page
 
-            #Calcualtes the number of rows in the table using the fact the binary is 2^inputs
-            NumberRows = 2 ** numInputs
+            """# This section limits the amount of outputs or inputs someone can generate
+            MAXINPUTSANDOUTPUTS = 30
+            if numInputs + numOutputs > MAXINPUTSANDOUTPUTS:
+                messagebox.showerror("Error", f"Inputs ({numInputs}) + Outputs({numOutputs}) = {numInputs + numOutputs} <- NEEDS to be less than {MAXINPUTSANDOUTPUTS}")
+                return"""
 
-            # List of lists to store output values
-            self.OutputValues = [[] for thing in range(numOutputs)]  
+            # set these values for the getters
+            self.TableNumInputs = numInputs
+            self.TableNumOutputs = numOutputs
 
-            #for each input append the next letter of the alphabet - columns
-            for i in range(numInputs):
-                label = tk.Label(self.Table, text=chr(65 + i))
-                label.grid(row=0, column=i + 1)
-                #i dont know why this is here i forgor
-                self.inputs.append(0)
+            # Ensure self.inputs is correctly sized
+            self.inputs = [0] * numInputs
+            self.OutputValues = [[] for _ in range(numOutputs)]
 
-            #for the nubmer of outputs make more output label columns
-            for j in range(numOutputs):
-                label = tk.Label(self.Table, text=f"Output {j + 1}")
-                label.grid(row=0, column=numInputs + j + 1)
+        except ValueError:
+            messagebox.showerror("Error", "Please enter valid numbers for inputs and outputs.")  # Throw Error if the user didn't input correct things
+            return
 
-            #Create the num column 
-            label = tk.Label(self.Table, text="Num")
-            label.grid(row=0, column=numInputs + numOutputs + 1)
+        # Clears the canvas for new widgets
+        self.ClearTable()
 
-            #make the rows
-            for i in range(NumberRows):
-                row_num = i
-                rows = [int(bit) for bit in bin(i)[2:].zfill(numInputs)]
+        # Calculate the number of rows in the table using the fact the binary is 2^inputs
+        NumberRows = 2 ** numInputs
 
-                for j in range(numInputs):
-                    label = tk.Label(self.Table, text=str(rows[j]))
-                    label.grid(row=i + 1, column=j + 1)
-                    self.inputs[j] = rows[j]
+        # Calculate rows for the current page
+        page_start = self.current_page * self.rows_per_page
+        page_end = min(page_start + self.rows_per_page, NumberRows)
 
-                for k in range(numOutputs):
-                    output = tk.Label(self.Table, text="0", bg="black", relief=tk.SOLID, borderwidth=1, width=5)
-                    output.grid(row=i + 1, column=numInputs + k + 1)
-                    output.bind("<Button-1>", lambda event, row=i, col=k: self.ToggleValueOutput(row, col))
-                    self.OutputValues[k].append(output)  # Store output value in the corresponding list
+        self.UpdatePageLabel()
 
-                RowNumLbl = tk.Label(self.Table, text=str(row_num))
-                RowNumLbl.grid(row=i + 1, column=numInputs + numOutputs + 1)
+        # for each input append the next letter of the alphabet - columns
+        for i in range(numInputs):
+            label = tk.Label(self.Table, text=chr(65 + i))
+            label.grid(row=0, column=i + 1)
 
-        #make it multithreaded so program doesnt halt
-        threading.Thread(target=generate).start()
+        # for the number of outputs make more output label columns
+        for j in range(numOutputs):
+            label = tk.Label(self.Table, text=f"Output {j + 1}")
+            label.grid(row=0, column=numInputs + j + 1)
+
+        # Create the num column
+        label = tk.Label(self.Table, text="Num")
+        label.grid(row=0, column=numInputs + numOutputs + 1)
+
+        # make the rows
+        for i in range(page_start, page_end):
+            row_num = i
+            rows = [int(bit) for bit in bin(i)[2:].zfill(numInputs)]
+
+            for j in range(numInputs):
+                label = tk.Label(self.Table, text=str(rows[j]))
+                label.grid(row=i - page_start + 1, column=j + 1)
+
+            for k in range(numOutputs):
+                output = tk.Label(self.Table, text="0", bg="black", relief=tk.SOLID, borderwidth=1, width=5)
+                output.grid(row=i - page_start + 1, column=numInputs + k + 1)
+                output.bind("<Button-1>", lambda event, row=i, col=k: self.ToggleValueOutput(row, col))
+                self.OutputValues[k].append(output)  # Store output value in the corresponding list
+
+            RowNumLbl = tk.Label(self.Table, text=str(row_num))
+            RowNumLbl.grid(row=i - page_start + 1, column=numInputs + numOutputs + 1)
+
+        # Update page label once after generating table to correct the initial miscalculation
+        self.UpdatePageLabel()
 
     def ToggleValueOutput(self, row, col):
-        """Funtion toggles the value of a output button"""
-        CurrentVal = self.OutputValues[col][row].cget("text")
+        """Function toggles the value of an output button"""
+        visible_row = row % self.rows_per_page
+        CurrentVal = self.OutputValues[col][visible_row].cget("text")
         if CurrentVal == "0":
             NewVal = 1
         elif CurrentVal == "1":
             NewVal = "X"
         elif CurrentVal == "X":
             NewVal = 0
-        #NewVal = 1 - CurrentVal
-        self.OutputValues[col][row].configure(text=str(NewVal))
+        self.OutputValues[col][visible_row].configure(text=str(NewVal))
 
     def GetTerms(self) -> list:
         """returns three things: minterms, Maxterms, dontcares"""
@@ -641,11 +709,11 @@ class TruthTableApp:
             dontcaresForOutput = []
             for row, output in enumerate(outputs):
                 if output.cget("text") == "1":
-                    mintermsForOutput.append(row)
+                    mintermsForOutput.append(row + (self.current_page * self.rows_per_page))
                 elif output.cget("text") == "0":
-                    maxtermsForOutput.append(row)
+                    maxtermsForOutput.append(row + (self.current_page * self.rows_per_page))
                 elif output.cget("text") == "X":
-                    dontcaresForOutput.append(row)
+                    dontcaresForOutput.append(row + (self.current_page * self.rows_per_page))
             self.minterms.append(mintermsForOutput)
             self.maxterms.append(maxtermsForOutput)
             self.dontcares.append(dontcaresForOutput)
@@ -654,13 +722,13 @@ class TruthTableApp:
     def GetTableNumInputs(self):
         """Returns the number of Table Inputs"""
         return self.TableNumInputs
-    
+
     def GetTableNumOutputs(self):
         """Returns the number of Table Outputs"""
         return self.TableNumOutputs
 
     def ClearTable(self):
-        "Clears table"
+        """Clears table"""
         for widget in self.Table.winfo_children():
             widget.destroy()
         self.inputs.clear()
