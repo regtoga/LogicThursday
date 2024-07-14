@@ -18,7 +18,7 @@ class MainMenu(tk.Tk):
         super().__init__()
         self.title("Main Menu")
         self.geometry(position)
-        self.geometry("1050x700")
+        self.geometry("1050x600")
         self.resizable(False, False)
         self.call('tk', 'scaling', 1.3)
 
