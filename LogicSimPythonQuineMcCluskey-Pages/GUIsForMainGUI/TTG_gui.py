@@ -5,9 +5,12 @@ import threading
 import os
 import sqlite3
 
+import pickle
+
 import tkinter as tk
 import tkinter.ttk as ttk
 from tkinter import messagebox
+from tkinter import filedialog
 
 try:
     import Thinkers.TruthTableToGatesThinker as TTG_Thinker
@@ -160,17 +163,17 @@ class TTG_gui(tk.Toplevel):
             textvariable=self.TruthTableFrame.NumOutputsVar
         )
         
-        #seperation label between the inputs and operations of the TT
-        self.TTSeperationLbl = ttk.Label(
-            self.OperationsFrame,
-            text="                  ------           "
-        )
-        
         #Btn that will delete old table and generate new table based on user inputs self.TruthTableFrame.GenerateTable
         self.BtnGenerateTable = ttk.Button(
             self.OperationsFrame, 
             text="Generate Table", 
             command=self.TruthTableFrame.GenerateTable
+        )
+
+        #seperation label between the inputs and operations of the TT
+        self.TTSeperationLbl1 = ttk.Label(
+            self.OperationsFrame,
+            text="                  ------           "
         )
 
         #Btn that will calculate the minterms based off of the inputs in the truth table
@@ -185,6 +188,26 @@ class TTG_gui(tk.Toplevel):
             self.OperationsFrame,
             text="Calculate Maxterms",
             command=self.CalculateTTMaxterms
+        )
+
+        #seperation between the operations and the tablesavestate buttons
+        self.TTSeperationLbl2 = ttk.Label(
+            self.OperationsFrame,
+            text="                  ------           "
+        )
+
+        #Button will Save Current TruthTable from the Creator into a file
+        self.BtnSaveTruthTable = ttk.Button(
+            self.OperationsFrame, 
+            text="Save TruthTable", 
+            command=self.TruthTableFrame.SaveTableToFile
+        )
+
+        #Button will Load a TruthTable state from a that you choose and load it into the table
+        self.BtnLoadTruthTable = ttk.Button(
+            self.OperationsFrame, 
+            text="Load TruthTable", 
+            command=self.TruthTableFrame.LoadTableFromFile
         )
         #end table widgets
 
@@ -210,12 +233,15 @@ class TTG_gui(tk.Toplevel):
         self.TTNumOutputsLabel.grid(row=4, columnspan=2, sticky="EW")
         self.NumOutputsEntry.grid(row=4, column=1, sticky="EW")
         self.BtnGenerateTable.grid(row=5, columnspan=2, sticky="EW")
-        self.TTSeperationLbl.grid(row=6, columnspan=2, sticky="EW")
+        self.TTSeperationLbl1.grid(row=6, columnspan=2, sticky="EW")
         self.BtnCalculateMinterms.grid(row=7, columnspan=2, sticky="EW")
         self.BtnCalculateMaxterms.grid(row=8, columnspan=2, sticky="EW")
+        self.TTSeperationLbl2.grid(row=9, columnspan=2, sticky="EW")
+        self.BtnSaveTruthTable.grid(row=10, columnspan=2, sticky="EW")
+        self.BtnLoadTruthTable.grid(row=11, columnspan=2, sticky="EW")
 
-        self.LblExit.grid(row=9, columnspan=2, sticky="EW")
-        self.BtnMainMenu.grid(row=10, columnspan=2, sticky="EW")
+        self.LblExit.grid(row=12, columnspan=2, sticky="EW")
+        self.BtnMainMenu.grid(row=13, columnspan=2, sticky="EW")
 
         #Pad the outside of the operations frame
         self.OperationsFrame.grid_configure(padx=20, pady=(20))
@@ -500,7 +526,7 @@ class TruthTableApp:
 
         # Initialize pagination variables
         self.current_page = 0
-        self.rows_per_page = 16  # Default number of rows per page now set to 16
+        self.rows_per_page = 16  # Default number of rows per page
 
         # Initialize input/output variable holders
         self.NumInputsVar = tk.StringVar()
@@ -574,7 +600,6 @@ class TruthTableApp:
             self.current_page = 0
             self.GenerateTable()
         except ValueError:
-            pass
             messagebox.showerror("Error", "Please enter a valid number for rows per page.")
 
     def UpdatePageLabel(self):
@@ -717,6 +742,84 @@ class TruthTableApp:
 
         # Update page label once after generating table to correct the initial miscalculation
         self.UpdatePageLabel()
+
+    def SaveTableToFile(self):
+        #Save all changes to memory.
+        self.SavePageState
+
+        #locate the variable that everything is stored in.
+        #print(self.TruthTableMemory)
+
+        root = tk.Tk()
+        root.withdraw()  # hide the main window
+
+        file_path = filedialog.asksaveasfilename(
+            initialdir = "/",
+            title = "Save File",
+            filetypes = (("Pickle Files", "*.pkl*"), ("all files", "*.*"))
+        )
+
+        if file_path:
+            #print("Saving to:", file_path)
+            # Save the data to the specified file path
+
+            try:
+                #Make shure the file has the .pkl file extension for easier location later
+                if file_path[-4:] != ".pkl":
+                    file_path += ".pkl"
+                
+                #save the file to disk    
+                with open(file_path, "wb") as file:
+                    pickle.dump(self.TruthTableMemory, file)
+
+            except:
+                messagebox.showerror("Error", "Something went wrong when saving the file!")
+        
+    def LoadTableFromFile(self):
+        root = tk.Tk()
+        root.withdraw()  # hide the main window
+
+        #create a variable to hold the newly loaded table
+        TableFromStorage = [[]]
+        NumInputsFromStorage = 0
+        NumOutputsFromStorage = 0
+
+        file_path = filedialog.askopenfilename(
+            initialdir = "/",
+            title = "Select a File",
+            filetypes = (("Pickle Files", "*.pkl*"), ("all files", "*.*"))
+        )
+
+        if file_path:
+            #print("Selected file:", file_path)
+            # Process the loaded file here
+
+            try:
+                with open(file_path, "rb") as file:
+                    TableFromStorage = pickle.load(file)
+                
+                NumberOfEntriesInTruthTable = len(TableFromStorage)
+                counter = 0
+                while (NumberOfEntriesInTruthTable != 2**counter):
+                    counter += 1
+                NumInputsFromStorage = counter
+                #print(NumInputsFromStorage)
+
+                NumOutputsFromStorage = len(TableFromStorage[0])
+                #print(NumOutputsFromStorage)
+
+                #Generate the Table of the correct dimentions
+                self.GenerateTable(NumInputsFromStorage, NumOutputsFromStorage)
+
+                #Set the Input boxes that controll the dimentions of the table
+                self.NumInputsVar.set(f"{NumInputsFromStorage}")
+                self.NumOutputsVar.set(f"{NumOutputsFromStorage}")
+
+                #Insert the proper Values of the Outputs
+                self.TruthTableMemory = TableFromStorage
+                self.LoadPageState()
+            except:
+                messagebox.showerror("Error", "Something went wrong when loading the file!")
 
     def ToggleValueOutput(self, row, col):
         """Function toggles the value of an output button"""
