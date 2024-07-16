@@ -69,7 +69,7 @@ class TTG_gui(tk.Toplevel):
 
         #grid the frames so that they are in the correct rows and columns
         self.InputOutputFrame.grid(row=0, column=0, sticky="NW")
-        self.TruthTableCreatorFrame.grid(row=0, column=1, sticky="NW")
+        self.TruthTableCreatorFrame.grid(row=0, column=1, sticky="NW", pady=20)
         self.OperationsFrame.grid(row=0, column=2, sticky="NW")
 
     def CreateInputOutputWidgets(self):
@@ -170,6 +170,13 @@ class TTG_gui(tk.Toplevel):
             command=self.TruthTableFrame.GenerateTable
         )
 
+        #Button will Save Current TruthTable from the Creator into a file
+        self.BtnPowerToys = ttk.Button(
+            self.OperationsFrame, 
+            text="Open Power Toys", 
+            command=self.TruthTableFrame.TablePowerToys
+        )
+
         #seperation label between the inputs and operations of the TT
         self.TTSeperationLbl1 = ttk.Label(
             self.OperationsFrame,
@@ -199,14 +206,14 @@ class TTG_gui(tk.Toplevel):
         #Button will Save Current TruthTable from the Creator into a file
         self.BtnSaveTruthTable = ttk.Button(
             self.OperationsFrame, 
-            text="Save TruthTable", 
+            text="Save TT", 
             command=self.TruthTableFrame.SaveTableToFile
         )
 
         #Button will Load a TruthTable state from a that you choose and load it into the table
         self.BtnLoadTruthTable = ttk.Button(
             self.OperationsFrame, 
-            text="Load TruthTable", 
+            text="Load TT", 
             command=self.TruthTableFrame.LoadTableFromFile
         )
         #end table widgets
@@ -233,12 +240,13 @@ class TTG_gui(tk.Toplevel):
         self.TTNumOutputsLabel.grid(row=4, columnspan=2, sticky="EW")
         self.NumOutputsEntry.grid(row=4, column=1, sticky="EW")
         self.BtnGenerateTable.grid(row=5, columnspan=2, sticky="EW")
-        self.TTSeperationLbl1.grid(row=6, columnspan=2, sticky="EW")
-        self.BtnCalculateMinterms.grid(row=7, columnspan=2, sticky="EW")
-        self.BtnCalculateMaxterms.grid(row=8, columnspan=2, sticky="EW")
-        self.TTSeperationLbl2.grid(row=9, columnspan=2, sticky="EW")
-        self.BtnSaveTruthTable.grid(row=10, columnspan=2, sticky="EW")
-        self.BtnLoadTruthTable.grid(row=11, columnspan=2, sticky="EW")
+        self.BtnPowerToys.grid(row=6, columnspan=2, sticky="EW")
+        self.TTSeperationLbl1.grid(row=7, columnspan=2, sticky="EW")
+        self.BtnCalculateMinterms.grid(row=8, columnspan=2, sticky="EW")
+        self.BtnCalculateMaxterms.grid(row=9, columnspan=2, sticky="EW")
+        self.TTSeperationLbl2.grid(row=10, columnspan=2, sticky="EW")
+        self.BtnSaveTruthTable.grid(row=11, column=0, columnspan=1, sticky="EW")
+        self.BtnLoadTruthTable.grid(row=11, column=1, columnspan=1, sticky="EW")
 
         self.LblExit.grid(row=12, columnspan=2, sticky="EW")
         self.BtnMainMenu.grid(row=13, columnspan=2, sticky="EW")
@@ -502,7 +510,7 @@ class TruthTableApp:
             relief="groove",
             height=800  # Adjust the height here
         )
-        self.TruthTableCreatorFrame.grid(row=0, column=0, padx=10, pady=10)
+        self.TruthTableCreatorFrame.grid(row=0, column=0, padx=10, pady=0)
 
         # Initialize inputs and outputs variables
         self.inputs = []
@@ -518,7 +526,7 @@ class TruthTableApp:
             self.TruthTableCreatorFrame,
             text="Click on output values to change them: "
         )
-        self.LblDirections.grid(row=0, column=0)
+        self.LblDirections.grid(row=0, column=0, pady=0)
 
         # Create a frame for the table to be attached to
         self.TableFrame = ttk.Frame(self.TruthTableCreatorFrame)
@@ -542,7 +550,7 @@ class TruthTableApp:
         self.CreatePaginationControls()
 
         # Create actual table container inside scrollable canvas
-        self.TableCanvas = tk.Canvas(self.TableFrame, height=365) #can change the height if you need here
+        self.TableCanvas = tk.Canvas(self.TableFrame, height=355) #can change the height if you need here
         self.TableCanvas.grid(row=0, column=0, sticky="nsew")
         self.Table = ttk.Frame(self.TableCanvas)
         self.TableId = self.TableCanvas.create_window((0, 0), window=self.Table, anchor=tk.NW)
@@ -566,7 +574,7 @@ class TruthTableApp:
     def CreatePaginationControls(self):
         """Create pagination controls"""
         nav_frame = ttk.Frame(self.TruthTableCreatorFrame)
-        nav_frame.grid(row=2, column=0, pady=10)
+        nav_frame.grid(row=2, column=0, pady=1)
 
         self.rows_per_page_var = tk.StringVar(value=self.rows_per_page)
         rows_per_page_label = ttk.Label(nav_frame, text="Rows per page:")
@@ -575,7 +583,7 @@ class TruthTableApp:
         rows_per_page_entry.grid(row=0, column=1, padx=5)
 
         update_rows_btn = ttk.Button(nav_frame, text="Update Rows per Page", command=self.UpdateRowsPerPage)
-        update_rows_btn.grid(row=0, column=2, padx=5)
+        update_rows_btn.grid(row=0, column=2, padx=5, pady=2)
 
         prev_btn = ttk.Button(nav_frame, text="<< Previous", command=self.PrevPage)
         prev_btn.grid(row=1, column=0, padx=5)
@@ -592,7 +600,7 @@ class TruthTableApp:
         go_to_page_entry = ttk.Entry(nav_frame, textvariable=self.go_to_page_var, width=5)
         go_to_page_entry.grid(row=2, column=1, padx=5)
         go_to_page_btn = ttk.Button(nav_frame, text="Go", command=self.GoToPage)
-        go_to_page_btn.grid(row=2, column=2, padx=5)
+        go_to_page_btn.grid(row=2, column=2, padx=5, pady=2)
 
     def UpdateRowsPerPage(self):
         try:
@@ -820,6 +828,9 @@ class TruthTableApp:
                 self.LoadPageState()
             except:
                 messagebox.showerror("Error", "Something went wrong when loading the file!")
+
+    def TablePowerToys(self):
+        messagebox.showerror("Error", "This hasn't been implemented yet!")
 
     def ToggleValueOutput(self, row, col):
         """Function toggles the value of an output button"""
