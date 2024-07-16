@@ -25,7 +25,7 @@ class TTG_gui(tk.Toplevel):
 
         #these variables set the posion and height/width of the TTG window, it is not resisable
         self.geometry(position)
-        self.geometry("1050x600")
+        self.geometry("1055x600")
         self.resizable(False, False)
 
         #set the title to TTG
@@ -256,7 +256,9 @@ class TTG_gui(tk.Toplevel):
 
         #pad every widget inside the operations frame
         for widget in self.OperationsFrame.winfo_children():
-            widget.grid_configure(padx=7, pady=7)       
+            widget.grid_configure(padx=7, pady=7) 
+        #am giving this one a little more padding to try and make the gui look better
+        self.TTSeperationLbl1.grid(pady=8)       
 
     def CalculateAnswer(self):
         """Functions that starts the calculation process for single user input functions"""
