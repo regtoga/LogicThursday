@@ -22,7 +22,6 @@ except ImportError:
 class TTG_gui(tk.Toplevel):
     def __init__(self, MainMenuRef, position="+100+100"):
         super().__init__(MainMenuRef)
-
         #these variables set the posion and height/width of the TTG window, it is not resisable
         self.geometry(position)
         self.geometry("1055x600")
@@ -174,7 +173,7 @@ class TTG_gui(tk.Toplevel):
         self.BtnPowerToys = ttk.Button(
             self.OperationsFrame, 
             text="Open Power Toys", 
-            command=lambda: self.TruthTableFrame.TablePowerToys(int(self.TruthTableFrame.NumInputsVar.get()), int(self.TruthTableFrame.NumOutputsVar.get()))
+            command=lambda: self.TruthTableFrame.TablePowerToys(int(self.TruthTableFrame.NumInputsVar.get()), int(self.TruthTableFrame.NumOutputsVar.get()), f"+{self.winfo_rootx()-9}+{self.winfo_rooty()-32}")
         )
 
         #seperation label between the inputs and operations of the TT
@@ -831,12 +830,15 @@ class TruthTableApp:
             except:
                 messagebox.showerror("Error", "Something went wrong when loading the file!")
 
-    def TablePowerToys(self, inputs, outputs):
+    def TablePowerToys(self, inputs, outputs, position="+100+100"):
         # Create pop-up window
         self.PowerToysWindow = tk.Toplevel(self.root)
-        self.PowerToysWindow.geometry("600x800")
-        self.PowerToysWindow.resizable(True, True)
+        self.PowerToysWindow.geometry(position)
+        self.PowerToysWindow.geometry("400x600")
+        self.PowerToysWindow.resizable(False, False)
         self.PowerToysWindow.title("Power Toys")
+
+        self.queue = []
 
         def CancelChanges():
             self.PowerToysWindow.destroy()
@@ -850,16 +852,16 @@ class TruthTableApp:
 
             if function_name == "Import Custom Function":
                 import_label = tk.Label(self.scrollable_frame, text="Import a custom function:")
-                import_label.grid(row=0, column=0, pady=10, sticky="w")
-                import_button = tk.Button(self.scrollable_frame, text="Import", command=ImportFunction)
-                import_button.grid(row=0, column=1, pady=10, sticky="w")
+                import_label.grid(row=0, column=0, pady=5, sticky="w")
+                import_button = ttk.Button(self.scrollable_frame, text="Import", command=ImportFunction)
+                import_button.grid(row=0, column=1, pady=5, sticky="w")
                 return
 
             # Get the input and output count for the selected function
             input_count, output_count = self.functions.get(function_name, (0, 0))
 
             range_label = tk.Label(self.scrollable_frame, text=f"Function '{function_name}' requires:")
-            range_label.grid(row=0, column=0, columnspan=2, pady=10, sticky="w")
+            range_label.grid(row=0, column=0, columnspan=2, pady=5, sticky="w")
 
             # Generate values based on inputs
             total_values = [chr(65 + i) for i in range(inputs)]
@@ -937,12 +939,20 @@ class TruthTableApp:
             selected_function = self.function_selection.get()
             inputs_outputs = [combobox.get() for combobox in self.scrollable_frame.winfo_children() if isinstance(combobox, ttk.Combobox)]
 
-            queue_entry = f"{range_selection}: {selected_function} - {inputs_outputs}"
-            self.queue_listbox.insert(tk.END, queue_entry)
+            #detect if user forgot any information
+            filtered_list = [item for item in inputs_outputs if item != '']
+            if (range_selection and selected_function != '') and (filtered_list == inputs_outputs):
+                queue_entry = f"{range_selection}: {selected_function} - {inputs_outputs}"
+                
+                #append the variables to the queue
+                self.queue.append([range_selection, selected_function, inputs_outputs])
+                self.queue_listbox.insert(tk.END, queue_entry)
+            else:
+                messagebox.showerror("Error", "Your missing an input!")
 
         # Define the functions and their requirements
         self.functions = {
-            "Addition": (2, 1),
+            "Addition": (2, 2),
             "Subtraction": (2, 1),
             "Multiplication": (2, 1),
             "Division": (2, 1),
@@ -967,7 +977,7 @@ class TruthTableApp:
         self.function_selection.bind("<<ComboboxSelected>>", lambda event: update_scrollable_frame(self.function_selection.get()))
 
         # Create canvas for scrollable frame
-        self.canvas = tk.Canvas(self.PowerToysWindow, width=450, height=400)
+        self.canvas = tk.Canvas(self.PowerToysWindow, width=250, height=230)
         self.scrollbar = ttk.Scrollbar(self.PowerToysWindow, orient="vertical", command=self.canvas.yview)
         self.scrollable_frame = ttk.Frame(self.canvas)
 
@@ -982,12 +992,12 @@ class TruthTableApp:
         self.canvas.configure(yscrollcommand=self.scrollbar.set)
 
         # Save to Queue button and display area
-        self.save_queue_button = tk.Button(self.PowerToysWindow, text="Save to Que", command=SaveToQueue)
+        self.save_queue_button = ttk.Button(self.PowerToysWindow, text="Save to Que", command=SaveToQueue)
         self.queue_listbox = tk.Listbox(self.PowerToysWindow, height=10, width=50)
 
         # Submit and Cancel button to apply/cancel changes
-        self.submit_button = tk.Button(self.PowerToysWindow, text="Submit", command=self.AreYouShure)
-        self.cancel_button = tk.Button(self.PowerToysWindow, text="Cancel", command=CancelChanges)
+        self.submit_button = ttk.Button(self.PowerToysWindow, text="Submit", command=self.AreYouShure)
+        self.cancel_button = ttk.Button(self.PowerToysWindow, text="Cancel", command=CancelChanges)
 
         # Stylistic adjustments to the widgets
         self.range_selection_label.grid(row=0, column=0, columnspan=2, padx=7, pady=7, sticky="w")
@@ -1022,6 +1032,8 @@ class TruthTableApp:
         def Submit():
             #Submit stuff here
 
+            print(self.queue)
+
             self.AreYouShureWindow.destroy()
             self.PowerToysWindow.destroy()
 
@@ -1029,10 +1041,10 @@ class TruthTableApp:
         self.are_you_shure_lbl = tk.Label(self.AreYouShureWindow, text="Are You shure? Changes made with \nthe PowerToys cannot be easily undone")
 
         #decline button to apply changes
-        self.decline_button = tk.Button(self.AreYouShureWindow, text="NO, I'm not shure!", command=Closer )
+        self.decline_button = ttk.Button(self.AreYouShureWindow, text="NO, I'm not shure!", command=Closer )
 
         #accept button to apply changes
-        self.yes_button = tk.Button(self.AreYouShureWindow, text="YES, I'm shure!", command=Submit )
+        self.yes_button = ttk.Button(self.AreYouShureWindow, text="YES, I'm shure!", command=Submit )
 
         #Styleizers ----- 
 
@@ -1104,7 +1116,7 @@ if __name__ == "__main__":
 
             self.withdraw()  # Hide the main menu
 
-            self.btn_close = tk.Button(self, text="Close", command=self.close_gui)
+            self.btn_close = ttk.Button(self, text="Close", command=self.close_gui)
             self.btn_close.pack(pady=10)
 
             # Draw the TTG menu
