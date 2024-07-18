@@ -174,7 +174,7 @@ class TTG_gui(tk.Toplevel):
         self.BtnPowerToys = ttk.Button(
             self.OperationsFrame, 
             text="Open Power Toys", 
-            command=self.TruthTableFrame.TablePowerToys
+            command=lambda: self.TruthTableFrame.TablePowerToys(int(self.TruthTableFrame.NumInputsVar.get()), int(self.TruthTableFrame.NumOutputsVar.get()))
         )
 
         #seperation label between the inputs and operations of the TT
@@ -831,8 +831,218 @@ class TruthTableApp:
             except:
                 messagebox.showerror("Error", "Something went wrong when loading the file!")
 
-    def TablePowerToys(self):
-        messagebox.showerror("Error", "This hasn't been implemented yet!")
+    def TablePowerToys(self, inputs, outputs):
+        # Create pop-up window
+        self.PowerToysWindow = tk.Toplevel(self.root)
+        self.PowerToysWindow.geometry("600x800")
+        self.PowerToysWindow.resizable(True, True)
+        self.PowerToysWindow.title("Power Toys")
+
+        def CancelChanges():
+            self.PowerToysWindow.destroy()
+
+        def clear_scrollframe():
+            for widget in self.scrollable_frame.winfo_children():
+                widget.destroy()
+
+        def update_scrollable_frame(function_name):
+            clear_scrollframe()
+
+            if function_name == "Import Custom Function":
+                import_label = tk.Label(self.scrollable_frame, text="Import a custom function:")
+                import_label.grid(row=0, column=0, pady=10, sticky="w")
+                import_button = tk.Button(self.scrollable_frame, text="Import", command=ImportFunction)
+                import_button.grid(row=0, column=1, pady=10, sticky="w")
+                return
+
+            # Get the input and output count for the selected function
+            input_count, output_count = self.functions.get(function_name, (0, 0))
+
+            range_label = tk.Label(self.scrollable_frame, text=f"Function '{function_name}' requires:")
+            range_label.grid(row=0, column=0, columnspan=2, pady=10, sticky="w")
+
+            # Generate values based on inputs
+            total_values = [chr(65 + i) for i in range(inputs)]
+            if inputs > 26:
+                total_values.extend([chr(97 + i) for i in range(inputs - 26)])
+
+            # Dynamically create input dropdowns
+            for i in range(input_count):
+                label = tk.Label(self.scrollable_frame, text=f"Input {i + 1}:")
+                label.grid(row=i + 1, column=0, sticky="w")
+                combobox = ttk.Combobox(self.scrollable_frame, values=total_values)
+                combobox.grid(row=i + 1, column=1, pady=5, sticky="w")
+                
+            # Output dropdown
+            for i in range(output_count):
+                label = tk.Label(self.scrollable_frame, text=f"Output {i + 1}:")
+                label.grid(row=input_count + i + 1, column=0, sticky="w")
+                combobox = ttk.Combobox(self.scrollable_frame, values=[f"Output {j + 1}" for j in range(outputs)])
+                combobox.grid(row=input_count + i + 1, column=1, pady=5, sticky="w")
+
+        def ImportFunction():
+            root = tk.Tk()
+            root.withdraw()
+
+            file_path = filedialog.askopenfilename(
+                initialdir="/",
+                title="Select a File",
+                filetypes=(("Pickle Files", "*.pkl*"), ("all files", "*.*"))
+            )
+
+            if file_path:
+                try:
+                    with open(file_path, "rb") as file:
+                        self.TableFromStorage = pickle.load(file)
+
+                    NumberOfEntriesInTruthTable = len(self.TableFromStorage)
+                    counter = 0
+                    while (NumberOfEntriesInTruthTable != 2**counter):
+                        counter += 1
+                    self.NumInputsFromStorage = counter
+
+                    self.NumOutputsFromStorage = len(self.TableFromStorage[0])
+
+                    # Update inputs to reflect custom function details
+                    inputsFromStorage = self.NumInputsFromStorage
+                    outputsFromStorage = self.NumOutputsFromStorage
+
+                    # Show the number of inputs and outputs as a label
+                    clear_scrollframe()
+                    custom_function_info_label = tk.Label(self.scrollable_frame, text=f"Custom function: {inputsFromStorage} inputs, {outputsFromStorage} outputs")
+                    custom_function_info_label.grid(row=1, column=0, columnspan=2, pady=10, sticky="w")
+
+                    # Generate input and output drop-downs for the custom function
+                    total_values = [chr(65 + i) for i in range(inputs)]
+                    if inputs > 26:
+                        total_values.extend([chr(97 + i) for i in range(inputs - 26)])
+                    for i in range(self.NumInputsFromStorage):
+                        label = tk.Label(self.scrollable_frame, text=f"Input {i + 1}:")
+                        label.grid(row=i + 2, column=0, sticky="w")
+                        combobox = ttk.Combobox(self.scrollable_frame, values=total_values)
+                        combobox.grid(row=i + 2, column=1, pady=5, sticky="w")
+
+                    for i in range(self.NumOutputsFromStorage):
+                        label = tk.Label(self.scrollable_frame, text=f"Output {i + 1}:")
+                        label.grid(row=self.NumInputsFromStorage + i + 2, column=0, sticky="w")
+                        combobox = ttk.Combobox(self.scrollable_frame, values=[f"Output {j + 1}" for j in range(outputs)])
+                        combobox.grid(row=self.NumInputsFromStorage + i + 2, column=1, pady=5, sticky="w")
+
+                except:
+                    messagebox.showerror("Error", "Something went wrong when loading the file!")
+                    del self.TableFromStorage  # Clear the variable
+
+        def SaveToQueue():
+            range_selection = self.range_selection_entry.get()
+            selected_function = self.function_selection.get()
+            inputs_outputs = [combobox.get() for combobox in self.scrollable_frame.winfo_children() if isinstance(combobox, ttk.Combobox)]
+
+            queue_entry = f"{range_selection}: {selected_function} - {inputs_outputs}"
+            self.queue_listbox.insert(tk.END, queue_entry)
+
+        # Define the functions and their requirements
+        self.functions = {
+            "Addition": (2, 1),
+            "Subtraction": (2, 1),
+            "Multiplication": (2, 1),
+            "Division": (2, 1),
+            "NOT": (1, 1),
+            "AND": (2, 1),
+            "OR": (2, 1),
+            "NOR": (2, 1),
+            "XOR": (2, 1),
+            "Import Custom Function": (0, 0)  # Default, will be updated on import
+        }
+
+        # Label and Entry for selecting a range in the truth table to be changed
+        self.range_selection_label = tk.Label(self.PowerToysWindow, text="Select a num range (Ex. 2,3-7):")
+        self.range_selection_entry = tk.Entry(self.PowerToysWindow)
+
+        # Label and Entry for selecting a function
+        self.function_selection_label = tk.Label(self.PowerToysWindow, text="Select a function:")
+        self.function_selection = ttk.Combobox(
+            self.PowerToysWindow,
+            values=list(self.functions.keys())
+        )
+        self.function_selection.bind("<<ComboboxSelected>>", lambda event: update_scrollable_frame(self.function_selection.get()))
+
+        # Create canvas for scrollable frame
+        self.canvas = tk.Canvas(self.PowerToysWindow, width=450, height=400)
+        self.scrollbar = ttk.Scrollbar(self.PowerToysWindow, orient="vertical", command=self.canvas.yview)
+        self.scrollable_frame = ttk.Frame(self.canvas)
+
+        self.scrollable_frame.bind(
+            "<Configure>",
+            lambda e: self.canvas.configure(
+                scrollregion=self.canvas.bbox("all")
+            )
+        )
+
+        self.canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
+        self.canvas.configure(yscrollcommand=self.scrollbar.set)
+
+        # Save to Queue button and display area
+        self.save_queue_button = tk.Button(self.PowerToysWindow, text="Save to Que", command=SaveToQueue)
+        self.queue_listbox = tk.Listbox(self.PowerToysWindow, height=10, width=50)
+
+        # Submit and Cancel button to apply/cancel changes
+        self.submit_button = tk.Button(self.PowerToysWindow, text="Submit", command=self.AreYouShure)
+        self.cancel_button = tk.Button(self.PowerToysWindow, text="Cancel", command=CancelChanges)
+
+        # Stylistic adjustments to the widgets
+        self.range_selection_label.grid(row=0, column=0, columnspan=2, padx=7, pady=7, sticky="w")
+        self.range_selection_entry.grid(row=0, column=2, columnspan=2, padx=7, pady=7, sticky="w")
+
+        self.function_selection_label.grid(row=1, column=0, columnspan=2, padx=7, pady=7, sticky="w")
+        self.function_selection.grid(row=1, column=2, columnspan=2, padx=7, pady=7, sticky="w")
+
+        self.canvas.grid(row=2, column=0, columnspan=4, padx=7, pady=7, sticky="ew")
+        self.scrollbar.grid(row=2, column=4, sticky="ns")
+
+        self.save_queue_button.grid(row=3, column=0, columnspan=4, padx=7, pady=7)
+        self.queue_listbox.grid(row=4, column=0, columnspan=4, padx=7, pady=7)
+
+        self.submit_button.grid(row=5, column=0, columnspan=2, padx=7, pady=7)
+        self.cancel_button.grid(row=5, column=2, columnspan=2, padx=7, pady=7)
+
+        # Pad every widget inside the operations frame
+        for widget in self.PowerToysWindow.winfo_children():
+            widget.grid_configure(padx=7, pady=7)
+
+    def AreYouShure(self):
+        # Create anotherpop-up window
+        self.AreYouShureWindow = tk.Toplevel(self.PowerToysWindow)
+        self.AreYouShureWindow.geometry("227x90")
+        self.AreYouShureWindow.resizable(False, False)
+        self.AreYouShureWindow.title("User Confirmation!")
+
+        def Closer():
+            self.AreYouShureWindow.destroy()
+
+        def Submit():
+            #Submit stuff here
+
+            self.AreYouShureWindow.destroy()
+            self.PowerToysWindow.destroy()
+
+        # Label and Entry for changing font size
+        self.are_you_shure_lbl = tk.Label(self.AreYouShureWindow, text="Are You shure? Changes made with \nthe PowerToys cannot be easily undone")
+
+        #decline button to apply changes
+        self.decline_button = tk.Button(self.AreYouShureWindow, text="NO, I'm not shure!", command=Closer )
+
+        #accept button to apply changes
+        self.yes_button = tk.Button(self.AreYouShureWindow, text="YES, I'm shure!", command=Submit )
+
+        #Styleizers ----- 
+
+        self.are_you_shure_lbl.grid(column=0, row=0, columnspan=2)
+        self.decline_button.grid(column=0, row=1, columnspan=1)
+        self.yes_button.grid(column=1, row=1, columnspan=1)
+
+        #pad every widget inside the operations frame
+        for widget in self.AreYouShureWindow.winfo_children():
+            widget.grid_configure(padx=7, pady=7)
 
     def ToggleValueOutput(self, row, col):
         """Function toggles the value of an output button"""
