@@ -18,6 +18,11 @@ except ImportError:
     # for local use, if it worked
     import Thinkers as TTG_Thinker
 
+try:
+    import Thinkers.GatesToTableThinker as GTT_Thinker
+except ImportError:
+    # for local use, if it worked
+    import Thinkers as GTT_Thinker
 
 class TTG_gui(tk.Toplevel):
     def __init__(self, MainMenuRef, position="+100+100"):
@@ -839,6 +844,7 @@ class TruthTableApp:
         self.PowerToysWindow.title("Power Toys")
 
         self.queue = []
+        self.function = ""
 
         def CancelChanges():
             self.PowerToysWindow.destroy()
@@ -858,7 +864,7 @@ class TruthTableApp:
                 return
 
             # Get the input and output count for the selected function
-            input_count, output_count = self.functions.get(function_name, (0, 0))
+            input_count, output_count, self.function = self.functions.get(function_name, (0, 0, "A"))
 
             range_label = tk.Label(self.scrollable_frame, text=f"Function '{function_name}' requires:")
             range_label.grid(row=0, column=0, columnspan=2, pady=5, sticky="w")
@@ -930,6 +936,153 @@ class TruthTableApp:
                         combobox = ttk.Combobox(self.scrollable_frame, values=[f"Output {j + 1}" for j in range(outputs)])
                         combobox.grid(row=self.NumInputsFromStorage + i + 2, column=1, pady=5, sticky="w")
 
+                    #this portion should seperate the min max and dontcares
+                    Importedminterms = []
+                    Importedmaxterms = []
+                    Importeddontcares = []
+                    for col in range(outputsFromStorage):
+                        mintermsForOutput = []
+                        maxtermsForOutput = []
+                        dontcaresForOutput = []
+                        for row in range(2**inputsFromStorage):  # Loop through all rows in the memory
+                            output = self.TableFromStorage[row][col]
+                            if output == "1":
+                                mintermsForOutput.append(row)
+                            elif output == "0":
+                                maxtermsForOutput.append(row)
+                            elif output == "X":
+                                dontcaresForOutput.append(row)
+                        Importedminterms.append(mintermsForOutput)
+                        Importedmaxterms.append(maxtermsForOutput)
+                        Importeddontcares.append(dontcaresForOutput)
+
+                    #For Truthtable
+                    def CalculateTTMinterms():
+                        """Calculate TruthTable Minterms many outputs"""
+                        def calc():
+                            """Function for the worker thread to call so that the main program doesnt halt"""
+                            try:
+                                #set up variables
+                                Importedminterms, Importedmaxterms, Importeddontcares
+                                inputsFromStorage
+                                inputs = ""
+                                outputs = ""
+
+                                #calculate the numerous outputs
+                                for out in range(0, len(Importedminterms)):
+                                    minterm = Importedminterms[out]
+                                    dontcare = Importeddontcares[out]
+                                    function = "F("
+                                    #this chr(65 + i) stuff essentially starts a loop at Capital A and then counts B, C, D, E...
+                                    #Makes the first part of the function F(A,B...
+                                    for i in range(0, inputsFromStorage):
+                                        function += f"{chr(65 + i)},"
+
+                                    #take the last comma off the end of the function string
+                                    function = function[:-1]
+                                    #add the rest of the function to the str version of the function
+                                    #The join function adds a comma between each minterm
+                                    function += f") = Z'm({','.join(map(str, minterm))})"
+
+                                    #+Z'd(6,7)
+                                    #add the dont cares to the end
+                                    if Importeddontcares != [[]]:
+                                        function += f"+Z'd({','.join(map(str, dontcare))})"
+
+                                    #Do the calculation
+                                    TTGThinker = TTG_Thinker.TruthTableToGates(function)
+                                    TTGThinker.calculateanswer()
+
+                                    #append the input to the inputs str
+                                    inputs += f"{function}\n"
+                                    #append the output to the outputs str
+                                    outputs += f"{TTGThinker.get_Answer()}\n"
+                                    
+                                    #once done thinking delete the thinker
+                                    del TTGThinker
+
+                                #Take the \n off the end of the strings
+                                inputs = inputs[:-1]
+                                outputs = outputs[:-1]
+
+                                #messagebox.showerror("Error", f"Inputs ='s : \n{inputs}\n--\nOutputs ='s : \n{outputs}")
+                                #firstoutput = outputs[0]
+                                firstoutput = outputs[4:]
+                                self.function = firstoutput
+
+                            except:
+                                #output an error if user is dumb :)
+                                messagebox.showerror("Error", "An error has occurred, try making one of you output columns not all zeros")
+
+                        #Create the worker thread
+                        threading.Thread(target=calc).start()
+
+                    def CalculateTTMaxterms():
+                        """Calculate TruthTable Maxterms many outputs"""
+                        def calc():
+                            """Function for the worker thread to call so that the main program doesnt halt"""
+                            try:
+                                #set up variables
+                                Importedminterms, Importedmaxterms, Importeddontcares
+                                inputsFromStorage
+                                inputs = ""
+                                outputs = ""
+                                filenames = []
+
+                                #calculate the numerous outputs
+                                for out in range(0, len(Importedmaxterms)):
+                                    maxterm = Importedmaxterms[out]
+                                    dontcare = Importeddontcares[out]
+                                    function = "F("
+                                    #this chr(65 + i) stuff essentially starts a loop at Capital A and then counts B, C, D, E...
+                                    #Makes the first part of the function F(A,B...
+                                    for i in range(0, inputsFromStorage):
+                                        function += f"{chr(65 + i)},"
+
+                                    #take the last comma off the end of the function string
+                                    function = function[:-1]
+                                    #add the rest of the function to the str version of the function
+                                    #The join function adds a comma between each maxterm
+                                    function += f") = Z'M({','.join(map(str, maxterm))})"
+
+                                    #+Z'd(6,7)
+                                    #add the dont cares to the end
+                                    if Importeddontcares != [[]]:
+                                        function += f"+Z'd({','.join(map(str, dontcare))})"
+
+                                    #Do the calculation
+                                    TTGThinker = TTG_Thinker.TruthTableToGates(function)
+                                    TTGThinker.calculateanswer()
+
+                                    #append the input to the inputs str
+                                    inputs += f"{function}\n"
+                                    #append the output to the outputs str
+                                    outputs += f"{TTGThinker.get_Answer()}\n"
+                                    
+                                    #once done thinking delete the thinker
+                                    del TTGThinker
+
+                                #Take the \n off the end of the strings
+                                inputs = inputs[:-1]
+                                outputs = outputs[:-1]
+
+                                #messagebox.showerror("Error", f"Inputs ='s : \n{inputs}\n--\nOutputs ='s : \n{outputs}")
+                                firstoutput = outputs[0]
+                                firstoutput = firstoutput.replace("F = ", "")
+                                self.function = firstoutput
+
+                            except:
+                                #output an error if user is dumb :)
+                                messagebox.showerror("Error", "An error has occurred, try making one of you output columns not all zeros")
+                        
+                        #Create the worker thread
+                        #threading.Thread(target=calc).start()
+                        calc()
+
+                    
+                    CalculateTTMinterms()
+                    print(self.function)
+
                 except:
                     messagebox.showerror("Error", "Something went wrong when loading the file!")
                     del self.TableFromStorage  # Clear the variable
@@ -945,23 +1098,20 @@ class TruthTableApp:
                 queue_entry = f"{range_selection}: {selected_function} - {inputs_outputs}"
                 
                 #append the variables to the queue
-                self.queue.append([range_selection, selected_function, inputs_outputs])
+                self.queue.append([selected_function, range_selection, inputs_outputs])
                 self.queue_listbox.insert(tk.END, queue_entry)
             else:
                 messagebox.showerror("Error", "Your missing an input!")
 
         # Define the functions and their requirements
         self.functions = {
-            "Addition": (2, 2),
-            "Subtraction": (2, 1),
-            "Multiplication": (2, 1),
-            "Division": (2, 1),
-            "NOT": (1, 1),
-            "AND": (2, 1),
-            "OR": (2, 1),
-            "NOR": (2, 1),
-            "XOR": (2, 1),
-            "Import Custom Function": (0, 0)  # Default, will be updated on import
+            "NOT": (1, 1, "A'"),
+            "AND": (2, 1, "AB"),
+            "OR": (2, 1, "B + A"),
+            "NOR": (2, 1, "A'B'"),
+            "XOR": (2, 1, "A'B + AB'"),
+            "XNOR": (2, 1, "A'B' + AB"),
+            "Import Custom Function": (0, 0, "")  # Default, will be updated on import
         }
 
         # Label and Entry for selecting a range in the truth table to be changed
@@ -983,8 +1133,7 @@ class TruthTableApp:
 
         self.scrollable_frame.bind(
             "<Configure>",
-            lambda e: self.canvas.configure(
-                scrollregion=self.canvas.bbox("all")
+            lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all")
             )
         )
 
@@ -1020,9 +1169,13 @@ class TruthTableApp:
             widget.grid_configure(padx=7, pady=7)
 
     def AreYouShure(self):
+        #dont ask the question if there is no data to submit
+        if self.queue == []:
+            return
+        
         # Create anotherpop-up window
         self.AreYouShureWindow = tk.Toplevel(self.PowerToysWindow)
-        self.AreYouShureWindow.geometry("227x90")
+        self.AreYouShureWindow.geometry("280x95")
         self.AreYouShureWindow.resizable(False, False)
         self.AreYouShureWindow.title("User Confirmation!")
 
@@ -1030,9 +1183,89 @@ class TruthTableApp:
             self.AreYouShureWindow.destroy()
 
         def Submit():
-            #Submit stuff here
+            """This function handeles the final submission of data reguarding the Power Toys"""
 
-            print(self.queue)
+            numInputs = int(self.NumInputsVar.get())
+            numOutputs = int(self.NumOutputsVar.get())
+            validfilechars = ('A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z')
+
+            #print(self.queue)
+            print(self.TruthTableMemory)
+
+            gtt_thinker = GTT_Thinker
+            ttg_thinker = TTG_Thinker
+
+            #step 1: iterate though the queue
+            for spot in self.queue:
+                #step 2: load the correct opperation
+                opperation = spot[0]
+                self.function # the function in string form
+                range_of_duty = spot[1]
+                inputs = []
+                outputs = []
+
+                #seperate the inputs and outputs
+                for pot in spot[2]:
+                    if len(pot) == 1:
+                        inputs.append(pot)
+                    else:
+                        outputs.append(pot)
+                #show the programer what was harvested
+                #print(inputs, opperation, self.function, outputs, range_of_duty)
+
+                range_of_duty = range_of_duty.split(",")
+                for range in range_of_duty:
+                    ran_ge = range.split("-")
+
+                    #Current outputs needs to be one less than you actually need because the outputs are stored in a list
+                    currentoutput = int(outputs[0][-1:]) - 1
+
+                    def findbinaryinputsforthefunction(ran_ge, numInputs):
+                        binarynumber = ttg_thinker.convertdecimaltobinarywithzeros(ran_ge, numInputs)
+                        binaryinputsforthefunction = []
+
+                        counterr = 0
+                        #For each char in the binary number
+                        for chhar in binarynumber:
+                            #see if we need it and turn it into a bool from a char
+                            if validfilechars[counterr] in inputs:
+                                if int(chhar) == 0:
+                                    binaryinputsforthefunction.append(False)
+                                if int(chhar) == 1:
+                                    binaryinputsforthefunction.append(True)
+
+                            counterr += 1
+
+                        return binaryinputsforthefunction
+
+                    self.function = self.function.replace(" ","")
+
+                    if len(ran_ge) == 1:
+                        #This is where it would always = 1
+                        binaryinputsforthefunction = findbinaryinputsforthefunction(int(ran_ge[0]), numInputs)
+                        #Calculate the answer and send it to the truthtable's memory
+                        self.TruthTableMemory[int(ran_ge[0])][currentoutput] = str(int(gtt_thinker.calculateFunctionOutput(self.function, binaryinputsforthefunction)))
+                    else:
+                        #This is where it would always = 2
+                        if len(self.TruthTableMemory) >= int(ran_ge[0]) and len(self.TruthTableMemory) >= int(ran_ge[1]):
+                            #Calculate the answer and send it to the truthtable's memory
+                            counter = int(ran_ge[0])
+                            while counter <= int(ran_ge[1]):
+                                binaryinputsforthefunction = findbinaryinputsforthefunction(counter, numInputs)
+                                self.TruthTableMemory[counter][currentoutput] = str(int(gtt_thinker.calculateFunctionOutput(self.function, binaryinputsforthefunction)))
+                                counter += 1
+
+                print(self.TruthTableMemory)
+
+                
+                
+                #step 3: go to the correct locations in the table and compute the operations baised on what the binary value of that location is
+
+                
+                
+
+            #update the page's data after the data has been changed
+            self.LoadPageState()
 
             self.AreYouShureWindow.destroy()
             self.PowerToysWindow.destroy()
