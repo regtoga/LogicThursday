@@ -1189,9 +1189,6 @@ class TruthTableApp:
             numOutputs = int(self.NumOutputsVar.get())
             validfilechars = ('A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z')
 
-            #print(self.queue)
-            print(self.TruthTableMemory)
-
             gtt_thinker = GTT_Thinker
             ttg_thinker = TTG_Thinker
 
@@ -1204,69 +1201,69 @@ class TruthTableApp:
                 inputs = []
                 outputs = []
 
+                #Split the functions up into their singular forms for each output
+                self.function = self.function.replace(" ","").replace("\n", "").split("F=")
+
                 #seperate the inputs and outputs
                 for pot in spot[2]:
                     if len(pot) == 1:
                         inputs.append(pot)
                     else:
                         outputs.append(pot)
-                #show the programer what was harvested
-                #print(inputs, opperation, self.function, outputs, range_of_duty)
 
+                #for each range in the provided ranges
                 range_of_duty = range_of_duty.split(",")
                 for range in range_of_duty:
                     ran_ge = range.split("-")
-
-                    #Current outputs needs to be one less than you actually need because the outputs are stored in a list
-                    currentoutput = int(outputs[0][-1:]) - 1
 
                     def findbinaryinputsforthefunction(ran_ge, numInputs):
                         binarynumber = ttg_thinker.convertdecimaltobinarywithzeros(ran_ge, numInputs)
                         binaryinputsforthefunction = []
 
-                        counterr = 0
+                        counter = 0
                         #For each char in the binary number
                         for chhar in binarynumber:
                             #see if we need it and turn it into a bool from a char
-                            if validfilechars[counterr] in inputs:
+                            if validfilechars[counter] in inputs:
                                 if int(chhar) == 0:
                                     binaryinputsforthefunction.append(False)
                                 if int(chhar) == 1:
                                     binaryinputsforthefunction.append(True)
 
-                            counterr += 1
+                            counter += 1
 
                         return binaryinputsforthefunction
+                    
+                    #for each output function do this:
+                    cunter = 0
+                    for func in self.function:
 
-                    self.function = self.function.replace(" ","")
+                        #Current outputs needs to be one less than you actually need because the outputs are stored in a list
+                        currentoutput = int(outputs[cunter][-1:]) - 1
 
-                    if len(ran_ge) == 1:
-                        #This is where it would always = 1
-                        binaryinputsforthefunction = findbinaryinputsforthefunction(int(ran_ge[0]), numInputs)
-                        #Calculate the answer and send it to the truthtable's memory
-                        self.TruthTableMemory[int(ran_ge[0])][currentoutput] = str(int(gtt_thinker.calculateFunctionOutput(self.function, binaryinputsforthefunction)))
-                    else:
-                        #This is where it would always = 2
-                        if len(self.TruthTableMemory) >= int(ran_ge[0]) and len(self.TruthTableMemory) >= int(ran_ge[1]):
+                        if len(ran_ge) == 1:
+                            #This is where it would always = 1
+                            binaryinputsforthefunction = findbinaryinputsforthefunction(int(ran_ge[0]), numInputs)
                             #Calculate the answer and send it to the truthtable's memory
-                            counter = int(ran_ge[0])
-                            while counter <= int(ran_ge[1]):
-                                binaryinputsforthefunction = findbinaryinputsforthefunction(counter, numInputs)
-                                self.TruthTableMemory[counter][currentoutput] = str(int(gtt_thinker.calculateFunctionOutput(self.function, binaryinputsforthefunction)))
-                                counter += 1
+                            #step 3: go to the correct locations in the table and compute the operations baised on what the binary value of that location is
+                            self.TruthTableMemory[int(ran_ge[0])][currentoutput] = str(int(gtt_thinker.calculateFunctionOutput(func, binaryinputsforthefunction)))
+                        else:
+                            #This is where it would always = 2
+                            if len(self.TruthTableMemory) >= int(ran_ge[0]) and len(self.TruthTableMemory) >= int(ran_ge[1]):
+                                #Calculate the answer and send it to the truthtable's memory
+                                counter = int(ran_ge[0])
+                                while counter <= int(ran_ge[1]):
+                                    binaryinputsforthefunction = findbinaryinputsforthefunction(counter, numInputs)
+                                    #step 3: go to the correct locations in the table and compute the operations baised on what the binary value of that location is
+                                    self.TruthTableMemory[counter][currentoutput] = str(int(gtt_thinker.calculateFunctionOutput(func, binaryinputsforthefunction)))
+                                    counter += 1
 
-                print(self.TruthTableMemory)
-
-                
-                
-                #step 3: go to the correct locations in the table and compute the operations baised on what the binary value of that location is
-
-                
-                
+                        cunter += 1
 
             #update the page's data after the data has been changed
             self.LoadPageState()
 
+            #destroy the confirmation window and the PowerToys window
             self.AreYouShureWindow.destroy()
             self.PowerToysWindow.destroy()
 
