@@ -5,3 +5,4 @@ Things i need to add to make not suck:
 
 a hell of a lot of other stuff like:
 4. integration with my other program to make it easier to make truth tables, convert them into Diagrams and back into minimized functions....
+5. there needs to be a way to handle infinite loops, i bet just by adding multiprocessing would help, look at the 2nd picture to get a better understanding.
