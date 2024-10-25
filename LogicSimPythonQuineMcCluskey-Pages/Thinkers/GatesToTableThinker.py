@@ -242,13 +242,15 @@ class TruthTableToGates():
         else:
             output += f"{tuple(self.maxterms)}".replace(" ","")
 
-        with open(self.databasename.replace(".db",".txt"), 'w') as file:
+        newdatabasename = self.databasename.replace(".db",".txt")
+
+        with open(newdatabasename, 'w') as file:
             file.write(output)
 
         if len(output) > 2000:
-            output = "The output was to long to output RAW, so you will need to obtain the data someother way"
+            output = f"The output was to long to output RAW, so you will need to obtain the data someother way.\nOutput saved as: {newdatabasename}"
 
-        return output
+        return f"{output} \nOutput saved as: {newdatabasename}"
 
 
 #Nessesary Binary functions = AND, OR, NOT

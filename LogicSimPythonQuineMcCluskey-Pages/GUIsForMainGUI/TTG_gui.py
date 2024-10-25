@@ -1196,7 +1196,7 @@ class TruthTableApp:
             for spot in self.queue:
                 #step 2: load the correct opperation
                 opperation = spot[0]
-                self.function # the function in string form
+                self.function = self.functions.get(opperation)[2] # the function in string form
                 range_of_duty = spot[1]
                 inputs = []
                 outputs = []

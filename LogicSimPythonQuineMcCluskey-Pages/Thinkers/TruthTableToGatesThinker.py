@@ -36,7 +36,7 @@ class TruthTableToGates():
         self.DontCares = []
 
         #define variable that is used to keep track of how many matched pairs tables
-        self.numbermatchedpairstables = 0
+        self.numbermatchedpairstables = 10
 
         #vars for defining the num of min and max terms.
         self.numMax = 0
@@ -245,17 +245,13 @@ class TruthTableToGates():
             self.connection = sqlite3.connect(self.databasename)
             self.cursor = self.connection.cursor()
 
+            #update the number of matched pairs tables using my own crude method... i just dont want to run out of space...
+            self.numbermatchedpairstables = self.NumInputVars * 2
+
             #I think that dropping a table will clear it, so that is what this does
-            SQL = """
-            DROP TABLE IF EXISTS stl_matchedpairs1;
-            DROP TABLE IF EXISTS stl_matchedpairs2;
-            DROP TABLE IF EXISTS stl_matchedpairs3;
-            DROP TABLE IF EXISTS stl_matchedpairs4;
-            DROP TABLE IF EXISTS stl_matchedpairs5;
-            DROP TABLE IF EXISTS stl_matchedpairs6;
-            DROP TABLE IF EXISTS stl_matchedpairs7;
-            DROP TABLE IF EXISTS stl_primeimplicanttable;
-            """
+            tables = [f"stl_matchedpairs{i}" for i in range(1, self.numbermatchedpairstables+1)] + ["stl_primeimplicanttable"]
+            SQL = "\n".join([f"DROP TABLE IF EXISTS {table};" for table in tables])
+
 
             #Run the SQL
             self.cursor.executescript(SQL)
@@ -263,7 +259,7 @@ class TruthTableToGates():
             #----Create the table for when we group by number of 1's in the bin rep
             #The range of the number is the number of tables im generating for matched pairs
             i = 0
-            while i in range(7):
+            while i in range(self.numbermatchedpairstables):
                 SQL = f"""
                 CREATE TABLE IF NOT EXISTS stl_matchedpairs{i+1}(
                     PK_id INTEGER PRIMARY KEY,
@@ -305,16 +301,8 @@ class TruthTableToGates():
         
             if self.databasename == defaultname:
                 #I think that dropping a table will clear it, so that is what this does
-                SQL = """
-                DROP TABLE IF EXISTS stl_matchedpairs1;
-                DROP TABLE IF EXISTS stl_matchedpairs2;
-                DROP TABLE IF EXISTS stl_matchedpairs3;
-                DROP TABLE IF EXISTS stl_matchedpairs4;
-                DROP TABLE IF EXISTS stl_matchedpairs5;
-                DROP TABLE IF EXISTS stl_matchedpairs6;
-                DROP TABLE IF EXISTS stl_matchedpairs7;
-                DROP TABLE IF EXISTS stl_primeimplicanttable;
-                """
+                tables = [f"stl_matchedpairs{i}" for i in range(1, self.numbermatchedpairstables+1)] + ["stl_primeimplicanttable"]
+                SQL = "\n".join([f"DROP TABLE IF EXISTS {table};" for table in tables])
 
                 #Run the SQL
                 self.cursor.executescript(SQL)
@@ -418,7 +406,7 @@ class TruthTableToGates():
 
         answer = ""
 
-        for counter in range(7):
+        for counter in range(self.numbermatchedpairstables):
             #Fetch all records from the first matched pairs table
             self.cursor.execute(f"Select * FROM stl_matchedpairs{counter+1}")
             publisher_data = self.cursor.fetchall()
@@ -619,7 +607,7 @@ class TruthTableToGates():
         primeImplicants = []
         mintermsinvolved = []
 
-        for counter in range(6):
+        for counter in range(self.numbermatchedpairstables-1):
             #Fetch all records from the first matched pairs table
             self.cursor.execute(f"Select * FROM stl_matchedpairs{counter+1} WHERE checked = 0")
             Matchedpairdata = self.cursor.fetchall()
