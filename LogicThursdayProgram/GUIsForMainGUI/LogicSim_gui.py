@@ -75,19 +75,19 @@ class LogicSim_gui(tk.Toplevel):
         self.buttons_frame.pack(side=tk.BOTTOM, fill=tk.X)
 
         self.add_input_button = tk.Button(self.buttons_frame, text="Add Input", command=self.add_input)
-        self.add_input_button.pack(side=tk.LEFT, padx=5, pady=5)
+        self.add_input_button.pack(fill=tk.X, pady=2)
 
         self.add_output_button = tk.Button(self.buttons_frame, text="Add Output", command=self.add_output)
-        self.add_output_button.pack(side=tk.LEFT, padx=5, pady=5)
+        self.add_output_button.pack(fill=tk.X, pady=2)
 
         self.save_circuit_button = tk.Button(self.buttons_frame, text="Save Circuit as Gate", command=self.save_circuit_as_gate)
-        self.save_circuit_button.pack(side=tk.LEFT, padx=5, pady=5)
+        self.save_circuit_button.pack(fill=tk.X, pady=2)
 
         self.clear_board_button = tk.Button(self.buttons_frame, text="Clear Board", command=self.clear_board)
-        self.clear_board_button.pack(side=tk.LEFT, padx=5, pady=5)
+        self.clear_board_button.pack(fill=tk.X, pady=2)
 
         self.back_button = tk.Button(self.buttons_frame, text="Back to Menu", command=self.back_to_main_menu)
-        self.back_button.pack(side=tk.LEFT, padx=5, pady=5)
+        self.back_button.pack(fill=tk.X, pady=2)
 
         self.populate_operations()
 
@@ -99,9 +99,9 @@ class LogicSim_gui(tk.Toplevel):
         for gate_name in self.gates:
             button = tk.Button(self.operations_frame, text=gate_name)
             button.bind("<Button-1>", self.start_drag)
-            if gate_name not in ['AND', 'OR', 'NOT']:  # Custom gates only
+            if gate_name not in ['AND', 'OR', 'NOT']:
                 button.bind("<Button-3>", self.delete_gate_file)
-            button.pack(pady=5)
+            button.pack(pady=2)
 
     def start_drag(self, event):
         widget = event.widget
