@@ -1,136 +1,461 @@
-import sys
-
 import tkinter as tk
-import tkinter.ttk as ttk
+from tkinter import simpledialog, messagebox, filedialog
+import pickle
+import os
 
-#import my logic classes
+import Thinkers.TruthTableToGatesThinker as TTG_Thinker
+import Thinkers.GatesToTableThinker as GTT_Thinker
 
-#Example of how to import and use
-#takes input: F(A,B,C) = Z'm(2,3,4,5)+Z'd(6,7) and returns -> F = B + A
-#Do the calculation
-#TTGThinker = TTG_Thinker.TruthTableToGates(userfunction)
-#Return answer
-#TTGThinker.calculateanswer()
-#answer = TTGThinker.get_Answer()
-try:
-    import Thinkers.TruthTableToGatesThinker as TTG_Thinker
-except ImportError:
-    # for local use, if it worked
-    import Thinkers as TTG_Thinker
-    
-#Example of how to import and use
-#takes input F = B'D' + BC'D + ACD' + ABD and returns -> F(A,B,C,D) = Z'm(0,1,3,4,7,9,12,13,14)
-#gtt_Thinker = GTT_Thinker.TruthTableToGates(userfunction)
-#answer = gtt_Thinker.get_AnswerFunction()
-try:
-    import Thinkers.GatesToTableThinker as GTT_Thinker
-except ImportError:
-    # for local use, if it worked
-    import Thinkers as GTT_Thinker
+CHIP_DIR = "chips/"
 
-#START OF INFO GUI class!-----------------------------------------------------------------------------------------------------------
+# Ensure the directory for saving chips exists
+if not os.path.exists(CHIP_DIR):
+    os.makedirs(CHIP_DIR)
+
+class Gate:
+    def __init__(self, name, inputs, outputs, truth_table=None):
+        self.name = name
+        self.inputs = inputs
+        self.outputs = outputs
+        self.truth_table = truth_table
+
+    def evaluate(self, input_state):
+        if self.truth_table is not None:
+            return self.truth_table.get(input_state, (False,))
+        else:
+            # Default behavior for AND, OR, NOT gates
+            if self.name == "AND":
+                return (all(input_state),)
+            elif self.name == "OR":
+                return (any(input_state),)
+            elif self.name == "NOT":
+                return (not input_state[0],)
+            return (False,)  # Fallback for unknown gate types
+
 class LogicSim_gui(tk.Toplevel):
     def __init__(self, main_menu_ref, position="+100+100"):
         super().__init__(main_menu_ref)
-
-        """Initialize program GUI"""
-
-        # set window location on screen 100 pixels right 100 pixels down
-        # the window size will change based on the controls
+        self.main_menu_ref = main_menu_ref
+        self.title("Logic Circuit Designer")
         self.geometry(position)
-        self.geometry("1050x600")
-        self.resizable(False, False)
+        self.geometry("1200x800")
+        self.configure(bg='lightgray')
 
-        """self.iconbitmap("icon.ico")"""
-        self.title("LogicSim")
-        
-        # create and grid all widgets
+        self.gates = {'AND': Gate('AND', 2, 1), 'OR': Gate('OR', 2, 1), 'NOT': Gate('NOT', 1, 1)}
+        self.workspace_objects = {}
+        self.connections = {}
+        self.states = {}
+
         self.create_frames()
-        self.create_widgets()
 
-# ---------------------------------- CREATE FRAMES -----------------------------------#
+        self.dragged_gate = None
+        self.selected_node = None
+        self.preview_item = None
+        self.moving_gate = None
+        self.move_start = None
+
+        self.load_custom_gates()
+
     def create_frames(self):
-        self.entry_frame = ttk.LabelFrame(
-            self,
-            text="About this program",
-            relief="groove"
-        )
-        self.operations_frame = ttk.LabelFrame(
-            self,
-            text="Operations",
-            relief="groove"
-        )
-        # Grid the frames
-        self.entry_frame.grid(row=0, column=0, sticky="NW")
-        self.operations_frame.grid(row=0, column=1, sticky="N")
+        self.operations_frame = tk.Frame(self, bg='lightgray', width=200)
+        self.operations_frame.pack(side=tk.LEFT, fill=tk.Y, padx=10, pady=(10, 0))
 
-# ------------------------------- CREATE WIDGETS ----------------------------------#
-    def create_widgets(self):
-        # -------------------- CREATE BUTTONS -----------------------------#
-        # back to the main menu
-        self.btn_back = ttk.Button(
-            self.operations_frame,
-            text="Back to main Menu",
-            command=self.back_to_main_menu
-        )
+        self.workspace_frame = tk.Frame(self, bg='white')
+        self.workspace_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=10, pady=10)
 
-        # Create a scrollbar
-        self.scrollbar = tk.Scrollbar(self.entry_frame)
-        self.scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        self.canvas = tk.Canvas(self.workspace_frame, bg='white')
+        self.canvas.pack(fill=tk.BOTH, expand=True)
+        self.canvas.bind("<Button-1>", self.on_canvas_click)
+        self.canvas.bind("<Button-3>", self.cancel_action)
 
-        # Create the Text widget
-        self.textbox = tk.Text(
-            self.entry_frame,
-            height=20,
-            width=100,
-            yscrollcommand=self.scrollbar.set
-        )
+        self.create_buttons()
 
-        # Configure the scrollbar to work with the Text widget
-        self.scrollbar.config(command=self.textbox.yview)
+    def create_buttons(self):
+        self.buttons_frame = tk.Frame(self.operations_frame, bg='lightgray')
+        self.buttons_frame.pack(side=tk.BOTTOM, fill=tk.X)
 
-        # ------------------------- GRID WIDGETS ---------------------#
-        self.btn_back.grid(row=0, column=0, sticky="EW")
+        self.add_input_button = tk.Button(self.buttons_frame, text="Add Input", command=self.add_input)
+        self.add_input_button.pack(side=tk.LEFT, padx=5, pady=5)
 
-        # set padding between frame and window
-        self.entry_frame.grid_configure(padx=20, pady=(20))
-        self.operations_frame.grid_configure(padx=20, pady=(20))
+        self.add_output_button = tk.Button(self.buttons_frame, text="Add Output", command=self.add_output)
+        self.add_output_button.pack(side=tk.LEFT, padx=5, pady=5)
 
-        # Set padding for all widgets inside the frame
+        self.save_circuit_button = tk.Button(self.buttons_frame, text="Save Circuit as Gate", command=self.save_circuit_as_gate)
+        self.save_circuit_button.pack(side=tk.LEFT, padx=5, pady=5)
+
+        self.clear_board_button = tk.Button(self.buttons_frame, text="Clear Board", command=self.clear_board)
+        self.clear_board_button.pack(side=tk.LEFT, padx=5, pady=5)
+
+        self.back_button = tk.Button(self.buttons_frame, text="Back to Menu", command=self.back_to_main_menu)
+        self.back_button.pack(side=tk.LEFT, padx=5, pady=5)
+
+        self.populate_operations()
+
+    def populate_operations(self):
         for widget in self.operations_frame.winfo_children():
-            widget.grid_configure(padx=7, pady=7)
+            if isinstance(widget, tk.Button) and widget not in self.buttons_frame.winfo_children():
+                widget.destroy()
 
-        self.textbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        for gate_name in self.gates:
+            button = tk.Button(self.operations_frame, text=gate_name)
+            button.bind("<Button-1>", self.start_drag)
+            if gate_name not in ['AND', 'OR', 'NOT']:  # Custom gates only
+                button.bind("<Button-3>", self.delete_gate_file)
+            button.pack(pady=5)
 
-        # Make the textbox uneditable
-        self.textbox.config(state=tk.DISABLED)
+    def start_drag(self, event):
+        widget = event.widget
+        gate = widget.cget("text")
+        self.dragged_gate = self.gates[gate]
+        self.canvas.bind("<Motion>", self.update_preview)
+
+    def update_preview(self, event):
+        if self.preview_item:
+            self.canvas.delete(self.preview_item)
+        x, y = event.x, event.y
+        self.preview_item = self.canvas.create_rectangle(x, y, x+80, y+40, dash=(5, 2), outline="gray")
+
+    def on_canvas_click(self, event):
+        item = self.canvas.find_withtag('current')
+        if self.dragged_gate:
+            self.place_gate(event.x, event.y)
+        elif item:
+            if 'gate' in self.canvas.gettags(item):
+                self.select_gate(item[0])
+
+    def place_gate(self, x, y):
+        gate_obj = self.canvas.create_rectangle(x, y, x+80, y+40, fill="lightblue", tag="gate")
+        text_obj = self.canvas.create_text(x+40, y+20, text=self.dragged_gate.name, tags=("text",))
+
+        self.workspace_objects[gate_obj] = {'gate': self.dragged_gate, 'nodes': [], 'text': text_obj}
+
+        for i in range(self.dragged_gate.inputs):
+            input_node = self.canvas.create_oval(x-5, y+10*i+10, x+5, y+10*i+20, fill="black", tags=("node", "gate_input"))
+            self.workspace_objects[gate_obj]['nodes'].append(input_node)
+            self.workspace_objects[input_node] = {'parent': gate_obj, 'type': 'gate_input'}
+            self.canvas.tag_bind(input_node, "<Button-1>", self.select_node)
+
+        for i in range(self.dragged_gate.outputs):
+            output_node = self.canvas.create_oval(x+75, y+10*i+10, x+85, y+10*i+20, fill="black", tags=("node", "gate_output"))
+            self.workspace_objects[gate_obj]['nodes'].append(output_node)
+            self.workspace_objects[output_node] = {'parent': gate_obj, 'type': 'gate_output'}
+            self.canvas.tag_bind(output_node, "<Button-1>", self.select_node)
+
+        self.dragged_gate = None
+        self.canvas.delete(self.preview_item)
+        self.canvas.unbind("<Motion>")
+
+        self.canvas.tag_bind(gate_obj, "<Button-3>", self.prompt_delete_gate)
+
+    def select_gate(self, gate_id):
+        if gate_id in self.workspace_objects and 'gate' in self.workspace_objects[gate_id]:
+            self.moving_gate = gate_id
+            self.invert_gate_colors(gate_id)
+            self.move_start = self.canvas.coords(gate_id)[:2]
+            self.canvas.bind("<B1-Motion>", self.move_gate)
+            self.canvas.bind("<ButtonRelease-1>", self.end_move_gate)
+
+    def prompt_delete_gate(self, event):
+        gate_id = self.canvas.find_withtag('current')[0]
+        result = messagebox.askyesno("Delete Confirmation", "Do you want to delete this gate?", parent=self.canvas)
+        if result:
+            self.delete_gate(gate_id)
+
+    def delete_gate(self, gate_id):
+        connections_to_delete = [(start, end) for start, end in self.connections if start in self.workspace_objects[gate_id]['nodes'] or end in self.workspace_objects[gate_id]['nodes']]
+
+        for conn in connections_to_delete:
+            line = self.connections[conn]
+            self.canvas.delete(line)
+            del self.connections[conn]
+
+        for node in self.workspace_objects[gate_id]['nodes']:
+            self.canvas.delete(node)
+            del self.workspace_objects[node]
+
+        text = self.workspace_objects[gate_id]['text']
+        self.canvas.delete(text)
+
+        self.canvas.delete(gate_id)
+        del self.workspace_objects[gate_id]
+
+    def move_gate(self, event):
+        if self.moving_gate and self.move_start:
+            dx = event.x - self.move_start[0]
+            dy = event.y - self.move_start[1]
+            self.canvas.move(self.moving_gate, dx, dy)
+
+            for node in self.workspace_objects[self.moving_gate]['nodes']:
+                self.canvas.move(node, dx, dy)
+                for connection, line in self.connections.items():
+                    if node in connection:
+                        self.update_line(connection, line)
+
+            text = self.workspace_objects[self.moving_gate]['text']
+            self.canvas.move(text, dx, dy)
+            self.move_start = (event.x, event.y)
+
+    def update_line(self, nodes, line):
+        start_node, end_node = nodes
+        start_coords = self.canvas.coords(start_node)
+        end_coords = self.canvas.coords(end_node)
+        color = "red" if self.states.get(start_node, False) else "grey"
+        self.canvas.itemconfig(line, fill=color)
+        self.canvas.coords(line, start_coords[0]+5, start_coords[1]+5, end_coords[0]+5, end_coords[1]+5)
+
+    def end_move_gate(self, event):
+        if self.moving_gate:
+            self.invert_gate_colors(self.moving_gate)
+        self.moving_gate = None
+        self.move_start = None
+        self.canvas.unbind("<B1-Motion>")
+        self.canvas.unbind("<ButtonRelease-1>")
+
+    def select_node(self, event):
+        node_id = self.canvas.find_withtag('current')[0]
+        node_tags = self.canvas.gettags(node_id)
+
+        if self.selected_node:
+            selected_node_tags = self.canvas.gettags(self.selected_node)
+            if (('workspace_input' in selected_node_tags and 'gate_input' in node_tags) or
+                ('gate_output' in selected_node_tags and 'workspace_output' in node_tags) or
+                ('gate_output' in selected_node_tags and 'gate_input' in node_tags)):
+                self.connect_nodes(self.selected_node, node_id)
+
+            self.canvas.itemconfig(self.selected_node, fill="black")
+            self.selected_node = None
+        else:
+            self.selected_node = node_id
+            self.canvas.itemconfig(node_id, fill="blue")
+
+    def connect_nodes(self, start_node, end_node):
+        if (start_node, end_node) in self.connections or start_node == end_node:
+            return
+
+        start_coords = self.canvas.coords(start_node)
+        end_coords = self.canvas.coords(end_node)
+        line = self.canvas.create_line(start_coords[0]+5, start_coords[1]+5, end_coords[0]+5, end_coords[1]+5, width=6, tags="wire")
+        self.connections[(start_node, end_node)] = line
+        self.canvas.tag_bind(line, "<Button-3>", self.delete_wire)
+        self.simulate_circuit()
+
+    def delete_wire(self, event):
+        line_id = self.canvas.find_withtag('current')[0]
+        for conn, line in list(self.connections.items()):
+            if line == line_id:
+                del self.connections[conn]
+                break
+        self.canvas.delete(line_id)
+
+    def delete_workspace_element(self, element_id):
+        if element_id in self.workspace_objects:
+            element = self.workspace_objects[element_id]
+            if 'type' in element and element['type'] in ['workspace_input', 'workspace_output']:
+                if element['type'] == 'workspace_input':
+                    toggle_button = element.get('toggle')
+                    if toggle_button:
+                        self.canvas.delete(toggle_button)
+                if element['type'] == 'workspace_output':
+                    indicator = element.get('indicator')
+                    if indicator:
+                        self.canvas.delete(indicator)
+                self.canvas.delete(element_id)
+                del self.workspace_objects[element_id]
+
+    def invert_gate_colors(self, gate_id):
+        current_fill = self.canvas.itemcget(gate_id, "fill")
+        inverted_fill = "blue" if current_fill == "lightblue" else "lightblue"
+        self.canvas.itemconfig(gate_id, fill=inverted_fill)
+
+    def save_circuit_as_gate(self):
+        name = simpledialog.askstring("New Gate", "Enter the name for the new gate (max 14 characters):")
+        if not name or len(name) > 14:
+            messagebox.showerror("Error", "Invalid gate name. Must be 1-14 characters.")
+            return
+
+        input_nodes = [obj for obj, details in self.workspace_objects.items() if details.get('type') == 'workspace_input']
+        output_nodes = [obj for obj, details in self.workspace_objects.items() if details.get('type') == 'workspace_output']
+
+        num_inputs = len(input_nodes)
+        num_outputs = len(output_nodes)
+
+        truth_table = {}
+
+        for i in range(2 ** num_inputs):
+            input_state = [(i >> bit) & 1 for bit in range(num_inputs)]
+            
+            for idx, node in enumerate(input_nodes):
+                self.states[node] = input_state[idx] == 1
+                toggle_color = "red" if self.states[node] else "grey"
+                self.canvas.itemconfig(self.workspace_objects[node]['toggle'], fill=toggle_color)
+
+            self.simulate_circuit()
+
+            # Record the entire output state
+            output_state = tuple(self.states.get(node, False) for node in output_nodes)
+            truth_table[tuple(input_state)] = output_state
+
+        # Use TTG or GTT to minimize and save the gate
+        minimized_function = self.minimize_function(truth_table)
+        self.gates[name] = Gate(name, num_inputs, num_outputs, minimized_function)
+        self.populate_operations()
+
+        # Save the gate to its own file
+        with open(os.path.join(CHIP_DIR, f"{name}.pkl"), 'wb') as f:
+            pickle.dump(self.gates[name], f)
+
+        self.clear_board()
+
+    def minimize_function(self, truth_table):
+        # Place logic for minimization using TTG or GTT here
+        # For now, returning the truth_table as-is, assuming the minimization happens in TTG/GTT
+
+        #Example of how to import and use
+        #takes input: F(A,B,C) = Z'm(2,3,4,5)+Z'd(6,7) and returns -> F = B + A
+        #Do the calculation
+        #TTGThinker = TTG_Thinker.TruthTableToGates(userfunction)
+        #Return answer
+        #TTGThinker.calculateanswer()
+        #answer = TTGThinker.get_Answer()
+
+        return truth_table
+
+    def simulate_circuit(self):
+        change_flag = True
+        while change_flag:
+            change_flag = False
+            for gate_obj, details in self.workspace_objects.items():
+                if 'gate' not in details:
+                    continue
+
+                gate = details['gate']
+                input_nodes = [n for n in details['nodes'] if 'gate_input' in self.canvas.gettags(n)]
+                output_nodes = [n for n in details['nodes'] if 'gate_output' in self.canvas.gettags(n)]
+
+                inputs = tuple(self.states.get(node, False) for node in input_nodes)
+                result = gate.evaluate(inputs)
+
+                for idx, output_node in enumerate(output_nodes):
+                    if self.states.get(output_node) != result[idx]:
+                        self.states[output_node] = result[idx]
+                        change_flag = True
+
+            for (start_node, end_node), line in self.connections.items():
+                state = self.states.get(start_node, False)
+                self.canvas.itemconfig(line, fill="red" if state else "grey")
+                if self.states.get(end_node) != state:
+                    self.states[end_node] = state
+                    change_flag = True
+
+            for obj, details in self.workspace_objects.items():
+                if details.get('type') == 'workspace_output':
+                    connected_nodes = [start for (start, end) in self.connections if end == obj]
+                    indicator_color = "red" if any(self.states.get(node, False) for node in connected_nodes) else "grey"
+                    self.canvas.itemconfig(details['indicator'], fill=indicator_color)
+
+    def add_input(self):
+        coords = (5, 10 + len([w for w in self.workspace_objects.values() if w.get('type') == 'workspace_input']) * 30)
+        toggle_button = self.canvas.create_oval(*coords, coords[0]+20, coords[1]+20, fill="grey", tag="toggle_button")
+        connect_node = self.canvas.create_oval(coords[0]+25, coords[1]+5, coords[0]+35, coords[1]+15, fill="black", tags=("node", "workspace_input"))
+
+        self.workspace_objects[connect_node] = {'type': 'workspace_input', 'toggle': toggle_button}
+        self.states[connect_node] = False
+
+        self.canvas.tag_bind(toggle_button, "<Button-1>", lambda event, toggle=connect_node: self.toggle_input(toggle))
+        self.canvas.tag_bind(connect_node, "<Button-1>", self.select_node)
+        self.canvas.tag_bind(connect_node, "<Button-3>", lambda event, element=connect_node: self.delete_workspace_element(element))
+
+    def add_output(self):
+        coords = (self.canvas.winfo_width() - 50, 10 + len([w for w in self.workspace_objects.values() if w.get('type') == 'workspace_output']) * 30)
+        connect_node = self.canvas.create_oval(coords[0], coords[1]+5, coords[0]+10, coords[1]+15, fill="black", tags=("node", "workspace_output"))
+        indicator = self.canvas.create_oval(coords[0]+15, coords[1], coords[0]+35, coords[1]+20, fill="grey", tag="output_indicator")
+
+        self.workspace_objects[connect_node] = {'type': 'workspace_output', 'indicator': indicator}
+
+        self.canvas.tag_bind(connect_node, "<Button-1>", self.select_node)
+        self.canvas.tag_bind(connect_node, "<Button-3>", lambda event, element=connect_node: self.delete_workspace_element(element))
+
+    def toggle_input(self, toggle):
+        self.states[toggle] = not self.states.get(toggle, False)
+        self.canvas.itemconfig(self.workspace_objects[toggle]['toggle'], fill="red" if self.states[toggle] else "grey")
+        self.simulate_circuit()
+
+    def clear_board(self):
+        self.canvas.delete("all")
+        self.workspace_objects.clear()
+        self.connections.clear()
+        self.states.clear()
+
+    def cancel_action(self, event):
+        if self.selected_node:
+            self.canvas.itemconfig(self.selected_node, fill="black")
+            self.selected_node = None
+
+        if self.preview_item:
+            self.canvas.delete(self.preview_item)
+
+        if self.moving_gate:
+            self.invert_gate_colors(self.moving_gate)
+            self.moving_gate = None
+            self.move_start = None
+            self.canvas.unbind("<B1-Motion>")
+            self.canvas.unbind("<ButtonRelease-1>")
 
     def back_to_main_menu(self):
-        self.master.deiconify()  # Show main menu again
-        self.destroy()  # Destroy current GUI
+        """Return to the main menu"""
+        self.main_menu_ref.deiconify()
+        self.destroy()
 
-#Run the Info Menu!-------------------------------------------------------------------------------------------
-if __name__ == "__main__":
+    def delete_gate_file(self, event):
+        """Delete gate file via right-click on custom gate button."""
+        button = event.widget
+        gate_name = button.cget("text")
+        should_delete = messagebox.askyesno("Delete Gate", f"Are you sure you want to delete the gate '{gate_name}'?")
+        if should_delete:
+            # Remove the gate from the internal dictionary
+            if gate_name in self.gates:
+                del self.gates[gate_name]
+            
+            # Delete the associated file
+            filepath = os.path.join(CHIP_DIR, f"{gate_name}.pkl")
+            if os.path.exists(filepath):
+                os.remove(filepath)
+                
+            # Refresh gate buttons
+            self.populate_operations()
+
+    def load_custom_gates(self):
+        """Load custom gates from the CHIP_DIR."""
+        files = os.listdir(CHIP_DIR)
+        for filename in files:
+            if filename.endswith('.pkl'):
+                filepath = os.path.join(CHIP_DIR, filename)
+                with open(filepath, 'rb') as f:
+                    gate = pickle.load(f)
+                    self.gates[gate.name] = gate
+        
+        # Refresh the gate button list
+        self.populate_operations()
+
+
+if __name__ == '__main__':
+    # Create main menu for testing purposes
     class MainMenu(tk.Tk):
         def __init__(self):
             super().__init__()
             self.title("Main Menu")
             self.geometry("300x200")
 
+            self.withdraw()  # Hide the main menu on startup
+
+            open_design_button = tk.Button(self, text="Open Circuit Designer", command=self.open_designer)
+            open_design_button.pack(pady=10)
+
+        def open_designer(self):
             self.withdraw()  # Hide the main menu
+            designer = LogicSim_gui(self, position="+100+100")
+            designer.mainloop()
 
-            self.btn_close = tk.Button(self, text="Close", command=self.close_gui)
-            self.btn_close.pack(pady=10)
-
-            #Draw the info menu
-            app = LogicSim_gui(self)
-            app.mainloop()
-
-
-        def close_gui(self):
-            sys.exit() #Exit the program
-            #self.destroy()
-
-    info_gui = MainMenu()
-
-    
+    # Instantiate MainMenu for standalone execution
+    app = MainMenu()
+    app.mainloop()
