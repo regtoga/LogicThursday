@@ -15,8 +15,3 @@ F(A,B,C) = Z'm(2,3,4,5)+Z'd(6,7)
 
 Now hopefully enough of that made sense that you can try it out for your self...
 I am very thankful for anyone who has read this far and thank you for taking a look at my program!
-
-
-
-
-Fortnight!

@@ -18,7 +18,7 @@ class Info_gui(tk.Toplevel):
         self.resizable(False, False)
 
         """self.iconbitmap("icon.ico")"""
-        self.title("GTT")
+        self.title("Info")
         
         # create and grid all widgets
         self.create_frames()

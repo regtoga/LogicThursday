@@ -5,6 +5,7 @@ import tkinter as tk
 
 import GUIsForMainGUI.TTG_gui as TTG_gui
 import GUIsForMainGUI.GTT_gui as GTT_gui
+import GUIsForMainGUI.LogicSim_gui as LogicSim_gui
 import GUIsForMainGUI.Info_gui as Info_gui
 
 # Override tk widgets with themed ttk widgets if available
@@ -28,6 +29,9 @@ class MainMenu(tk.Tk):
         self.btn_GTT_gui = Button(self, text="Gates to TruthTable", command=self.open_GTT_gui)
         self.btn_GTT_gui.pack(pady=10)
 
+        self.btn_LogicSim_gui = Button(self, text="Logic Simulator", command=self.open_LogicSim_gui)
+        self.btn_LogicSim_gui.pack(pady=10)
+
         self.btn_Info = Button(self, text="Info", command=self.open_Info_gui)
         self.btn_Info.pack(pady=10)
 
@@ -46,6 +50,12 @@ class MainMenu(tk.Tk):
     def open_GTT_gui(self):
         self.withdraw()  # Hide the main menu
         GTT_GUi = GTT_gui.GTT_gui(self, f"+{self.winfo_rootx()-9}+{self.winfo_rooty()-32}")  # Pass reference to the main menu
+        GTT_GUi.mainloop()
+        self.deiconify()  # Show the main menu again when GTT_gui closes
+
+    def open_LogicSim_gui(self):
+        self.withdraw()  # Hide the main menu
+        GTT_GUi = LogicSim_gui.LogicSim_gui(self, f"+{self.winfo_rootx()-9}+{self.winfo_rooty()-32}")  # Pass reference to the main menu
         GTT_GUi.mainloop()
         self.deiconify()  # Show the main menu again when GTT_gui closes
 
