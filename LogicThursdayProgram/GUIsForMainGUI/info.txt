@@ -13,5 +13,9 @@ we can minimize the ammount of logic gates needed to fufill the table.
 This process is called circut minimization. These functions look like this:
 F(A,B,C) = Z'm(2,3,4,5)+Z'd(6,7)
 
+There is also a Logic Simulator portion of this program. In that portion you can create some logical systems and compact them as a single chip.
+Secondly you can use this program to export a real design as a truth table, which you can either import into the truth table editor to see it,
+or you could alternativly edit the design using the power toys. so many things to do!!!
+
 Now hopefully enough of that made sense that you can try it out for your self...
 I am very thankful for anyone who has read this far and thank you for taking a look at my program!

@@ -16,7 +16,8 @@ The project consists of several Python files:
 1. `GUI_GTT_TTG_MAIN.py`: The main entry point of the application, containing the `MainMenu` class.
 2. `TTG_gui.py`: GUI for the TruthTable to Gates functionality.
 3. `GTT_gui.py`: GUI for the Gates to TruthTable functionality.
-4. `Info_gui.py`: Information panel GUI.
+4. `LogicSim_gui.py`: GUI for the Logic Simulator.
+5. `Info_gui.py`: Information panel GUI.
 
 ## Dependencies
 
@@ -38,7 +39,7 @@ The project consists of several Python files:
 ## Usage
 
 Run the main script to start the application:
-The current main script is inside the file "5LogicSimPythonQuineMcCluskey-Pages"
+The current main script is inside the file "LogicThursdayProgram"
 
 ```
 GUI_GTT_TTG_MAIN.py

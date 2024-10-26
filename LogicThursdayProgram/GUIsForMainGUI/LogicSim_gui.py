@@ -3,34 +3,30 @@ from tkinter import simpledialog, messagebox, filedialog
 import pickle
 import os
 
-import Thinkers.TruthTableToGatesThinker as TTG_Thinker
 import Thinkers.GatesToTableThinker as GTT_Thinker
 
 CHIP_DIR = "chips/"
 
-# Ensure the directory for saving chips exists
 if not os.path.exists(CHIP_DIR):
     os.makedirs(CHIP_DIR)
 
 class Gate:
-    def __init__(self, name, inputs, outputs, truth_table=None):
+    def __init__(self, name, inputs, outputs, boolean_exprs):
         self.name = name
         self.inputs = inputs
         self.outputs = outputs
-        self.truth_table = truth_table
+        self.boolean_exprs = boolean_exprs
 
     def evaluate(self, input_state):
-        if self.truth_table is not None:
-            return self.truth_table.get(input_state, (False,))
-        else:
-            # Default behavior for AND, OR, NOT gates
-            if self.name == "AND":
-                return (all(input_state),)
-            elif self.name == "OR":
-                return (any(input_state),)
-            elif self.name == "NOT":
-                return (not input_state[0],)
-            return (False,)  # Fallback for unknown gate types
+        results = []
+        for expr in self.boolean_exprs:
+            try:
+                output = GTT_Thinker.calculateFunctionOutput(expr.replace(" ", ""), input_state)
+                results.append(output)
+            except Exception as e:
+                print(f"Error evaluating function: {e}")
+                results.append(False)
+        return tuple(results)
 
 class LogicSim_gui(tk.Toplevel):
     def __init__(self, main_menu_ref, position="+100+100"):
@@ -38,27 +34,31 @@ class LogicSim_gui(tk.Toplevel):
         self.main_menu_ref = main_menu_ref
         self.title("Logic Circuit Designer")
         self.geometry(position)
-        self.geometry("1200x800")
-        self.configure(bg='lightgray')
-
-        self.gates = {'AND': Gate('AND', 2, 1), 'OR': Gate('OR', 2, 1), 'NOT': Gate('NOT', 1, 1)}
+        self.geometry("1055x600")
+        
+        self.gate_definitions = {
+            "AND": (2, 1, ["AB"]),
+            "OR": (2, 1, ["A+B"]),
+            "NOT": (1, 1, ["A'"])
+        }
+        
+        self.gates = {name: Gate(name, *details) for name, details in self.gate_definitions.items()}
         self.workspace_objects = {}
         self.connections = {}
         self.states = {}
 
-        self.create_frames()
-
+        self.preview_item = None
         self.dragged_gate = None
         self.selected_node = None
-        self.preview_item = None
         self.moving_gate = None
         self.move_start = None
 
+        self.create_frames()
         self.load_custom_gates()
 
     def create_frames(self):
-        self.operations_frame = tk.Frame(self, bg='lightgray', width=200)
-        self.operations_frame.pack(side=tk.LEFT, fill=tk.Y, padx=10, pady=(10, 0))
+        self.operations_frame = tk.Frame(self, width=200)
+        self.operations_frame.pack(side=tk.LEFT, fill=tk.Y, padx=10)
 
         self.workspace_frame = tk.Frame(self, bg='white')
         self.workspace_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=10, pady=10)
@@ -71,7 +71,7 @@ class LogicSim_gui(tk.Toplevel):
         self.create_buttons()
 
     def create_buttons(self):
-        self.buttons_frame = tk.Frame(self.operations_frame, bg='lightgray')
+        self.buttons_frame = tk.Frame(self.operations_frame)
         self.buttons_frame.pack(side=tk.BOTTOM, fill=tk.X)
 
         self.add_input_button = tk.Button(self.buttons_frame, text="Add Input", command=self.add_input)
@@ -99,7 +99,7 @@ class LogicSim_gui(tk.Toplevel):
         for gate_name in self.gates:
             button = tk.Button(self.operations_frame, text=gate_name)
             button.bind("<Button-1>", self.start_drag)
-            if gate_name not in ['AND', 'OR', 'NOT']:
+            if gate_name not in self.gate_definitions:  # Custom gates
                 button.bind("<Button-3>", self.delete_gate_file)
             button.pack(pady=2)
 
@@ -280,45 +280,36 @@ class LogicSim_gui(tk.Toplevel):
         num_outputs = len(output_nodes)
 
         truth_table = {}
+        functions = []
 
-        for i in range(2 ** num_inputs):
-            input_state = [(i >> bit) & 1 for bit in range(num_inputs)]
-            
-            for idx, node in enumerate(input_nodes):
-                self.states[node] = input_state[idx] == 1
-                toggle_color = "red" if self.states[node] else "grey"
-                self.canvas.itemconfig(self.workspace_objects[node]['toggle'], fill=toggle_color)
+        for out_idx in range(num_outputs):
+            minterms = []
 
-            self.simulate_circuit()
+            for i in range(2 ** num_inputs):
+                input_state = [(i >> bit) & 1 for bit in range(num_inputs)]
+                for idx, node in enumerate(input_nodes):
+                    self.states[node] = input_state[idx] == 1
 
-            # Record the entire output state
-            output_state = tuple(self.states.get(node, False) for node in output_nodes)
-            truth_table[tuple(input_state)] = output_state
+                self.simulate_circuit()
 
-        # Use TTG or GTT to minimize and save the gate
-        minimized_function = self.minimize_function(truth_table)
-        self.gates[name] = Gate(name, num_inputs, num_outputs, minimized_function)
-        self.populate_operations()
+                output_state = self.states.get(output_nodes[out_idx], False)
+                truth_table[tuple(input_state)] = output_state
 
-        # Save the gate to its own file
+                if output_state:
+                    minterm = ''.join([f"{chr(65 + idx)}" if val else f"{chr(65 + idx)}'" for idx, val in enumerate(input_state)])
+                    if minterm:
+                        minterms.append(minterm)
+
+            minimized_function = ' + '.join(minterms)
+            functions.append(minimized_function)
+
+        self.gates[name] = Gate(name, num_inputs, num_outputs, boolean_exprs=functions)
+
         with open(os.path.join(CHIP_DIR, f"{name}.pkl"), 'wb') as f:
-            pickle.dump(self.gates[name], f)
+            pickle.dump((num_inputs, num_outputs, functions), f)
 
         self.clear_board()
-
-    def minimize_function(self, truth_table):
-        # Place logic for minimization using TTG or GTT here
-        # For now, returning the truth_table as-is, assuming the minimization happens in TTG/GTT
-
-        #Example of how to import and use
-        #takes input: F(A,B,C) = Z'm(2,3,4,5)+Z'd(6,7) and returns -> F = B + A
-        #Do the calculation
-        #TTGThinker = TTG_Thinker.TruthTableToGates(userfunction)
-        #Return answer
-        #TTGThinker.calculateanswer()
-        #answer = TTGThinker.get_Answer()
-
-        return truth_table
+        self.populate_operations()
 
     def simulate_circuit(self):
         change_flag = True
@@ -336,7 +327,7 @@ class LogicSim_gui(tk.Toplevel):
                 result = gate.evaluate(inputs)
 
                 for idx, output_node in enumerate(output_nodes):
-                    if self.states.get(output_node) != result[idx]:
+                    if idx < len(result) and self.states.get(output_node) != result[idx]:
                         self.states[output_node] = result[idx]
                         change_flag = True
 
@@ -421,7 +412,7 @@ class LogicSim_gui(tk.Toplevel):
             if os.path.exists(filepath):
                 os.remove(filepath)
                 
-            # Refresh gate buttons
+            # Refresh the gate buttons on UI
             self.populate_operations()
 
     def load_custom_gates(self):
@@ -431,15 +422,17 @@ class LogicSim_gui(tk.Toplevel):
             if filename.endswith('.pkl'):
                 filepath = os.path.join(CHIP_DIR, filename)
                 with open(filepath, 'rb') as f:
-                    gate = pickle.load(f)
-                    self.gates[gate.name] = gate
-        
-        # Refresh the gate button list
+                    try:
+                        # Load and unpack all expressions for the custom gate
+                        num_inputs, num_outputs, function_exprs = pickle.load(f)
+                        name_without_ext = os.path.splitext(filename)[0]
+                        self.gates[name_without_ext] = Gate(name_without_ext, num_inputs, num_outputs, boolean_exprs=function_exprs)
+                    except Exception as e:
+                        print(f"Failed to load gate from {filename}: {e}")
+
         self.populate_operations()
 
-
 if __name__ == '__main__':
-    # Create main menu for testing purposes
     class MainMenu(tk.Tk):
         def __init__(self):
             super().__init__()

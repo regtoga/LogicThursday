@@ -1108,6 +1108,7 @@ class TruthTableApp:
             "NOT": (1, 1, "A'"),
             "AND": (2, 1, "AB"),
             "OR": (2, 1, "B + A"),
+            "NAND": (2, 1, "A'B' + AB' + A'B"),
             "NOR": (2, 1, "A'B'"),
             "XOR": (2, 1, "A'B + AB'"),
             "XNOR": (2, 1, "A'B' + AB"),
