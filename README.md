@@ -38,6 +38,7 @@ The project consists of several Python files:
 ## Usage
 
 Run the main script to start the application:
+The current main script is inside the file "5LogicSimPythonQuineMcCluskey-Pages"
 
 ```
 GUI_GTT_TTG_MAIN.py

@@ -1,8 +1,0 @@
-Things i need to add to make not suck:
-1. Save/Load So that you dont loose your progress
-2. ability to move inputs and outputs around so that you can atleast breath
-3. Gates should get bigger based on the ammount of inputs/outputs they have so not everything spills over
-
-a hell of a lot of other stuff like:
-4. integration with my other program to make it easier to make truth tables, convert them into Diagrams and back into minimized functions....
-5. there needs to be a way to handle infinite loops, i bet just by adding multiprocessing would help, look at the 2nd picture to get a better understanding.
