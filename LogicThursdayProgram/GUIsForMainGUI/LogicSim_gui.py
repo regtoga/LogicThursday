@@ -2,7 +2,6 @@ import tkinter as tk
 from tkinter import simpledialog, messagebox, filedialog
 import pickle
 import os
-import threading
 
 import Thinkers.GatesToTableThinker as GTT_Thinker
 
@@ -269,52 +268,48 @@ class LogicSim_gui(tk.Toplevel):
         self.canvas.itemconfig(gate_id, fill=inverted_fill)
 
     def save_circuit_as_gate(self):
-        def calc():
-            name = simpledialog.askstring("New Gate", "Enter the name for the new gate (max 14 characters):")
-            if not name or len(name) > 14:
-                messagebox.showerror("Error", "Invalid gate name. Must be 1-14 characters.")
-                return
+        name = simpledialog.askstring("New Gate", "Enter the name for the new gate (max 14 characters):")
+        if not name or len(name) > 14:
+            messagebox.showerror("Error", "Invalid gate name. Must be 1-14 characters.")
+            return
 
-            input_nodes = [obj for obj, details in self.workspace_objects.items() if details.get('type') == 'workspace_input']
-            output_nodes = [obj for obj, details in self.workspace_objects.items() if details.get('type') == 'workspace_output']
+        input_nodes = [obj for obj, details in self.workspace_objects.items() if details.get('type') == 'workspace_input']
+        output_nodes = [obj for obj, details in self.workspace_objects.items() if details.get('type') == 'workspace_output']
 
-            num_inputs = len(input_nodes)
-            num_outputs = len(output_nodes)
+        num_inputs = len(input_nodes)
+        num_outputs = len(output_nodes)
 
-            truth_table = {}
-            functions = []
+        truth_table = {}
+        functions = []
 
-            for out_idx in range(num_outputs):
-                minterms = []
+        for out_idx in range(num_outputs):
+            minterms = []
 
-                for i in range(2 ** num_inputs):
-                    input_state = [(i >> bit) & 1 for bit in range(num_inputs)]
-                    for idx, node in enumerate(input_nodes):
-                        self.states[node] = input_state[idx] == 1
+            for i in range(2 ** num_inputs):
+                input_state = [(i >> bit) & 1 for bit in range(num_inputs)]
+                for idx, node in enumerate(input_nodes):
+                    self.states[node] = input_state[idx] == 1
 
-                    self.simulate_circuit()
+                self.simulate_circuit()
 
-                    output_state = self.states.get(output_nodes[out_idx], False)
-                    truth_table[tuple(input_state)] = output_state
+                output_state = self.states.get(output_nodes[out_idx], False)
+                truth_table[tuple(input_state)] = output_state
 
-                    if output_state:
-                        minterm = ''.join([f"{chr(65 + idx)}" if val else f"{chr(65 + idx)}'" for idx, val in enumerate(input_state)])
-                        if minterm:
-                            minterms.append(minterm)
+                if output_state:
+                    minterm = ''.join([f"{chr(65 + idx)}" if val else f"{chr(65 + idx)}'" for idx, val in enumerate(input_state)])
+                    if minterm:
+                        minterms.append(minterm)
 
-                minimized_function = ' + '.join(minterms)
-                functions.append(minimized_function)
+            minimized_function = ' + '.join(minterms)
+            functions.append(minimized_function)
 
-            self.gates[name] = Gate(name, num_inputs, num_outputs, boolean_exprs=functions)
+        self.gates[name] = Gate(name, num_inputs, num_outputs, boolean_exprs=functions)
 
-            with open(os.path.join(CHIP_DIR, f"{name}.pkl"), 'wb') as f:
-                pickle.dump((num_inputs, num_outputs, functions), f)
+        with open(os.path.join(CHIP_DIR, f"{name}.pkl"), 'wb') as f:
+            pickle.dump((num_inputs, num_outputs, functions), f)
 
-            self.clear_board()
-            self.populate_operations()
-
-        #Create the worker thread
-        threading.Thread(target=calc).start()
+        self.clear_board()
+        self.populate_operations()
 
     def simulate_circuit(self):
         change_flag = True
