@@ -2,8 +2,11 @@ import tkinter as tk
 from tkinter import simpledialog, messagebox, filedialog
 import pickle
 import os
+import threading
+import math
 
 import Thinkers.GatesToTableThinker as GTT_Thinker
+import Thinkers.TruthTableToGatesThinker as TTG_Thinker
 
 CHIP_DIR = "chips/"
 
@@ -84,6 +87,9 @@ class LogicSim_gui(tk.Toplevel):
         self.save_circuit_button.pack(fill=tk.X, pady=2)
 
         self.clear_board_button = tk.Button(self.buttons_frame, text="Clear Board", command=self.clear_board)
+        self.clear_board_button.pack(fill=tk.X, pady=2)
+
+        self.clear_board_button = tk.Button(self.buttons_frame, text="Import Chip", command=self.import_custom_gates)
         self.clear_board_button.pack(fill=tk.X, pady=2)
 
         self.back_button = tk.Button(self.buttons_frame, text="Back to Menu", command=self.back_to_main_menu)
@@ -415,6 +421,77 @@ class LogicSim_gui(tk.Toplevel):
             # Refresh the gate buttons on UI
             self.populate_operations()
 
+    def import_custom_gates(self):
+        def calc():
+            root = tk.Tk()
+            root.withdraw()
+
+            file_path = filedialog.askopenfilename(
+                initialdir="/",
+                title="Select a File",
+                filetypes=(("Pickle Files", "*.pkl*"), ("all files", "*.*"))
+            )
+
+            if file_path:
+                try:
+                    with open(file_path, "rb") as file:
+                        TableFromStorage = pickle.load(file)
+
+                    # Load and unpack all expressions for the custom gate
+                    name_without_ext = os.path.basename(file_path).replace(".pkl", "")
+
+                    if len(TableFromStorage) == 3:
+                        num_inputs = TableFromStorage[0]
+                        num_outputs = TableFromStorage[1]
+                        function_exprs = TableFromStorage[2]
+                        
+                        
+                    else:
+                        name_without_ext = os.path.basename(file_path).replace(".pkl", "")
+                        num_inputs = int(math.log(len(TableFromStorage), 2))
+                        num_outputs = len(TableFromStorage[0])
+                        function_exprs = []
+                        for depth in range(0, len(TableFromStorage[0])):
+                            stuff = []
+                            for item in TableFromStorage:
+                                stuff.append(item[depth])
+
+                            stuff2 = "Z'm("
+                            for minterm in range(0, len(stuff)):
+                                if stuff[minterm] == "1":
+                                    stuff2 += (f"{minterm},")
+
+                            #remove the last comma
+                            stuff2 = stuff2[:-1]
+                            stuff2 += ")"
+
+                            #print(stuff2)
+
+                            ttg_thinker = TTG_Thinker.TruthTableToGates(stuff2, f"importpt{depth}")
+                            ttg_thinker.calculateanswer()
+                            #append result to the answer bit
+                            function_exprs.append(ttg_thinker.get_Answer().replace("F = ", ""))
+                            del ttg_thinker
+                            os.remove(f"importpt{depth}")
+                            
+
+                    self.gates[name_without_ext] = Gate(name_without_ext, num_inputs, num_outputs, boolean_exprs=function_exprs)
+
+                    #look into this one cheef...
+
+                    with open(os.path.join(CHIP_DIR, f"{name_without_ext}.pkl"), 'wb') as f:
+                        pickle.dump((num_inputs, num_outputs, function_exprs), f)
+
+                    self.populate_operations()
+
+
+                except:
+                    messagebox.showerror("Error", "Something went wrong when loading the file!")
+                    del TableFromStorage  # Clear the variable
+        
+        #Create the worker thread
+        threading.Thread(target=calc).start()
+        
     def load_custom_gates(self):
         """Load custom gates from the CHIP_DIR."""
         files = os.listdir(CHIP_DIR)
