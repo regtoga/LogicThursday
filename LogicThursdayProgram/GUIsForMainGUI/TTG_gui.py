@@ -24,6 +24,11 @@ except ImportError:
     # for local use, if it worked
     import Thinkers as GTT_Thinker
 
+CHIP_DIR = "chips/"
+
+if not os.path.exists(CHIP_DIR):
+    os.makedirs(CHIP_DIR)
+
 class TTG_gui(tk.Toplevel):
     def __init__(self, MainMenuRef, position="+100+100"):
         super().__init__(MainMenuRef)
@@ -768,7 +773,7 @@ class TruthTableApp:
         root.withdraw()  # hide the main window
 
         file_path = filedialog.asksaveasfilename(
-            initialdir = "/",
+            initialdir = CHIP_DIR,
             title = "Save File",
             filetypes = (("Pickle Files", "*.pkl*"), ("all files", "*.*"))
         )
@@ -799,7 +804,7 @@ class TruthTableApp:
         NumOutputsFromStorage = 0
 
         file_path = filedialog.askopenfilename(
-            initialdir = "/",
+            initialdir = CHIP_DIR,
             title = "Select a File",
             filetypes = (("Pickle Files", "*.pkl*"), ("all files", "*.*"))
         )
@@ -924,7 +929,7 @@ class TruthTableApp:
                 root.withdraw()
 
                 file_path = filedialog.askopenfilename(
-                    initialdir="/",
+                    initialdir=CHIP_DIR,
                     title="Select a File",
                     filetypes=(("Pickle Files", "*.pkl*"), ("all files", "*.*"))
                 )
