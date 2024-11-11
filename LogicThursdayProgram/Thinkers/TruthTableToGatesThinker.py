@@ -246,7 +246,7 @@ class TruthTableToGates():
             self.cursor = self.connection.cursor()
 
             #update the number of matched pairs tables using my own crude method... i just dont want to run out of space...
-            self.numbermatchedpairstables = self.NumInputVars * 2
+            self.numbermatchedpairstables = self.NumInputVars * 3
 
             #I think that dropping a table will clear it, so that is what this does
             tables = [f"stl_matchedpairs{i}" for i in range(1, self.numbermatchedpairstables+1)] + ["stl_primeimplicanttable"]

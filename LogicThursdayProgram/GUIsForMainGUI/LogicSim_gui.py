@@ -35,6 +35,7 @@ class Gate:
             try:
                 #gates outputs are calculated using my GTT's calculate Function output method.
                 output = GTT_Thinker.calculateFunctionOutput(expr.replace(" ", ""), input_state)
+                #print(self.name, expr.replace(" ", ""), output, input_state)
                 results.append(output)
             except Exception as e:
                 print(f"Error evaluating function: {e}")
@@ -157,6 +158,7 @@ class LogicSim_gui(tk.Toplevel):
         else if dragging is not active try and select whatever the user clicked on.
         """
         item = self.canvas.find_withtag('current')
+
         if self.dragged_gate:
             #place the gate
             self.place_gate(event.x, event.y)
@@ -164,6 +166,46 @@ class LogicSim_gui(tk.Toplevel):
             if 'gate' in self.canvas.gettags(item):
                 #select thing on canvas
                 self.select_gate(item[0])
+        #if there is a node selected
+        elif self.selected_node:
+            node_tags = self.canvas.gettags(self.selected_node)
+
+            if len(item) == 0:
+                #if nothing was clicked and if a node was selected make a wire that goes to that point
+                if node_tags[1] == 'workspace_input' or node_tags[1] == 'gate_input' or node_tags[1] == 'wire_node_input':
+                    self.place_part_of_wire(event.x, event.y, "wire_node_input")
+                else:
+                    self.place_part_of_wire(event.x, event.y, "wire_node_output")
+
+    def place_part_of_wire(self, x, y, type_node):
+        #This huge if statement is a copy of the one below in the select node function, if you change one change both
+        #all it does is define what types of connections are allowed between nodes
+        selected_node_tags = self.canvas.gettags(self.selected_node)
+        if (('workspace_input' in selected_node_tags and 'gate_input' in type_node) or
+            ('gate_output' in selected_node_tags and 'workspace_output' in type_node) or
+            ('gate_output' in selected_node_tags and 'gate_input' in type_node) or
+            ('wire_node_input' in selected_node_tags and 'wire_node_input' in type_node) or
+            ('wire_node_output' in selected_node_tags and 'wire_node_output' in type_node) or
+            ('wire_node_input' in selected_node_tags and 'gate_input' in type_node) or
+            ('gate_output' in selected_node_tags and 'wire_node_output' in type_node) or
+            ('wire_node_output' in selected_node_tags and 'gate_input' in type_node) or
+            ('workspace_input' in selected_node_tags and 'wire_node_input' in type_node) or
+            ('wire_node_output' in selected_node_tags and 'workspace_output' in type_node)):
+
+            #create a rectangle behind the node to have the same format as a normal gate
+            wire_obj = self.canvas.create_rectangle(x, y, x, y, fill="lightblue", tag="gate")
+            self.workspace_objects[wire_obj] = {'wire': self.dragged_gate, 'nodes': []}
+
+            #make and attach the node to the rectangle
+            wire_node = self.canvas.create_oval(x-5, y, x+5, y+10, fill="black", tags=("node", type_node))
+            self.workspace_objects[wire_obj]['nodes'].append(wire_node)
+            self.workspace_objects[wire_node] = {'parent': wire_obj, 'type': type_node}
+
+            #bind the button to the new node
+            self.canvas.tag_bind(wire_node, "<Button-1>", self.select_node)
+            #select the node thus making a connection and making life good
+            self.select_node(wire_node)
+
 
     def place_gate(self, x, y):
         """This function takes an x and y cordinate and makes a chip in that space using the gate currently in self.dragged_gate"""
@@ -302,19 +344,36 @@ class LogicSim_gui(tk.Toplevel):
         This functions will visually change a node when clicked to show that is selected.
         If there is allready a node selected form a connections and unchange the other node.
         """
-        node_id = self.canvas.find_withtag('current')[0]
+        #if event is equal to None then we need to connect the wire to a new node that will allow for complicated wires
+        if type(event) != int:
+            node_id = self.canvas.find_withtag('current')[0]
+        else:
+            node_id = event
+
         node_tags = self.canvas.gettags(node_id)
 
         #if we have already selected a node and the node just clicked is a valid canidate to be connected with... form a connection
         if self.selected_node:
             selected_node_tags = self.canvas.gettags(self.selected_node)
+            #if you mess with this if statement i would recomend also changing the identical one above
             if (('workspace_input' in selected_node_tags and 'gate_input' in node_tags) or
                 ('gate_output' in selected_node_tags and 'workspace_output' in node_tags) or
-                ('gate_output' in selected_node_tags and 'gate_input' in node_tags)):
+                ('gate_output' in selected_node_tags and 'gate_input' in node_tags) or
+                ('wire_node_input' in selected_node_tags and 'wire_node_input' in node_tags) or
+                ('wire_node_output' in selected_node_tags and 'wire_node_output' in node_tags) or
+                ('wire_node_input' in selected_node_tags and 'gate_input' in node_tags) or
+                ('gate_output' in selected_node_tags and 'wire_node_output' in node_tags) or
+                ('wire_node_output' in selected_node_tags and 'gate_input' in node_tags) or
+                ('workspace_input' in selected_node_tags and 'wire_node_input' in node_tags) or
+                ('wire_node_output' in selected_node_tags and 'workspace_output' in node_tags)):
                 self.connect_nodes(self.selected_node, node_id)
 
             self.canvas.itemconfig(self.selected_node, fill="black")
             self.selected_node = None
+            
+            #auto select the 2nd node because it was just created by the user, so it should be selected
+            if type(event) == int:
+                self.select_node(event)
         #else the node just selected is the new self.selected_node so that next time we might be able to form a connection. 
         else:
             self.selected_node = node_id
@@ -344,12 +403,34 @@ class LogicSim_gui(tk.Toplevel):
         then deletes all information about that connection.
         """
         line_id = self.canvas.find_withtag('current')[0]
+        findmore = []       
+        connectionss = []
+
         for conn, line in list(self.connections.items()):
             if line == line_id:
+                findmore.append(conn[0])
+                findmore.append(conn[1])
                 del self.connections[conn]
-                break
+            else:
+                connectionss.append(conn[0])
+                connectionss.append(conn[1])
+                
+        #if for each id in the connection (conn) check if there is any connections to the nodes
+        #if not delete the node because it is allalone.... there can be more than one alone node per deleteion..
+        for i in findmore:
+            if (i not in connectionss) and (i in self.workspace_objects):
+                element = self.workspace_objects[i]
+                if 'type' in element and element['type'] in ["wire_node_input", "wire_node_output"] :
+                    parent = element.get('parent')
+                    #delete the node's parent
+                    self.canvas.delete(parent)
+                    #delete the reference in the array of all objects
+                    del self.workspace_objects[i]
+                    #delete the node
+                    self.canvas.delete(i)
+                    
         self.canvas.delete(line_id)
-
+     
     def delete_workspace_element(self, element_id):
         """
         This function is used to delete workspace inputs and workspace outputs.
@@ -384,12 +465,23 @@ class LogicSim_gui(tk.Toplevel):
             messagebox.showerror("Error", "Invalid gate name. Must be 1-14 characters.")
             return
 
+        #this will allows us to pass reference to the number of inputs to the thinkers, this is VERRY important for correct results
+        ValidInputChars = ('A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z')
+
         #Get all input and outputs nodes so that we can count the ammount of them we have.
         input_nodes = [obj for obj, details in self.workspace_objects.items() if details.get('type') == 'workspace_input']
         output_nodes = [obj for obj, details in self.workspace_objects.items() if details.get('type') == 'workspace_output']
 
         num_inputs = len(input_nodes)
         num_outputs = len(output_nodes)
+
+        tempinputchars = ""
+
+        for input in range(0, num_inputs):
+            if input == 0:
+              tempinputchars += f"{ValidInputChars[input]}"  
+            else:
+                tempinputchars += f",{ValidInputChars[input]}"
 
         truth_table = {}
         functions = []
@@ -402,10 +494,17 @@ class LogicSim_gui(tk.Toplevel):
             #circuit curently on the workspace and append its result to a function which we can use to find the minimized functions
             for i in range(2 ** num_inputs):
                 input_state = [(i >> bit) & 1 for bit in range(num_inputs)]
-                for idx, node in enumerate(input_nodes):
-                    self.states[node] = input_state[idx] == 1
+                somelist = []
 
-                #This function calculates what is on the workspace for a any given states
+                # Reverse the assignment to count in the desired order.
+                for idx, node in enumerate(input_nodes):
+                    # This will reverse the order of indexing because it is backwards by default
+                    reversed_idx = len(input_nodes) - 1 - idx  
+                    
+                    self.states[node] = input_state[reversed_idx] == 1
+                    somelist.append(input_state[reversed_idx] == 1)
+
+                #This function calculates what is on the workspace for the given states
                 self.simulate_circuit()
 
                 #if the output of the circuit was 1 append it to the minterms
@@ -416,7 +515,7 @@ class LogicSim_gui(tk.Toplevel):
                 counterr += 1
 
             #calculate the function expression
-            stuff2 = "Z'm("
+            stuff2 = f"F({tempinputchars}) = Z'm("
             for minterm in minterms:
                 stuff2 += (f"{minterm},")
 

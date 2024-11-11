@@ -8,10 +8,12 @@ the GTT (Gates to TruthTable) program takes gates in this form
 F = AB'C'DEF'G + A'B'C'D'E'FG' + A'B'C'D'E'F'G
 and returns a function that describes a truth table, meaning you can construct every possible input and output from the function.
 
-The TTG (Truth Table to Gates) program on the other hand does the opposite with a truth table,
+The TTG (Truth Table to Gates) program on the other hand does the opposite. With a truth table,
 we can minimize the ammount of logic gates needed to fufill the table.
 This process is called circut minimization. These functions look like this:
-F(A,B,C) = Z'm(2,3,4,5)+Z'd(6,7)
+F(A,B,C) = Z'm(2,3,4,5)+Z'd(6,7) which would return a the minimized function "F = B + A",
+notice that the minimized function does not include the input C at any point, this is because the TTG is able to handle don't-cares
+ (anywhere in the truth table where you dont care what the output is)
 
 There is also a Logic Simulator portion of this program. In that portion you can create some logical systems and compact them as a single chip.
 Secondly you can use this program to export a real design as a truth table, which you can either import into the truth table editor to see it,
