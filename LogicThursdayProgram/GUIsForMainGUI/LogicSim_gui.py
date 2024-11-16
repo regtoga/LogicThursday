@@ -147,18 +147,44 @@ class LogicSim_gui(tk.Toplevel):
 
     def update_preview(self, event):
         """Functions creats the preview (dotted rectangle) around where the gate would go if the user clicked"""
+        self.preview_tag = "preview_item"
         if self.preview_item:
-            self.canvas.delete(self.preview_item)
+            self.canvas.delete(self.preview_tag)
         x, y = event.x, event.y
-        
+
         lenrectang = 25+4*(len(self.dragged_gate.name))
         #determine if the box needs to be scaled about the inputs or the ouputs
-        if self.dragged_gate.inputs >= self.dragged_gate.outputs:
+        if self.dragged_gate.inputs > self.dragged_gate.outputs:
             heirectang = 20+10*(self.dragged_gate.inputs)
-        else:
+            offset = (self.dragged_gate.inputs / self.dragged_gate.outputs)
+        elif self.dragged_gate.inputs < self.dragged_gate.outputs:
            heirectang = 20+10*(self.dragged_gate.outputs) 
+           offset = (self.dragged_gate.outputs / self.dragged_gate.inputs)
+        else:
+            heirectang = 20+10*(self.dragged_gate.inputs)
+            offset = 1
 
-        self.preview_item = self.canvas.create_rectangle(x, y, x+lenrectang, y+heirectang, dash=(5, 2), outline="gray")
+        # Create the main rectangle for the preview item
+        self.preview_item = self.canvas.create_rectangle(x, y, x+lenrectang, y+heirectang, fill="lightblue", tags=self.preview_tag)
+
+        # Add the text to the canvas and assign the same tag
+        text_obj = self.canvas.create_text(x+(lenrectang/2), y+(heirectang/2), text=self.dragged_gate.name, tags=self.preview_tag)
+
+        # Add input nodes to the canvas and assign the same tag
+        for i in range(self.dragged_gate.inputs):
+            if self.dragged_gate.inputs > self.dragged_gate.outputs:
+                input_node = self.canvas.create_oval(x-5, y+10*i+10, x+5, y+10*i+20, fill="black", tags=self.preview_tag)
+            else:
+                nodeoffset = 10 * (i * offset) + 10
+                input_node = self.canvas.create_oval(x-5, y+nodeoffset, x+5, y+nodeoffset+10, fill="black", tags=self.preview_tag)
+
+        # Add output nodes to the canvas and assign the same tag
+        for i in range(self.dragged_gate.outputs):
+            if self.dragged_gate.inputs > self.dragged_gate.outputs:
+                nodeoffset = 10*(i*offset)+10
+                output_node = self.canvas.create_oval(x+lenrectang-5, y+nodeoffset, x+lenrectang+5, y+nodeoffset+10, fill="black", tags=self.preview_tag)
+            else:
+                output_node = self.canvas.create_oval(x+lenrectang-5, y+10*i+10, x+lenrectang+5, y+10*i+20, fill="black", tags=self.preview_tag)
 
     def on_canvas_click(self, event):
         """
@@ -266,7 +292,7 @@ class LogicSim_gui(tk.Toplevel):
 
         #reset the dragged_gate to None as the drag has ended.
         self.dragged_gate = None
-        self.canvas.delete(self.preview_item)
+        self.canvas.delete(self.preview_tag)
         self.canvas.unbind("<Motion>")
         #give the chip a right click handler that will prompt for the deletion of a chip.
         self.canvas.tag_bind(gate_obj, "<Button-3>", self.prompt_delete_gate)
@@ -424,28 +450,9 @@ class LogicSim_gui(tk.Toplevel):
         end_coords = self.canvas.coords(end_node)
         #form a line between the two cords, update the connections list with the line reference
         line = self.canvas.create_line(start_coords[0]+5, start_coords[1]+5, end_coords[0]+5, end_coords[1]+5, width=6, tags="wire")
+        #render the nodes above the wires!
         try:
-            self.canvas.tag_lower("wire", "wire_node_input")
-        except:
-            pass
-        try:
-            self.canvas.tag_lower("wire", "wire_node_output")
-        except:
-            pass
-        try:
-            self.canvas.tag_lower("wire", "workspace_input")
-        except:
-            pass
-        try:
-            self.canvas.tag_lower("wire", "workspace_output")
-        except:
-            pass
-        try:
-            self.canvas.tag_lower("wire", "gate_input")
-        except:
-            pass
-        try:
-            self.canvas.tag_lower("wire", "gate_output")
+            self.canvas.tag_lower("wire", "node")
         except:
             pass
         self.connections[(start_node, end_node)] = line
@@ -587,12 +594,19 @@ class LogicSim_gui(tk.Toplevel):
                 ttg_thinker = TTG_Thinker.TruthTableToGates(stuff2, f"importpt{out_idx}")
                 ttg_thinker.calculateanswer()
                 #append result to the answer list
-                functions.append(ttg_thinker.get_Answer().replace("F = ", ""))
+                returnedanswer = ttg_thinker.get_Answer().replace("F = ", "")
+                if returnedanswer != '':
+                    functions.append(returnedanswer)
+                else:
+                    #if it is empty and the minterms are not empty, it should return true
+                    functions.append(True)
+                
                 del ttg_thinker
                 os.remove(f"importpt{out_idx}")
             else:
-                #if it is empty the "function" should always return false
+                #if it is empty and the minterms are empty the "function" should return false
                 functions.append(False)
+                
 
         #add the newly formed gate the programs bank of gates
         self.gates[name] = Gate(name, num_inputs, num_outputs, boolean_exprs=functions)
@@ -697,7 +711,7 @@ class LogicSim_gui(tk.Toplevel):
         if self.preview_item:
             #reset the dragged_gate to None as the drag has been canceled.
             self.dragged_gate = None
-            self.canvas.delete(self.preview_item)
+            self.canvas.delete(self.preview_tag)
             self.canvas.unbind("<Motion>")
 
         #this handles when a gate is not being moved anymore
