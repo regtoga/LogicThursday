@@ -27,11 +27,17 @@ class TruthTableToGates():
         #This bit removes the start of the function off if there is one.
         startapending = 1
         isFfound = False
-        
+        currentlargestinputcharindex = 0
+
         leninput = len(self.functionToSolve)
         for index in range(0, leninput):
             #this is the variable for the current char
             currentchar = self.functionToSolve[index]
+
+            #if f is found start logging previous char
+            if isFfound == True and startapending == 0:
+                if self.functionToSolve[index] in self.ValidInputChars:
+                    currentlargestinputcharindex += 1
 
             if currentchar.lower() == "f" and isFfound == False:
                 startapending = 0
@@ -89,6 +95,8 @@ class TruthTableToGates():
         #would show the largest num calculated to be inside the input function
         #print(f"Largest var num = {self.largestvarnum}, {self.ValidInputChars[self.largestvarnum]}")
 
+        if currentlargestinputcharindex > 0:
+            self.largestvarnum = currentlargestinputcharindex -1
 
         #create a list of bools that will be counted to provide the TruthTable
         inputslist = [False]
@@ -228,6 +236,8 @@ class TruthTableToGates():
         """This function should return a function such as: F(A,B,C) = Z'm(2,3,4,5)+Z'd(6,7)"""
         #Create a original Functions baised on the calculated minterms
         output = "F("
+
+        self.largestvarnum += 1
 
         for index in range(0, self.largestvarnum):
             if index != self.largestvarnum-1:
