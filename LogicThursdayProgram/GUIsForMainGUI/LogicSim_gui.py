@@ -150,10 +150,15 @@ class LogicSim_gui(tk.Toplevel):
         if self.preview_item:
             self.canvas.delete(self.preview_item)
         x, y = event.x, event.y
-        #if you make y+40 dynamic you could fix the issue with your inputs overflowing out of the box's bounds
-        #just clamp it to a minimum value then depending on the gate selected's number of inputs and outputs make it bigger by the 
-        #height of a single I/O node
-        self.preview_item = self.canvas.create_rectangle(x, y, x+80, y+40, dash=(5, 2), outline="gray")
+        
+        lenrectang = 25+4*(len(self.dragged_gate.name))
+        #determine if the box needs to be scaled about the inputs or the ouputs
+        if self.dragged_gate.inputs >= self.dragged_gate.outputs:
+            heirectang = 20+10*(self.dragged_gate.inputs)
+        else:
+           heirectang = 20+10*(self.dragged_gate.outputs) 
+
+        self.preview_item = self.canvas.create_rectangle(x, y, x+lenrectang, y+heirectang, dash=(5, 2), outline="gray")
 
     def on_canvas_click(self, event):
         """
@@ -189,6 +194,7 @@ class LogicSim_gui(tk.Toplevel):
             ('gate_output' in selected_node_tags and 'gate_input' in type_node) or
             ('wire_node_input' in selected_node_tags and 'wire_node_input' in type_node) or
             ('wire_node_output' in selected_node_tags and 'wire_node_output' in type_node) or
+            ('wire_node_input' in selected_node_tags and 'workspace_output' in type_node) or
             ('wire_node_input' in selected_node_tags and 'gate_input' in type_node) or
             ('gate_output' in selected_node_tags and 'wire_node_output' in type_node) or
             ('wire_node_output' in selected_node_tags and 'gate_input' in type_node) or
@@ -216,22 +222,44 @@ class LogicSim_gui(tk.Toplevel):
         #if you make y+40 dynamic you could fix the issue with your inputs overflowing out of the box's bounds
         #just clamp it to a minimum value then depending on the gate selected's number of inputs and outputs make it bigger by the 
         #height of a single I/O node
-        gate_obj = self.canvas.create_rectangle(x, y, x+80, y+40, fill="lightblue", tag="gate")
+
+        lenrectang = 25+4*(len(self.dragged_gate.name))
+        #determine if the box needs to be scaled about the inputs or the ouputs
+        if self.dragged_gate.inputs > self.dragged_gate.outputs:
+            heirectang = 20+10*(self.dragged_gate.inputs)
+            offset = (self.dragged_gate.inputs / self.dragged_gate.outputs)
+        elif self.dragged_gate.inputs < self.dragged_gate.outputs:
+           heirectang = 20+10*(self.dragged_gate.outputs) 
+           offset = (self.dragged_gate.outputs / self.dragged_gate.inputs)
+        else:
+            heirectang = 20+10*(self.dragged_gate.inputs)
+            offset = 1
+           
+
+        gate_obj = self.canvas.create_rectangle(x, y, x+lenrectang, y+heirectang, fill="lightblue", tag="gate")
         #y+20 should actually be half of y+40 if you implement dynamic chip sizes
-        text_obj = self.canvas.create_text(x+40, y+20, text=self.dragged_gate.name, tags=("text",))
+        text_obj = self.canvas.create_text(x+(lenrectang/2), y+(heirectang/2), text=self.dragged_gate.name, tags=("text",))
         #add the gate's information to the workspace's object list
         self.workspace_objects[gate_obj] = {'gate': self.dragged_gate, 'nodes': [], 'text': text_obj}
 
         #for each input the chip has, make an input node 
         for i in range(self.dragged_gate.inputs):
-            input_node = self.canvas.create_oval(x-5, y+10*i+10, x+5, y+10*i+20, fill="black", tags=("node", "gate_input"))
+            if self.dragged_gate.inputs > self.dragged_gate.outputs:
+                input_node = self.canvas.create_oval(x-5, y+10*i+10, x+5, y+10*i+20, fill="black", tags=("node", "gate_input"))
+            else:
+                nodeoffset = 10*(i*offset)+10
+                input_node = self.canvas.create_oval(x-5, y+nodeoffset, x+5, y+nodeoffset+10, fill="black", tags=("node", "gate_input"))
             self.workspace_objects[gate_obj]['nodes'].append(input_node)
             self.workspace_objects[input_node] = {'parent': gate_obj, 'type': 'gate_input'}
             self.canvas.tag_bind(input_node, "<Button-1>", self.select_node)
 
         #for each output the chip has, make an output node.
         for i in range(self.dragged_gate.outputs):
-            output_node = self.canvas.create_oval(x+75, y+10*i+10, x+85, y+10*i+20, fill="black", tags=("node", "gate_output"))
+            if self.dragged_gate.inputs > self.dragged_gate.outputs:
+                nodeoffset = 10*(i*offset)+10
+                output_node = self.canvas.create_oval(x+lenrectang-5, y+nodeoffset, x+lenrectang+5, y+nodeoffset+10, fill="black", tags=("node", "gate_output"))
+            else:
+                output_node = self.canvas.create_oval(x+lenrectang-5, y+10*i+10, x+lenrectang+5, y+10*i+20, fill="black", tags=("node", "gate_output"))
             self.workspace_objects[gate_obj]['nodes'].append(output_node)
             self.workspace_objects[output_node] = {'parent': gate_obj, 'type': 'gate_output'}
             self.canvas.tag_bind(output_node, "<Button-1>", self.select_node)
@@ -366,6 +394,7 @@ class LogicSim_gui(tk.Toplevel):
                 ('wire_node_input' in selected_node_tags and 'wire_node_input' in node_tags) or
                 ('wire_node_output' in selected_node_tags and 'wire_node_output' in node_tags) or
                 ('wire_node_input' in selected_node_tags and 'gate_input' in node_tags) or
+                ('wire_node_input' in selected_node_tags and 'workspace_output' in node_tags) or
                 ('gate_output' in selected_node_tags and 'wire_node_output' in node_tags) or
                 ('workspace_input' in selected_node_tags and 'workspace_output' in node_tags) or
                 ('wire_node_output' in selected_node_tags and 'gate_input' in node_tags) or
@@ -395,6 +424,30 @@ class LogicSim_gui(tk.Toplevel):
         end_coords = self.canvas.coords(end_node)
         #form a line between the two cords, update the connections list with the line reference
         line = self.canvas.create_line(start_coords[0]+5, start_coords[1]+5, end_coords[0]+5, end_coords[1]+5, width=6, tags="wire")
+        try:
+            self.canvas.tag_lower("wire", "wire_node_input")
+        except:
+            pass
+        try:
+            self.canvas.tag_lower("wire", "wire_node_output")
+        except:
+            pass
+        try:
+            self.canvas.tag_lower("wire", "workspace_input")
+        except:
+            pass
+        try:
+            self.canvas.tag_lower("wire", "workspace_output")
+        except:
+            pass
+        try:
+            self.canvas.tag_lower("wire", "gate_input")
+        except:
+            pass
+        try:
+            self.canvas.tag_lower("wire", "gate_output")
+        except:
+            pass
         self.connections[(start_node, end_node)] = line
         #if the line is rightclicked delete the the connection, and the wire
         self.canvas.tag_bind(line, "<Button-3>", self.delete_wire)

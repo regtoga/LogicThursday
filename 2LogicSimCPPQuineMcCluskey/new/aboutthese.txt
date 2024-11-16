@@ -1,0 +1,1 @@
+I wanted to see what chat GPT could do if i told it to remake my program, TTTG is a single threaded version, and Test2.cpp is a multithreaded version. I don't know if they work correctly for a lot of reasons, but reason one is that i didnt make them!
