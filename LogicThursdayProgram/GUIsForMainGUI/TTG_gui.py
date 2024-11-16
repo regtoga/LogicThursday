@@ -831,11 +831,14 @@ class TruthTableApp:
                         tempTableFromStorage.append([])
                         binarynumber = TTG_Thinker.convertdecimaltobinarywithzeros(counterforbinarynumber, numinputs)
                         for localcolumn in range(0, numoutputs):
-                            #print(f"{functions[localcolumn]}")
-                            #splits string number "0001" into a list [false, false, false, true]
-                            splitbinary = [int(x) == 1 for x in list(binarynumber)]
-                            #appends the result of a binary function to an index in an array
-                            outpuut = GTT_Thinker.calculateFunctionOutput(customfunctions[localcolumn].replace(" ", ""), splitbinary)
+                            if type(customfunctions[localcolumn]) == bool:
+                                outpuut = customfunctions[localcolumn]
+                            else:
+                                #print(f"{functions[localcolumn]}")
+                                #splits string number "0001" into a list [false, false, false, true]
+                                splitbinary = [int(x) == 1 for x in list(binarynumber)]
+                                #appends the result of a binary function to an index in an array
+                                outpuut = GTT_Thinker.calculateFunctionOutput(customfunctions[localcolumn].replace(" ", ""), splitbinary)
                             tempTableFromStorage[localrow].append(outpuut)
 
                         counterforbinarynumber += 1
@@ -953,11 +956,15 @@ class TruthTableApp:
                                 tempTableFromStorage.append([])
                                 binarynumber = TTG_Thinker.convertdecimaltobinarywithzeros(counterforbinarynumber, numinputs)
                                 for localcolumn in range(0, numoutputs):
-                                    #print(f"{functions[localcolumn]}")
-                                    #splits string number "0001" into a list [false, false, false, true]
-                                    splitbinary = [int(x) == 1 for x in list(binarynumber)]
-                                    #appends the result of a binary function to an index in an array
-                                    outpuut = GTT_Thinker.calculateFunctionOutput(self.customfunctions[localcolumn].replace(" ", ""), splitbinary)
+                                    if type(self.customfunctions[localcolumn]) == bool:
+                                        outpuut = self.customfunctions[localcolumn]
+                                    else:
+
+                                        #print(f"{functions[localcolumn]}")
+                                        #splits string number "0001" into a list [false, false, false, true]
+                                        splitbinary = [int(x) == 1 for x in list(binarynumber)]
+                                        #appends the result of a binary function to an index in an array
+                                        outpuut = GTT_Thinker.calculateFunctionOutput(self.customfunctions[localcolumn].replace(" ", ""), splitbinary)
                                     tempTableFromStorage[localrow].append(outpuut)
 
                                 counterforbinarynumber += 1
@@ -1145,7 +1152,10 @@ class TruthTableApp:
 
                     #Split the functions up into their singular forms for each output
                     for i in range(len(self.function)):
-                        self.function[i] = self.function[i].replace(" ","").replace("\n", "").split("F=")[0]
+                        if type(self.function[i]) == bool:
+                            continue
+                        else:
+                            self.function[i] = self.function[i].replace(" ","").replace("\n", "").split("F=")[0]
 
                     #seperate the inputs and outputs
                     for pot in spot[2]:
@@ -1185,21 +1195,29 @@ class TruthTableApp:
                             currentoutput = int(outputs[cunter][-1:]) - 1
 
                             if len(ran_ge) == 1:
-                                #This is where it would always = 1
-                                binaryinputsforthefunction = findbinaryinputsforthefunction(int(ran_ge[0]), numInputs)
-                                #Calculate the answer and send it to the truthtable's memory
-                                #step 3: go to the correct locations in the table and compute the operations baised on what the binary value of that location is
-                                self.TruthTableMemory[int(ran_ge[0])][currentoutput] = str(int(gtt_thinker.calculateFunctionOutput(func, binaryinputsforthefunction)))
+                                if type(func) == bool:
+                                    self.TruthTableMemory[int(ran_ge[0])][currentoutput] = str(int(func))
+                                else:
+                                    #This is where it would always = 1
+                                    binaryinputsforthefunction = findbinaryinputsforthefunction(int(ran_ge[0]), numInputs)
+                                    #Calculate the answer and send it to the truthtable's memory
+                                    #step 3: go to the correct locations in the table and compute the operations baised on what the binary value of that location is
+                                    self.TruthTableMemory[int(ran_ge[0])][currentoutput] = str(int(gtt_thinker.calculateFunctionOutput(func, binaryinputsforthefunction)))
                             else:
                                 #This is where it would always = 2
                                 if len(self.TruthTableMemory) >= int(ran_ge[0]) and len(self.TruthTableMemory) >= int(ran_ge[1]):
                                     #Calculate the answer and send it to the truthtable's memory
                                     counter = int(ran_ge[0])
                                     while counter <= int(ran_ge[1]):
-                                        binaryinputsforthefunction = findbinaryinputsforthefunction(counter, numInputs)
-                                        #step 3: go to the correct locations in the table and compute the operations baised on what the binary value of that location is
-                                        self.TruthTableMemory[counter][currentoutput] = str(int(gtt_thinker.calculateFunctionOutput(func, binaryinputsforthefunction)))
-                                        counter += 1
+
+                                        if type(func) == bool:
+                                            self.TruthTableMemory[int(ran_ge[0])][currentoutput] = str(int(func))
+                                            counter += 1
+                                        else:
+                                            binaryinputsforthefunction = findbinaryinputsforthefunction(counter, numInputs)
+                                            #step 3: go to the correct locations in the table and compute the operations baised on what the binary value of that location is
+                                            self.TruthTableMemory[counter][currentoutput] = str(int(gtt_thinker.calculateFunctionOutput(func, binaryinputsforthefunction)))
+                                            counter += 1
 
                             cunter += 1
 

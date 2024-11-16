@@ -34,9 +34,12 @@ class Gate:
         for expr in self.boolean_exprs:
             try:
                 #gates outputs are calculated using my GTT's calculate Function output method.
-                output = GTT_Thinker.calculateFunctionOutput(expr.replace(" ", ""), input_state)
-                #print(self.name, expr.replace(" ", ""), output, input_state)
-                results.append(output)
+                if type(expr) == bool:
+                    results.append(expr)
+                else:
+                    output = GTT_Thinker.calculateFunctionOutput(expr.replace(" ", ""), input_state)
+                    #print(self.name, expr.replace(" ", ""), output, input_state)
+                    results.append(output)
             except Exception as e:
                 print(f"Error evaluating function: {e}")
                 results.append(False)
@@ -189,6 +192,7 @@ class LogicSim_gui(tk.Toplevel):
             ('wire_node_input' in selected_node_tags and 'gate_input' in type_node) or
             ('gate_output' in selected_node_tags and 'wire_node_output' in type_node) or
             ('wire_node_output' in selected_node_tags and 'gate_input' in type_node) or
+            ('workspace_input' in selected_node_tags and 'workspace_output' in type_node) or
             ('workspace_input' in selected_node_tags and 'wire_node_input' in type_node) or
             ('wire_node_output' in selected_node_tags and 'workspace_output' in type_node)):
 
@@ -363,6 +367,7 @@ class LogicSim_gui(tk.Toplevel):
                 ('wire_node_output' in selected_node_tags and 'wire_node_output' in node_tags) or
                 ('wire_node_input' in selected_node_tags and 'gate_input' in node_tags) or
                 ('gate_output' in selected_node_tags and 'wire_node_output' in node_tags) or
+                ('workspace_input' in selected_node_tags and 'workspace_output' in node_tags) or
                 ('wire_node_output' in selected_node_tags and 'gate_input' in node_tags) or
                 ('workspace_input' in selected_node_tags and 'wire_node_input' in node_tags) or
                 ('wire_node_output' in selected_node_tags and 'workspace_output' in node_tags)):
@@ -519,17 +524,22 @@ class LogicSim_gui(tk.Toplevel):
             for minterm in minterms:
                 stuff2 += (f"{minterm},")
 
-            #remove the last comma
-            stuff2 = stuff2[:-1]
-            stuff2 += ")"
+            #if the answer function is empty:
+            if stuff2[-1] != '(':
+                #remove the last comma
+                stuff2 = stuff2[:-1]
+                stuff2 += ")"
 
-            #Calculate the minimized Function utilizing my TTG.
-            ttg_thinker = TTG_Thinker.TruthTableToGates(stuff2, f"importpt{out_idx}")
-            ttg_thinker.calculateanswer()
-            #append result to the answer list
-            functions.append(ttg_thinker.get_Answer().replace("F = ", ""))
-            del ttg_thinker
-            os.remove(f"importpt{out_idx}")
+                #Calculate the minimized Function utilizing my TTG.
+                ttg_thinker = TTG_Thinker.TruthTableToGates(stuff2, f"importpt{out_idx}")
+                ttg_thinker.calculateanswer()
+                #append result to the answer list
+                functions.append(ttg_thinker.get_Answer().replace("F = ", ""))
+                del ttg_thinker
+                os.remove(f"importpt{out_idx}")
+            else:
+                #if it is empty the "function" should always return false
+                functions.append(False)
 
         #add the newly formed gate the programs bank of gates
         self.gates[name] = Gate(name, num_inputs, num_outputs, boolean_exprs=functions)

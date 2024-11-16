@@ -840,6 +840,19 @@ class TruthTableToGates():
                 self.answer += " + "
             howmanyones -= 1
 
+        #check if the function is empty "F = " this means that all pairs matched,
+        #so just append every input term to the output, it will atleast become a proper function.
+        #problem you will have though is that if there is actually supposed to be no outputs, then
+        #it should even work as a function, so i guess ill check here if there were even any minterms,
+        #if not then just do nothing...
+        if self.nummin > 0 and self.answer == "F = ":
+            for i in range(self.NumInputVars):
+                if i == 0:
+                    self.answer += f"{self.ValidInputChars[i]}"
+                else:
+                    self.answer += f" + {self.ValidInputChars[i]}"
+
+
         #Make shure the program actually writes to the disk
         self.connection.commit()
 
