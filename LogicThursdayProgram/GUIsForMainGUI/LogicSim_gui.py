@@ -74,6 +74,7 @@ class LogicSim_gui(tk.Toplevel):
         self.selected_node = None
         self.moving_gate = None
         self.move_start = None
+        self.dontdocanvasclick = False
 
         self.create_frames()
         self.load_custom_gates()
@@ -191,25 +192,31 @@ class LogicSim_gui(tk.Toplevel):
         Trigger the place gate function when the user clicks on the canvas while dragging is active.
         else if dragging is not active try and select whatever the user clicked on.
         """
-        item = self.canvas.find_withtag('current')
+        #if i dont want it to click, then i disable it for a single click
+        if self.dontdocanvasclick == False:
 
-        if self.dragged_gate:
-            #place the gate
-            self.place_gate(event.x, event.y)
-        elif item:
-            if 'gate' in self.canvas.gettags(item):
-                #select thing on canvas
-                self.select_gate(item[0])
-        #if there is a node selected
-        elif self.selected_node:
-            node_tags = self.canvas.gettags(self.selected_node)
+            item = self.canvas.find_withtag('current')
 
-            if len(item) == 0:
-                #if nothing was clicked and if a node was selected make a wire that goes to that point
-                if node_tags[1] == 'workspace_input' or node_tags[1] == 'gate_input' or node_tags[1] == 'wire_node_input':
-                    self.place_part_of_wire(event.x, event.y, "wire_node_input")
-                else:
-                    self.place_part_of_wire(event.x, event.y, "wire_node_output")
+            if self.dragged_gate:
+                #place the gate
+                self.place_gate(event.x, event.y)
+            elif item:
+                if 'gate' in self.canvas.gettags(item):
+                    #select thing on canvas
+                    self.select_gate(item[0])
+            #if there is a node selected
+            elif self.selected_node:
+                node_tags = self.canvas.gettags(self.selected_node)
+
+                if len(item) == 0:
+                    #if nothing was clicked and if a node was selected make a wire that goes to that point
+                    if node_tags[1] == 'workspace_input' or node_tags[1] == 'gate_input' or node_tags[1] == 'wire_node_input':
+                        self.place_part_of_wire(event.x, event.y, "wire_node_input")
+                    else:
+                        self.place_part_of_wire(event.x, event.y, "wire_node_output")
+        else:
+            #re enable the on canvas click
+            self.dontdocanvasclick = False
 
     def place_part_of_wire(self, x, y, type_node):
         #This huge if statement is a copy of the one below in the select node function, if you change one change both
@@ -330,9 +337,7 @@ class LogicSim_gui(tk.Toplevel):
 
         #delete the connections and the line on the canvas
         for conn in connections_to_delete:
-            line = self.connections[conn]
-            self.canvas.delete(line)
-            del self.connections[conn]
+            self.delete_wire(self.connections[conn])
 
         #delete the nodes related to this chip
         for node in self.workspace_objects[gate_id]['nodes']:
@@ -458,16 +463,21 @@ class LogicSim_gui(tk.Toplevel):
         self.connections[(start_node, end_node)] = line
         #if the line is rightclicked delete the the connection, and the wire
         self.canvas.tag_bind(line, "<Button-3>", self.delete_wire)
+        self.canvas.tag_bind(line, "<Button-1>", self.split_wire)
 
         #simulate circuit needs to be ran to update the results of all the gates
         self.simulate_circuit()
 
-    def delete_wire(self, event):
+    def delete_wire(self, wire):
         """
         This function is called by a right click on a wire, when that happens it takes a reference from that wire 
         then deletes all information about that connection.
         """
-        line_id = self.canvas.find_withtag('current')[0]
+        if type(wire) == int:
+            line_id = wire
+        else:
+            line_id = self.canvas.find_withtag('current')[0]
+            
         findmore = []       
         connectionss = []
 
@@ -495,6 +505,81 @@ class LogicSim_gui(tk.Toplevel):
                     self.canvas.delete(i)
                     
         self.canvas.delete(line_id)
+
+    def split_wire(self, event):
+        """
+        This function should make a new node where the wire was right clicked and delete the wire,
+        then the nodes should both be selected and connected to the new node splitting the wire
+        """
+
+        line_id = self.canvas.find_withtag('current')[0]
+        findmore = []       
+
+        #delete the old wire from the innerworkings
+        for conn, line in list(self.connections.items()):
+            if line == line_id:
+                findmore.append(conn[0])
+                findmore.append(conn[1])
+                del self.connections[conn]
+
+        #delete the old wire from the canvas
+        self.canvas.delete(line_id)  
+
+
+        #create a new node at cursor position
+        #create a rectangle behind the node to have the same format as a normal gate
+        wire_obj = self.canvas.create_rectangle(event.x, event.y, event.x, event.y, fill="lightblue", tag="gate")
+        self.workspace_objects[wire_obj] = {'wire': self.dragged_gate, 'nodes': []}
+
+
+        node_tags = self.canvas.gettags(findmore[0])
+        node_tagss = self.canvas.gettags(findmore[1])
+
+        if node_tags[1] == 'workspace_input' or node_tags[1] == 'gate_input' or node_tags[1] == 'wire_node_input' or node_tagss[1] == 'workspace_input' or node_tagss[1] == 'gate_input' or node_tagss[1] == 'wire_node_input':
+            node_tag = "wire_node_input"
+        else:
+            node_tag = "wire_node_output"
+
+        #make and attach the node to the rectangle
+        wire_node = self.canvas.create_oval(event.x-5, event.y, event.x+5, event.y+10, fill="black", tags=("node", node_tag))
+        self.workspace_objects[wire_obj]['nodes'].append(wire_node)
+        self.workspace_objects[wire_node] = {'parent': wire_obj, 'type': node_tag}
+
+        
+        #bind the button to the new node
+        self.canvas.tag_bind(wire_node, "<Button-1>", self.select_node)
+
+
+        #form the new connections
+        #im resetting these because i think it will help with a bug im getting, when splitting wires random things connect to other random things!
+        if self.selected_node != None:
+            self.canvas.itemconfig(self.selected_node, fill="black")
+            self.selected_node = None
+
+        #select all nodes that had a connection broken
+        self.select_node(findmore[0])
+        #select new node
+        self.select_node(wire_node)
+
+        #im resetting these because i think it will help with a bug im getting, when splitting wires random things connect to other random things!
+        if self.selected_node != None:
+            self.canvas.itemconfig(self.selected_node, fill="black")
+            self.selected_node = None
+            
+        #select new node
+        self.select_node(wire_node)
+        #select all nodes that had a connection broken
+        self.select_node(findmore[1])
+                
+        #im resetting these because i think it will help with a bug im getting, when splitting wires random things connect to other random things!
+        if self.selected_node != None:
+            self.canvas.itemconfig(self.selected_node, fill="black")
+            self.selected_node = None        
+
+        #finally select the node because obiously you wanted it!
+        self.select_node(wire_node)
+        self.dontdocanvasclick = True
+
      
     def delete_workspace_element(self, element_id):
         """
@@ -625,8 +710,16 @@ class LogicSim_gui(tk.Toplevel):
         #function knows to stop once there is no longer any changes hapening in the circuit.
         #think about how we might not know how many changes may need to be calculated, so once it settles down...
         #or colapses on a steady state
+        #my bandaid fix is to stop the simulation after so many iterations, the other way this could be done is though using a death timer
+        counter = 0
+
         change_flag = True
         while change_flag:
+
+            if counter >= 10000:
+                messagebox.showerror("Error", "You have either a infinite loop or logic error in your ciruit!", parent=self.canvas)
+                return
+
             change_flag = False
             #Iterates though every object on the workspace 
             for gate_obj, details in self.workspace_objects.items():
@@ -662,6 +755,8 @@ class LogicSim_gui(tk.Toplevel):
                     connected_nodes = [start for (start, end) in self.connections if end == obj]
                     indicator_color = "red" if any(self.states.get(node, False) for node in connected_nodes) else "grey"
                     self.canvas.itemconfig(details['indicator'], fill=indicator_color)
+
+            counter += 1
 
     def add_input(self):
         """This adds an toggle button input to the left side of the workspace"""
