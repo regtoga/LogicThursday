@@ -434,430 +434,174 @@ class TruthTableToGates():
     def groupbynumones(self) -> bool:
         """
         Step 1:
-            Group All the minterms (and possibly Maxterms) by ammount of change in their Binary Representation.
+        Group all minterms (and possibly maxterms) by the number of '1's in their binary representation.
+        This function assumes that all minterms have been correctly derived from maxterms if necessary.
         """
         NumInputVars = self.NumInputVars 
 
-        unsortedBinaryTerms = []
-
-        if self.MinorMax == "minterms":
-            # Combine minterms and dont cares into one list
-            all_terms = self.Minterms + self.DontCares
-        elif self.MinorMax == "Maxterms":
-            # Combine minterms and dont cares into one list
-            all_terms = self.Maxterms + self.DontCares
+        # Combine minterms and don't cares
+        all_terms = self.Minterms + self.DontCares
 
         # Sort the combined list
         sorted_terms = sorted(all_terms)
 
-        # Convert sorted terms to binary and append to unsortedBinaryTerms
+        # Convert sorted terms to binary and append to a list
+        binary_terms_with_groups = []
         for term in sorted_terms:
-            decimal = convertdecimaltobinarywithzeros(term, NumInputVars)
-            unsortedBinaryTerms.append(decimal)
+            binary_rep = convertdecimaltobinarywithzeros(term, NumInputVars)
+            binary_terms_with_groups.append((binary_rep.count('1'), term, binary_rep))
 
-        sortedBinaryTerms = sorted(unsortedBinaryTerms, key=lambda x: x.count('1'))
+        # Sort binary terms/groups by the number of '1's
+        sorted_binary_terms = sorted(binary_terms_with_groups, key=lambda x: x[0])
 
-        #------------------------------------------------------------------------------------
-        #convert each sorted binary number into a decimal number so i know which midterm i am working with
-        sortedDecimalTerms = []
-
-        for term in sortedBinaryTerms:
-            DecimalTerm = convertbinarytodecimal(term)
-            if DecimalTerm in self.Minterms:
-                sortedDecimalTerms.append(f"m{DecimalTerm}")
-            elif DecimalTerm in self.Maxterms:
-                sortedDecimalTerms.append(f"M{DecimalTerm}")
-            elif DecimalTerm in self.DontCares:
-                sortedDecimalTerms.append(f"d{DecimalTerm}")
-
-        #------------------------------------------------------------------------------------
-        #as we append the data to the table we need to find out the groups to know which binary numbers to compare
-            
+        # Insert the sorted binary terms into the database table stl_matchedpairs1
         SQL = "INSERT INTO stl_matchedpairs1 (groupp, matched_pairs, bin_rep, checked) VALUES (?, ?, ?, ?)"
-        
-        for index in range(0, len(sortedDecimalTerms)):
-            #data to insert
-            datatoinsert = [(sortedBinaryTerms[index].count('1'),f"{sortedDecimalTerms[index]}",f"{sortedBinaryTerms[index]}",0)]
+        data_to_insert = []
 
-            #inserting data into the 'stl_matchedpairs1' table using placeholders
-            self.cursor.executemany(SQL, datatoinsert)
+        for num_ones, term, bin_rep in sorted_binary_terms:
+            # Determine the term label
+            if term in self.Minterms:
+                term_label = f"m{term}"
+            elif term in self.DontCares:
+                term_label = f"d{term}"
+            else:
+                # This case should not happen if everything is correctly set up
+                continue
 
-        #------------------------------------------------------------------------------------
+            # Prepare the data for insertion
+            data_to_insert.append((num_ones, term_label, bin_rep, 0))
 
-        return 0
+        # Execute the insert operation
+        self.cursor.executemany(SQL, data_to_insert)
+        self.connection.commit()
+
+        return True
     
-    def findMatchedpairs(self, matchedpairstable:str="1") -> bool:
+    def findMatchedpairs(self, matchedpairstable: str = "1") -> bool:
         """
         Step 2:
-            Find Match Pairs by comparing EVERY minterm in a group with every other minterm in group +1 of that minterm.
-            The Comparison must happen between the Binary Representation of one minterm and the next, though we only move them on to the next step-
-            if they are different by one variable. We represent the different variable by an Underscore in place of the 0/1.
-
-            do this step over asmany times as many time as needed to find all possible matched pairs.
+        Find matched pairs by comparing every term in a group with every term in the next group.
+        The comparison occurs between binary representations, differing by exactly one bit.
+        These pairs are then stored in a new table for the next round of comparisons.
         """
 
-        #------------------------------------------------------------------------------------
-        #groupp in table we are currently working with
-        grouppnum = 0
-
-        #find largest groupp num in the given table
+        # Get the largest group number in the current table
         self.cursor.execute(f"SELECT MAX(groupp) FROM stl_matchedpairs{matchedpairstable}")
-        largestGrouppNum = (self.cursor.fetchall())[0][0]
-        
-        #Testing Purposes
-        #print(f"The Largest Group in table number{matchedpairstable} = {largestGrouppNum}.\n")
+        largestGrouppNum = self.cursor.fetchone()[0]
 
-        #Write some SQL to get all groups n (n meaning smallest group that we havent gotten yet)
-        self.cursor.execute(f"SELECT * FROM stl_matchedpairs{matchedpairstable} WHERE groupp = {grouppnum}")
-        matchinggroup = self.cursor.fetchall()
+        if largestGrouppNum is None:
+            return False  # Exit if there are no groups
 
-        for groupp in range(largestGrouppNum):
-            #Write some SQL to get all groups n + 1 (to be compared to every group n)
-            self.cursor.execute(f"SELECT * FROM stl_matchedpairs{matchedpairstable} WHERE groupp = {grouppnum + 1}")
-            matchinggroupandone = self.cursor.fetchall()
+        # Iterate through the group numbers to find matched pairs
+        for group_num in range(largestGrouppNum):
+            # Retrieve terms from the current group
+            self.cursor.execute(f"SELECT * FROM stl_matchedpairs{matchedpairstable} WHERE groupp = {group_num}")
+            current_group = self.cursor.fetchall()
 
-            #Do that untill there is no n + 1 to compare against.
-            #print(f"{matchinggroup} are compared against: {matchinggroupandone}")
+            # Retrieve terms from the next group
+            self.cursor.execute(f"SELECT * FROM stl_matchedpairs{matchedpairstable} WHERE groupp = {group_num + 1}")
+            next_group = self.cursor.fetchall()
 
-            #for each comparison we are comparing the Binary Representation to find single digit changes,
-            #if we manage to find these single digit changes append the difference to the SQl Table and change the changed bit to an underscore,
-            #when something is found with a single bit change, we need to "check" every minterm involved so at the end we can figure out what has been used.
+            # Compare terms in current group with those in the next group
+            for term1 in current_group:
+                for term2 in next_group:
+                    # Compare the binary representations to find differences by exactly one bit
+                    new_bin_rep = compareTwoBinaryStrings(term1[3], term2[3])
+                    if new_bin_rep != "NA":
+                        # Ensure pairs are recorded only if they meet the strict ordering rule
+                        terms_involved1 = list(map(int, term1[2].replace('m', '').replace('M', '').replace('d', '').split('-')))
+                        terms_involved2 = list(map(int, term2[2].replace('m', '').replace('M', '').replace('d', '').split('-')))
 
-            #compare the two lists
-            for grouppp in matchinggroup:
-                for groupppp in matchinggroupandone:
-                    
-                    #takes two binary strings and compares them: EX: 0010 and 0000 = 00_0
-                    differentbits = compareTwoBinaryStrings(grouppp[3],groupppp[3])
+                        if terms_involved1[-1] < terms_involved2[0]:
+                            # Insert into the next matched pairs table
+                            SQL = f"INSERT INTO stl_matchedpairs{int(matchedpairstable)+1} (groupp, matched_pairs, bin_rep, checked) VALUES (?, ?, ?, ?)"
+                            new_matched_pairs = f"{term1[2]}-{term2[2]}"
+                            data_to_insert = (new_bin_rep.count('1'), new_matched_pairs, new_bin_rep, 0)
+                            self.cursor.execute(SQL, data_to_insert)
 
-                    #print(f"{grouppp[3]} checked via: {groupppp[3]} = {differentbits} different bits")
+                            # Mark the original terms as checked
+                            self.cursor.execute(f"UPDATE stl_matchedpairs{matchedpairstable} SET checked = 1 WHERE PK_id = ?", (term1[0],))
+                            self.cursor.execute(f"UPDATE stl_matchedpairs{matchedpairstable} SET checked = 1 WHERE PK_id = ?", (term2[0],))
 
-                    #store the first and last numbers in a given set of minterms to make shure that we dont break the rule of:
-                    """So, if you notice throughout all of the pairings, the right hand value is consistently at least larger than the left hand value
+        # Commit changes to the database
+        self.connection.commit()
 
-                    for example, (1,3), 3 is greater than 1, (3,7), 7 is greater than 3, (9,13), 13 is greater than 9
-
-                    This same concept is carried over to pairs with two dashes or differing bits:
-
-                    (1,3,9,11): 1 < 3 < 9 < 11
-                    (2,3,10,11): 2 < 3 < 10 < 11
-                    (3,7,11,15): 3 < 7 < 11 < 15
-
-                    A pairing of (1,9,3,11) would break this rule: 1 < 9 !< 3 < 11"""
-
-                    #should get the last bit involved in the first minterm
-                    firstgrouplastbit = int(((grouppp[2]).replace('-',' ').replace('m','').replace('M','').replace('d','').split())[-1])
-                    #should get the first bit involved in the first minterm
-                    secondgroupfristbit = int(((groupppp[2]).replace('-',' ').replace('m','').replace('M','').replace('d','').split())[0])
-
-                    if differentbits != "NA":
-                        #---
-                        #Append the data to the table
-                        
-                        SQL = f"INSERT INTO stl_matchedpairs{int(matchedpairstable)+1} (groupp, matched_pairs, bin_rep, checked) VALUES (?, ?, ?, ?)"
-        
-                        #data to insert
-                        datatoinsert = [(differentbits.count('1'),f"{grouppp[2]}-{groupppp[2]}",f"{differentbits}",0)]
-
-                        #i think that if i make an if statement that only appends stuff if the bit is bigger then we stay winning, but we have to check them off still? i think
-                        if firstgrouplastbit < secondgroupfristbit:
-                            #inserting data into the 'stl_matchedpairs1' table using placeholders
-                            self.cursor.executemany(SQL, datatoinsert)
-
-                        #--
-
-                        #check off both groupps involved:
-                        SQL1 = f"UPDATE stl_matchedpairs{matchedpairstable} SET checked = 1 WHERE matched_pairs = '{grouppp[2]}';"
-                        SQL2 = f"UPDATE stl_matchedpairs{matchedpairstable} SET checked = 1 WHERE matched_pairs = '{groupppp[2]}';"
-
-                        #TELLS programmer what the sql is, also tells me that the execute command is being used way to much
-                        SQL3 = f"{SQL1}\n{SQL2}"
-                        #print(SQL3)
-
-                        self.cursor.executescript(SQL3)
-                                
-                        #---
-
-            #so that i dont have to do another SQL query i will be setting the old n+1 to the new n
-            matchinggroup = matchinggroupandone
-            grouppnum += 1
-
-        #------------------------------------------------------------------------------------
-
-        #determine if we need to call this function again using the ammount of matched pairs in this table
+        # Determine if further steps are needed
         self.cursor.execute(f"SELECT COUNT(*) FROM stl_matchedpairs{int(matchedpairstable)+1}")
-        ammountofmatchedpairs = (self.cursor.fetchall())[0][0]
-        if ammountofmatchedpairs > 0:
-            self.findMatchedpairs(int(matchedpairstable)+1)
+        number_of_matched_pairs = self.cursor.fetchone()[0]
 
-        return 0
+        if number_of_matched_pairs > 0:
+            # Call this function recursively if new pairs were found
+            self.findMatchedpairs(str(int(matchedpairstable) + 1))
+
+        return True
     
     
     def primeimplicantstable(self) -> bool:
         """
-        Step 4:
-            After all matched pairs/Prime implicants are found we need to make a new table called the Prime Implicant Table:
-            This table has one purpose, make it obious which minterms used in a prime implicant show up only once. If If there is a pair of two-
-            that only show up once we write down the Prime Implicants in the ouput function and go find if there are any more. If there arnt we have our answer.
-
-            I want it to be said that you can use SQL to check if a column has a number for example query the matched_pairs_involved table with "m52" and you will get one of the results with that in it!
+        Construct the prime implicant table and generate the minimized boolean expression
+        using variable formats like 'A'B'C''.
         """
 
-        chosenPrimeImplicants = []
-        primeImplicants = []
-        mintermsinvolved = []
+        # Collect unmatched terms (prime implicants) from all matched pairs tables
+        prime_implicants = []
 
-        for counter in range(self.numbermatchedpairstables-1):
-            #Fetch all records from the first matched pairs table
-            self.cursor.execute(f"Select * FROM stl_matchedpairs{counter+1} WHERE checked = 0")
-            Matchedpairdata = self.cursor.fetchall()
+        for table_index in range(1, self.numbermatchedpairstables):
+            # Fetch all unmatched entries
+            self.cursor.execute(f"SELECT * FROM stl_matchedpairs{table_index} WHERE checked = 0")
+            unmatched = self.cursor.fetchall()
 
-            #make shure there is something in side of the Matchedpairtable
-            if Matchedpairdata != []:
-                #check every pair in the current table
-                for matchedpair in Matchedpairdata:
-                    #Check if the binrep of the prime implicant has allready been taken
-                    if matchedpair[3] not in chosenPrimeImplicants:
-                        mintermsinvolved.append(matchedpair[2])
+            for term in unmatched:
+                if term[3] not in {imp[0] for imp in prime_implicants}:
+                    prime_implicants.append((term[3], term[2]))
 
-                        #if it hasnt append the implicant to a register of all know implicants
-                        chosenPrimeImplicants.append(matchedpair[3])
+        # Translate prime implicants to boolean expressions
+        prime_expressions = [bintoinputvars(binary_rep, self.ValidInputChars) for binary_rep, _ in prime_implicants]
 
-                        #find what that equles in input terms
-                        primeImplicants.append(bintoinputvars(matchedpair[3], self.ValidInputChars))
-                        
-        #print(primeImplicants)
-        #print(mintermsinvolved)
-        
-        #append all the new data to a long SQL statement to append it to the primeimplicants table
-        #stl_primeimplicanttable(pk_id INTEGER PRIMARY KEY,prime_implicants TEXT,{termforinput})
+        # Determine term coverage
+        term_coverage = {minterm: set() for minterm in self.Minterms}
 
-        #This Piece of shit (lol) literaly just takes a string "m1-m3-m5-m3" and converts it into a list [[m1,m3,m5,m3]]
-        for index in range(0, len(mintermsinvolved)):
-            #setup variables
-            mintermsql = ", "
-            mintermsqldata = [1]
-            mintermsqlquestions = "?"
-            dontcare = False
-            lastchar = ''
+        for expression, (_, terms) in zip(prime_expressions, prime_implicants):
+            involved_terms = set(map(int, terms.replace('m', '').replace('d', '').split('-')))
+            for minterm in involved_terms:
+                if minterm in term_coverage:
+                    term_coverage[minterm].add(expression)
 
-            #for each char in a string ex: "m1-m3-m5-m3"
-            for character in mintermsinvolved[index]:
-                #if the char is a dont care dont append anything untill the char we are working with is not a dont care
-                if character == 'd':
-                    dontcare = True
-                    if lastchar == '-':
-                        #if the last char was a '-' then we have to take of some bad data that should have been here in the first place
-                        mintermsqldata.remove(1)
-                        mintermsql = mintermsql[:-2]
-                        mintermsqlquestions = mintermsqlquestions[:-3]
-                    elif lastchar == '':
-                        mintermsqldata.remove(1)
-                        mintermsql = mintermsql[:-2]
-                        mintermsqlquestions = mintermsqlquestions[:-1]
+        # Identify essential primes
+        essential_expressions = {next(iter(exprs)) for exprs in term_coverage.values() if len(exprs) == 1}
 
-                elif character == '-':
-                    #if the char is a '-' append that data needed to seperate this term from the last one
-                    mintermsql += ", "
-                    mintermsqldata.append(1)
-                    if mintermsqlquestions == '':
-                        mintermsqlquestions += "?"
-                    else:
-                        mintermsqlquestions += ", ?"
-                    
+        # Collect remaining prime expressions for further coverage
+        covered = set(essential_expressions)
+        uncovered_terms = {term for term, exprs in term_coverage.items() if not exprs.intersection(covered)}
 
-                elif ((character == 'm' or character == 'M') and (dontcare == True)):
-                    #cherck if current answer is a dont care and if it is not dont care is true
-                    dontcare = False
-                    mintermsql += character
+        while uncovered_terms:
+            previous_uncovered = uncovered_terms.copy()
 
-                else:
-                    #if none of that stuff is true append the char to the working data
-                    if dontcare == False:
-                        mintermsql += character
+            # Pick the expression covering the most uncovered terms
+            candidate, adds_coverage = None, 0
+            for expression, (_, terms) in zip(prime_expressions, prime_implicants):
+                involved_terms = set(map(int, terms.replace('m', '').replace('d', '').split('-')))
+                new_coverage = len(uncovered_terms.intersection(involved_terms))
 
-                lastchar = character
-            
-            if mintermsqldata != []:
+                if new_coverage > adds_coverage:
+                    candidate, adds_coverage = expression, new_coverage
 
-                SQL = f"""INSERT INTO stl_primeimplicanttable (prime_implicants,matched_pairs_involved{mintermsql}) VALUES ("{primeImplicants[index]}","{mintermsinvolved[index]}", {mintermsqlquestions})"""
+            if candidate:
+                covered.add(candidate)
+                involved_terms = [term for term in term_coverage if candidate in term_coverage[term]]
+                uncovered_terms.difference_update(involved_terms)
 
-                """print(f"{SQL}")
-                print("\n")"""
-                self.cursor.executemany(SQL, [mintermsqldata])
-        #---
-        
-        self.connection.commit()
+            # Break if no new terms are covered
+            if previous_uncovered == uncovered_terms:
+                break
 
-        #check every column of of the implicants table to find the columns where there is only one 1 then append them to the list
-        #if we are solving for max terms is this still correct?----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-        onlyone = []
-        onlyonetermsinvolved = []
-        for minterm in self.Minterms:
-            SQL = f"""SELECT * FROM stl_primeimplicanttable WHERE m{minterm} = 1"""
-            self.cursor.execute(SQL)
-            result = self.cursor.fetchall()
-            if len(result) == 1:
-                if result[0][1] not in onlyone:
-                    onlyone.append(result[0][1])
-                    onlyonetermsinvolved.append(result[0][2])
-
-
-        #Take the lists of onlyones and search it to see if there are any minterms missing from all the functions
-        #if there is then we need to make that happen mimimally.
-        #print(onlyonetermsinvolved)
-
-        #all numbers involved just numbers
-        justnumbersinvolved = []
-        
-        #iterate though every term in the terms involved.
-        for terminvolved in onlyonetermsinvolved:
-            #Get rid of the decorative m's
-            terminvolved = terminvolved.replace("m","")
-            terminvolved = terminvolved.replace("M","")
-
-            #remove all the terms that begin with d until the - or end
-            terminvolved += "-"
-            def delete_between(string, start, end):
-                """Deletes everything between the start and end characters in a string."""
-                newstring = ""
-                doappend = True
-
-                #go though each char in the string and if it is the starting char stop appending the string to the output, if it is the ending char start appending to the output
-                for i in range(0,len(string)):
-                    if string[i] == start:
-                        doappend = False
-                    if doappend == True:
-                        newstring += string[i]
-                    if string[i] == end:
-                        doappend = True
-
-                #if at the end there is still a thing you want gon from the end remove it
-                if newstring[-1] == end:
-                    newstring = newstring[:-1]
-
-                return newstring
-            
-            #print("1",terminvolved)
-            terminvolved = delete_between(terminvolved,"d","-")
-            #print("2",terminvolved)
-            #print("\n")
-
-
-            #Get len of terminvolved
-            lenterminvolved = len(terminvolved)
-            #Create a variable to store the current number in the terms involved
-            numberstr = ""
-            #keep track of all numbers 
-            numbers = []
-            #iterate through every value of the term involved
-            for index in range(0,lenterminvolved):
-                if terminvolved[index] == "-":
-                    #Convert numberstr into a int
-                    number = int(numberstr)
-                    numbers.append(number)
-
-                    #reset the numberstr to get ready for the next number     
-                    numberstr = ""
-                else:
-                    #add the current char to the string to be converted into a number
-                    numberstr += terminvolved[index]
-
-                    if lenterminvolved == index+1:
-                        #Convert numberstr into a int
-                        number = int(numberstr)
-                        numbers.append(number)
-
-            justnumbersinvolved.append(numbers)
-
-        #compare if the list of rangeonlyonetermsinvolved includes atleast one of each minterm in the input function to make shure we dont have any not covered
-        #self.Minterms
-        
-        #list to store the minterms missing
-        termsnotyetintegrated = []
-
-        for term in self.Minterms:
-            inside = False
-            for numberss in justnumbersinvolved:
-                if term in numberss:
-                    #if this passes even once somewhere is that minterm in the list
-                    inside = True
-            #after all the current numbersinvolved have been compared against the minterms given at the start we can
-            #decide what was some how left out, i dont know why this is...
-            if inside == False:
-                if term not in termsnotyetintegrated:
-                    termsnotyetintegrated.append(term)
-                
-        #print(termsnotyetintegrated)
-
-
-        #list of all possibly needed to add additional matched pairs.
-        #there are two of them because if i get less matches running from a different side then that side is more minimal!
-        additionalmatchedpairsleft = []
-        additionalmatchedpairsright = []
-
-        #1
-        #check every column of of the implicants AGAIN table to add the ones that were missed then append them to the list
-        for minterm in termsnotyetintegrated:
-            SQL = f"""SELECT * FROM stl_primeimplicanttable WHERE m{minterm} = 1"""
-            self.cursor.execute(SQL)
-            result = self.cursor.fetchall()
-
-            if result[0][1] not in additionalmatchedpairsleft:
-                additionalmatchedpairsleft.append(result[0][1])  
-
-        #2
-        #check every column of of the implicants AGAIN table to add the ones that were missed then append them to the list
-        for minterm in reversed(termsnotyetintegrated):
-            SQL = f"""SELECT * FROM stl_primeimplicanttable WHERE m{minterm} = 1"""
-            self.cursor.execute(SQL)
-            result = self.cursor.fetchall()
-
-            if result[0][1] not in additionalmatchedpairsright:
-                additionalmatchedpairsright.append(result[0][1])  
-
-        lenadditionalleft = len(additionalmatchedpairsleft)
-        lenadditionalright = len(additionalmatchedpairsright)
-
-        #print(additionalmatchedpairsleft, lenadditionalleft)
-
-        #print(additionalmatchedpairsright, lenadditionalright)
-        
-        #check which way has less terms then output that one
-        if lenadditionalleft <= lenadditionalright:
-            for term in additionalmatchedpairsleft:
-                onlyone.append(term)
+        # Formulate the minimized expression
+        if covered:
+            self.answer = "F = " + " + ".join(sorted(covered))
         else:
-            for term in additionalmatchedpairsright:
-                onlyone.append(term)
+            self.answer = "F = 1" if self.nummin > 0 else "F = 0"
 
-        #Take the list of answers and put them in the correct format
-        self.answer = "F = "
-        howmanyones = len(onlyone)
-        for one in onlyone:
-            self.answer += f"{one}"
-            if howmanyones > 1:
-                self.answer += " + "
-            howmanyones -= 1
-
-        #check if the function is empty "F = " this means that all pairs matched,
-        #so just append every input term to the output, it will atleast become a proper function.
-        #problem you will have though is that if there is actually supposed to be no outputs, then
-        #it should even work as a function, so i guess ill check here if there were even any minterms,
-        #if not then just do nothing...
-        if self.nummin > 0 and self.answer == "F = ":
-            for i in range(self.NumInputVars):
-                if i == 0:
-                    self.answer += f"{self.ValidInputChars[i]}"
-                else:
-                    self.answer += f" + {self.ValidInputChars[i]}"
-
-
-        #Make shure the program actually writes to the disk
-        self.connection.commit()
-
-        #If you where to print the answer you would be done!
-        return 0
+        return True
 
     def calculateanswer(self) -> bool:
         """Essentially runs all the step functions to calculate the final answer, It is possible to calculate the answer step by step by putting in the functions one by one:
